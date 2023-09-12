@@ -17,29 +17,38 @@ function check_stock_option_list($goodsinfo, $cfg, $stock, $reserve15, $reserve2
 		$cfg['ableStockLimit']	= $goodsinfo['able_stock_limit'];
 	}
 
-	if( $cfg['runout'] != 'unlimited' ){
-		if( $cfg['runout'] == 'stock' )	$able_stock_limit	= 0;
-		else							$able_stock_limit	= (int)$cfg['ableStockLimit'];
-	}else{
+	if ($cfg['runout'] == 'unlimited') { // 재고와 상관없이
 		return true;
 	}
 
-	// 출고 예약량
-	$reservation		= ${'reserve'.$cfg['ableStockStep']};
+	$able_stock_limit = 0; // 설정한 가용재고 수
+	$reservation = 0; // 출고 예약량
+	if ($cfg['runout'] == 'ableStock') {
+		$able_stock_limit	= (int)$cfg['ableStockLimit'];
+		$reservation		= ${'reserve'.$cfg['ableStockStep']};
+	}
+
 	$sale_able_stock	= (int) $stock - (int) $reservation - (int) $able_stock_limit;
 	$result_stock		= $sale_able_stock  - (int) $ea;
-	if			($mode == 'cart'){
-		if	($result_stock < 0)		return false;
-	}else if	($mode == 'view'){
-		if	($result_stock <= 0)	return false;
-	}else if	($mode == 'view_stock'){
-		$result_sale_able_stock		= 0;
-		if	($sale_able_stock > 0)	$result_sale_able_stock	= $sale_able_stock;
 
-		return array(	'stock'				=> $result_stock,
-						'able_stock'		=> $result_stock,
-						'runout'			=> $cfg['runout'],
-						'sale_able_stock'	=> $result_sale_able_stock	);
+	if ($mode == 'cart') {
+		if ($result_stock < 0) {
+			return false;
+		}
+	} elseif ($mode == 'view') {
+		if ($result_stock <= 0) {
+			return false;
+		}
+	} elseif ($mode == 'view_stock') {
+		$result_sale_able_stock = 0;
+		if ($sale_able_stock > 0) {
+			$result_sale_able_stock = $sale_able_stock;
+		}
+
+		return ['stock' => $result_stock,
+			'able_stock' => $result_stock,
+			'runout' => $cfg['runout'],
+			'sale_able_stock' => $result_sale_able_stock];
 	}
 
 	return true;

@@ -1554,6 +1554,18 @@ class Goodsmodel extends CI_Model {
 			$result['b_stock'] = "-";
 		}
 
+		//재고관리 사용하는 경우, 총 재고값(rtotal_stock) 창고 기준으로 재계산
+		if($this->scm_cfg['use'] == "Y"){
+			$this->db->select('sum(ea) as rtotal_stock')
+				->from('fm_scm_location_link')
+				->where('goods_seq', $no);
+			$query = $this->db->get();
+			$scm_result = $query->row_array();
+			if($scm_result['rtotal_stock']){
+				$result['rtotal_stock']		= $scm_result['rtotal_stock'];
+			}
+		}
+		
 		return $result;
 	}
 
@@ -10880,7 +10892,7 @@ class Goodsmodel extends CI_Model {
 				}
 
 				// 재고 체크
-				$opt['chk_stock'] = check_stock_option_list($goods, $cfg_order, $opt['stock'], $opt['reserve15'], $opt['reserve25'], 0, 'view');
+				$opt['chk_stock'] = check_stock_option_list($goods, $cfg_order, $opt['stock'], $opt['reservation15'], $opt['reservation25'], 0, 'view');
 				if ($opt['chk_stock']) {
 					$runout = false;
 				}

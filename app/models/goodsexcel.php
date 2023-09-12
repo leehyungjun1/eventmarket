@@ -4520,7 +4520,10 @@ class goodsExcel extends CI_Model {
 		foreach($addition as $goods_seq => $data){
 			$tmp1 = explode('^', trim($data['addition']));
 
-			if ($tmp1) {
+			// 추가 정보가 없는 경우 goods_seq 삭제처리
+			if (!array_filter($tmp1)) {
+				$goodsSeqs[]	= $goods_seq;
+			} else {
 				foreach ($tmp1 as $a => $addStr) {
 					if ($addStr) {
 						$type				= 'direct';
@@ -4566,12 +4569,13 @@ class goodsExcel extends CI_Model {
 		$returnData = array();
 		$goodsSeqs = array_unique($goodsSeqs);
 
-		if( count($optionParams) > 0 ){
-			if( count($goodsSeqs) > 0 ){
-				//기존 옵션 데이터 삭제
-				$this->db->where_in('goods_seq', $goodsSeqs);
-				$this->db->delete('fm_goods_addition');
-			}
+		if (count($goodsSeqs) > 0) {
+			//기존 옵션 데이터 삭제
+			$this->db->where_in('goods_seq', $goodsSeqs);
+			$this->db->delete('fm_goods_addition');
+		}
+
+		if (count($optionParams) > 0 ) {
 			
 			//bulk insert의 경우 모든 데이터의 key 갯수와 순서가 동일해야 함
 			foreach($optionParams as $k => &$options){
@@ -4636,8 +4640,10 @@ class goodsExcel extends CI_Model {
 
 		foreach($icons as $goods_seq => $data){
 			$icon = explode(chr($this->m_sUploadLineCharString), $data['icon']);
-
-			if ($icon) {
+			// 아이콘이 없는 경우 goods_seq 삭제처리
+			if (!array_filter($icon)) {
+				$goodsSeqs[]	= $goods_seq;
+			} else {
 				foreach ($icon as $iconStr) {
 					if (trim($iconStr)) {
 						$tmp1	= explode('=', $iconStr);
@@ -4664,12 +4670,13 @@ class goodsExcel extends CI_Model {
 
 		$goodsSeqs = array_unique($goodsSeqs);
 
+		if (count($goodsSeqs) > 0) {
+			//기존 옵션 데이터 삭제
+			$this->db->where_in('goods_seq', $goodsSeqs);
+			$this->db->delete('fm_goods_icon');
+		}
+	
 		if (count($optionParams) > 0) {
-			if (count($goodsSeqs) > 0) {
-				//기존 옵션 데이터 삭제
-				$this->db->where_in('goods_seq', $goodsSeqs);
-				$this->db->delete('fm_goods_icon');
-			}
 			
 			//bulk insert의 경우 모든 데이터의 key 갯수와 순서가 동일해야 함
 			foreach($optionParams as $k => &$options){

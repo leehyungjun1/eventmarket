@@ -282,6 +282,16 @@ function check_typereceiptuse() {
 		$('#typereceiptchoice').show();
 		$("#typereceipttablelay").show();
 		$("#typereceipt2").click();
+
+		let payment = $('input:radio[name=payment]:checked').val();
+		let taxReceiptUseArr = ['escrow_virtual','virtual','escrow_account','account','bank'];
+		var taxReceiptIs = taxReceiptUseArr.includes(payment);
+		
+		if (taxReceiptIs === true && gl_cashreceiptuse == 0) {
+			$('.tax_voucherchk').addClass('on');
+			$("#tax_container").show();
+			$( "input[name=typereceipt]:radio").attr( "checked", "checked" );
+		}
 	}
 
 	check_typereceipt();

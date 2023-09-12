@@ -9,8 +9,8 @@ class dbpatch extends front_base {
 	{
 		ob_start();
 ?>
--- FMDEV-1873_1_카테고리_중복으로_index_추가.sql 실행 쿼리
-ALTER TABLE fm_category_link ADD UNIQUE goods_seq_category_code ( goods_seq, category_code);
+-- FMDEV-2005_1_매출증빙_속도개선을_위한_주문번호_index_추가.sql 실행 쿼리
+ALTER TABLE fm_sales ADD INDEX(order_seq);
 <?
 		$sQuery = ob_get_contents();
 		ob_clean();

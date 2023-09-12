@@ -5471,6 +5471,13 @@ class order extends front_base {
 		if	(!$this->scm_cfg)	$this->scm_cfg	= config_load('scm');
 		if	($this->scm_cfg['use'] == 'Y') $this->load->model('scmmodel');
 
+		$sales_config = ($this->cfg_order) ? $this->cfg_order : config_load('order');
+		
+		// 현금영수증 미사용중임에도 현금 영수증 사용시
+		if (!$sales_config['cashreceiptuse'] && $this->input->post('typereceipt') == '2') {
+			openDialogAlert("현재 쇼핑몰에서 현금 영수증 발행을 사용하지 않고 있습니다. <br /> 다시 확인해주시기 바랍니다.",400,140,'parent');
+			exit;
+		}
 		## 모바일결제 : 체크값 오류시 callback으로 결제창 layer 숨김 처리
 		if($_POST['mobilenew'] == "y"){
 			$pg_cancel_script = $this->pg_cancel_script();
@@ -6808,7 +6815,6 @@ class order extends front_base {
 		}
 
 		# 세금계산서 관련
-		$sales_config = ($this->cfg_order) ? $this->cfg_order : config_load('order');
 		$this->load->model('salesmodel');
 
 		// 카드, 휴대폰일경우 매출전표만 출력가능하게 수정

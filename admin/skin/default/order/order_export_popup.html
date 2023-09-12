@@ -223,18 +223,19 @@ $( document ).ready(function() {
 		var row = $(this).closest("tbody");
 		var item_seq = $(this).attr("item_seq")
 		var chk_individual_export = row.find("input[name='chk_individual_export["+item_seq+"]']").val();
+		var item_option_seq = $(this).attr("item_option_seq");
 		//개별출고가 불가한 필수옵션 상품일때 추가옵션 제한
 		if(chk_individual_export!='1') {
 			if(parseInt($(this).val())==parseInt($(this).attr("org")) ) {//주문수량만큼 모두 출고시 추가옵션 제한
 				row.find("input.export_ea[opt_type='sub']").each(function(){
-					if( item_seq == $(this).attr("item_seq") ) {
+					if( item_seq == $(this).attr("item_seq") && item_option_seq == $(this).attr('item_option_seq')) {
 						$(this).val($(this).attr("org")).attr("readonly",true).addClass("disabled");
 						reset_barcode_ea(this);check_request_ea(this,$(this).attr("org"));
 					}
 				});
 			}else if(parseInt($(this).val())==0){//출고수량이 0 이면 추가옵션 제한
 				row.find("input.export_ea[opt_type='sub']").each(function(){
-					if( item_seq == $(this).attr("item_seq") ) {
+					if( item_seq == $(this).attr("item_seq") && item_option_seq == $(this).attr('item_option_seq')) {
 						$(this).val(0).attr("readonly",true).addClass("disabled");
 						reset_barcode_ea(this);check_request_ea(this,$(this).attr("org"));
 					}
@@ -1195,14 +1196,14 @@ table.table-export-info td.suboption {background-color:#f6f6f6;height:25px;}
 						<!--{ / }-->
 					<!--{ : }-->
 						<!--{ ? ..items[...item_seq].goods_data.goods_kind == 'coupon' }-->
-						<input type="text" name="request_ea[{..shipping_seq}][option][{...item_option_seq}]" class="line export_ea export_ea_opt"  style="text-align:right;background-color:#efefef;" size="2" value="{...request_ea}" onblur="check_request_ea(this,{...request_ea})" org="{...request_ea}" opt_type="opt" item_seq="{...item_seq}" readonly>
+						<input type="text" name="request_ea[{..shipping_seq}][option][{...item_option_seq}]" class="line export_ea export_ea_opt" item_option_seq="{...item_option_seq}" style="text-align:right;background-color:#efefef;" size="2" value="{...request_ea}" onblur="check_request_ea(this,{...request_ea})" org="{...request_ea}" opt_type="opt" item_seq="{...item_seq}" readonly>
 						<input type="hidden" name="shipping_goods_kind[{..shipping_seq}][option][{...item_option_seq}]"  value="COU" />
 						<!--{ : }-->
 						{? (npay_use && ...npay_product_order_id) || (talkbuy_use && ...talkbuy_product_order_id) || order[..order_seq].linkage_id == 'connector' || order[..order_seq].linkage_id == 'pos' }
-						<input type="hidden" name="request_ea[{..shipping_seq}][option][{...item_option_seq}]" class="line export_ea export_ea_opt" value="{...request_ea}"  org="{...request_ea}" opt_type="opt" item_seq="{...item_seq}">
+						<input type="hidden" name="request_ea[{..shipping_seq}][option][{...item_option_seq}]" class="line export_ea export_ea_opt" item_option_seq="{...item_option_seq}" value="{...request_ea}"  org="{...request_ea}" opt_type="opt" item_seq="{...item_seq}">
 						<input type="text" name="request_ea_tmp[{..shipping_seq}][option][{...item_option_seq}]" class="line export_ea_tmp"  style="text-align:right" size="2" value="{...request_ea}" disabled style="background-color:#eee;">
 						{ : }
-						<input type="text" name="request_ea[{..shipping_seq}][option][{...item_option_seq}]" class="line export_ea export_ea_opt" style="text-align:right" size="2" value="{...request_ea}" onkeyup="reset_barcode_ea(this);check_request_ea(this,{...request_ea});" org="{...request_ea}" opt_type="opt" item_seq="{...item_seq}" >
+						<input type="text" name="request_ea[{..shipping_seq}][option][{...item_option_seq}]" item_option_seq="{...item_option_seq}" class="line export_ea export_ea_opt" style="text-align:right" size="2" value="{...request_ea}" onkeyup="reset_barcode_ea(this);check_request_ea(this,{...request_ea});" org="{...request_ea}" opt_type="opt" item_seq="{...item_seq}" >
 						{ / }
 						<input type="hidden" name="shipping_goods_kind[{..shipping_seq}][option][{...item_option_seq}]"  value="OPT" />
 						<!--{ / }-->
@@ -1499,10 +1500,10 @@ table.table-export-info td.suboption {background-color:#f6f6f6;height:25px;}
 					<!--{ : }-->
 						<!--{ ? ..items[...item_seq].goods_data.goods_kind != 'coupon' }-->
 						{? (npay_use && ...npay_product_order_id) || (talkbuy_use && ...talkbuy_product_order_id) || order[..order_seq].linkage_id == 'connector' || order[..order_seq].linkage_id == 'pos' }
-						<input type="hidden" name="request_ea[{..shipping_seq}][suboption][{....item_suboption_seq}]" class="line export_ea" value="{....request_ea}" org="{....request_ea}" opt_type="sub" item_seq="{...item_seq}">
+						<input type="hidden" name="request_ea[{..shipping_seq}][suboption][{....item_suboption_seq}]" class="line export_ea" value="{....request_ea}" org="{....request_ea}" opt_type="sub" item_seq="{...item_seq}" item_option_seq="{...item_option_seq}">
 						<input type="text" name="request_ea_tmp[{..shipping_seq}][suboption][{....item_suboption_seq}]" class="line export_ea_tmp"  style="text-align:right" size="2" value="{....request_ea}" org="{....request_ea}" disabled>
 						{ : }
-						<input type="text" name="request_ea[{..shipping_seq}][suboption][{....item_suboption_seq}]" class="line export_ea" style="text-align:right" size="2" value="{....request_ea}" org="{....request_ea}" opt_type="sub" item_seq="{...item_seq}"  onkeyup="reset_barcode_ea(this);check_request_ea(this,{....request_ea});">
+						<input type="text" name="request_ea[{..shipping_seq}][suboption][{....item_suboption_seq}]" class="line export_ea" style="text-align:right" size="2" value="{....request_ea}" org="{....request_ea}" opt_type="sub" item_seq="{...item_seq}" item_option_seq="{...item_option_seq}" onkeyup="reset_barcode_ea(this);check_request_ea(this,{....request_ea});">
 						{ / }
 						<input type="hidden" name="shipping_goods_kind[{..shipping_seq}][suboption][{....item_suboption_seq}]"  value="SUB" />
 						<!--{ / }-->

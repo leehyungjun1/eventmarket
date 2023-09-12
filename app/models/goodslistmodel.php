@@ -407,7 +407,17 @@ class goodslistmodel extends CI_Model
 				->from('fm_goods go')
 				->where('go.goods_type', 'goods')
 				->where('go.provider_status', '1')
-				->where('go.goods_view', 'look');
+				->group_start()
+				->where('go.goods_view', 'look')
+				# 노출 예약일 경우
+				->or_group_start()
+				->or_where('go.display_terms','auto')
+					->where('go.display_terms_begin <= date(now())')
+					->where('go.display_terms_end >= date(now())')
+					->where('go.display_terms_before = "CONCEAL"')
+					->where('go.display_terms_after = "CONCEAL"')
+				->group_end()
+				->group_end();
 		}
 
 		// 상품 상태
