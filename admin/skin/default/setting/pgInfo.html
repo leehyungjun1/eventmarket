@@ -1,0 +1,434 @@
+<table width="100%" cellpadding="0" cellspacing="0" class="table_basic v3 v2" >
+	
+
+<!--{ ? pgCompany === 'paypal' }-->
+	<tr>
+		<th width="160px">
+			 결제 통화
+			<!--{ ? pgCompany === 'lg' || pgCompany === 'inicis' || pgCompany === 'allat' || pgCompany === 'kcp' || pgCompany === 'kspay' || pgCompany === 'kicc' || pgCompany === 'naverpay' || pgCompany === 'kakaopay' }-->
+			KRW
+			<!--{ : pgCompany === 'paypal' }-->
+			{paypal_currency}
+			<!--{ : pgCompany === 'eximbay' }-->
+			{=eximBayCur}
+			<!--{ / }-->
+		</th>
+		<th>PC / 모바일</th>		
+	</tr>
+	<tr>
+		<th>결제방법</th>
+		<td>신용카드, 예치금, 은행계좌, 전자수표(e-check)</td>
+	</tr>
+<!--{ : pgCompany === 'eximbay'}-->
+	<tr>
+		<th width="160px">
+			 결제 통화
+			<!--{ ? pgCompany === 'lg' || pgCompany === 'inicis' || pgCompany === 'allat' || pgCompany === 'kcp' || pgCompany === 'kspay' || pgCompany === 'kicc' || pgCompany === 'naverpay' || pgCompany === 'kakaopay' }-->
+			KRW
+			<!--{ : pgCompany === 'paypal' }-->
+			USD
+			<!--{ : pgCompany === 'eximbay' }-->
+			{=eximBayCur}
+			<!--{ / }-->
+		</th>
+		<th>PC / 모바일</th>
+	</tr>
+	<tr>
+		<th>결제방법</th>
+		<td>신용카드, 예치금, 은행계좌, 전자수표(e-check)</td>
+	</tr>
+<!--{ : pgCompany === 'naverpay'}-->
+	<tr>
+		<th width="160px">
+			 결제 통화
+			<!--{ ? pgCompany === 'lg' || pgCompany === 'inicis' || pgCompany === 'allat' || pgCompany === 'kcp' || pgCompany === 'kspay' || pgCompany === 'kicc' || pgCompany === 'naverpay' || pgCompany === 'kakaopay' }-->
+			KRW
+			<!--{ : pgCompany === 'paypal' }-->
+			USD
+			<!--{ : pgCompany === 'eximbay' }-->
+			{=eximBayCur}
+			<!--{ / }-->
+		</th>
+		<th>PC / 모바일</th>		
+	</tr>
+	<tr>
+		<th align="center" style="height:15px;">신용카드</th>
+		<td colspan="4" rowspan="4" align="left" style="padding-left: 10px;">
+			<!--{? navercheckout.use == 'test' }-->
+			<span class="desc" style="font-weight:normal;color:red;">네이버페이는 네이버 담당자의 최종 검수완료 후 사용 가능합니다.</span>
+			<!--{ / }-->
+			<div>
+			&nbsp;└ 연동 제외 상품 : { = count(navercheckout.except_category_code) }개의 카테고리, { = count(navercheckout.except_goods) }개의 상품
+			</div>
+			<div>
+			&nbsp;└ 연동 가능 배송그룹 : {=npay_shipping_group_cnt}개의 배송그룹
+			</div>
+			<br/><a href="https://admin.pay.naver.com/" target="_blank"><span class="btn medium orange"><button type="button" id="btnPaySetting" class="resp_btn active3">네이버페이 관리</button></span></a>
+		</td>
+	</tr>
+	<tr>
+		<th>계좌이체</th>
+	</tr>
+	<tr>
+		<th>가상계좌</th>
+	</tr>
+	<tr>
+		<th>예치금</th>
+	</tr>
+<!--{ : pgCompany === 'talkbuy'}-->
+	<tr>
+		<th width="160px">
+			결제 통화 KRW
+		</th>
+		<th>PC / 모바일</th>		
+	</tr>
+	<tr>
+		<th align="center" style="height:15px;">신용카드</th>
+		<td colspan="4" rowspan="4" align="left" style="padding-left: 10px;">
+			<div>
+			&nbsp;└ 연동 제외 상품 : { = count(talkbuy.except_category_code) }개의 카테고리, { = count(talkbuy.except_goods) }개의 상품
+			</div>
+			<div>
+			&nbsp;└ 연동 가능 배송그룹 : {=talkbuy_shipping_group_cnt}개의 배송그룹
+			</div>
+			<br/><a href="https://seller.pay.kakao.com/" target="_blank"><span class="btn medium orange"><button type="button" id="btnPaySetting" class="resp_btn active3">카카오페이 구매 관리</button></span></a>
+		</td>
+	</tr>
+	<tr>
+		<th>가상계좌</th>
+	</tr>
+	<tr>
+		<th>휴대폰</th>
+	</tr>
+	<tr>
+		<th>포인트</th>
+	</tr>	
+<!--{ : pgCompany === 'payco' }-->
+	<tr>
+		<th width="160px">
+			 결제 통화
+			<!--{ ? pgCompany === 'lg' || pgCompany === 'inicis' || pgCompany === 'allat' || pgCompany === 'kcp' || pgCompany === 'kspay' || pgCompany === 'kicc' || pgCompany === 'naverpay' || pgCompany === 'kakaopay' }-->
+			KRW
+			<!--{ : pgCompany === 'payco' }-->
+			{=payco_currency}
+			<!--{ : pgCompany === 'paypal' }-->
+			{=paypal_currency}
+			<!--{ : pgCompany === 'eximbay' }-->
+			{=eximBayCur}
+			<!--{ / }-->
+		</th>
+		<th>PC / 모바일</th>
+		
+	</tr>
+	<tr>
+		<th>결제방법</th>
+		<td>
+			{=payment_opt_str}<br/>
+			할부기간 : 자동
+		</td>
+	</tr>
+<!--{ : pgCompany === 'kakaopay' }-->
+	<tr>
+		<th width="160px">
+			 결제 통화
+			<!--{ ? pgCompany === 'lg' || pgCompany === 'inicis' || pgCompany === 'allat' || pgCompany === 'kcp' || pgCompany === 'kspay' || pgCompany === 'kicc' || pgCompany === 'naverpay' || pgCompany === 'kakaopay' }-->
+			KRW
+			<!--{ : pgCompany === 'paypal' }-->
+			{paypal_currency}
+			<!--{ : pgCompany === 'eximbay' }-->
+			{=eximBayCur}
+			<!--{ / }-->
+		</th>
+		<th colspan="2" align="center">PC</th>
+		<th colspan="2" align="center">모바일</th>
+	</tr>
+	<tr>
+		<th align="center" style="height:39px;">신용카드</th>
+		<td colspan="4" rowspan="3" align="left" style="padding-left: 10px;">
+			<!--{? payment === 'card' }-->
+			사용 <br/>
+				<!--{ ? interestTerms != '' }-->
+					할부기간 :
+						<!--{ ? interestTerms == '01' }-->
+						일시불
+						<!--{ : }-->
+						{interestTerms} 개월
+						<!--{ / }-->
+
+						<!--{ ? nonInterestTerms != '' }-->
+						<br/>무이자 할부<br/>
+						<!--{ ? nonInterestTerms == 'automatic' }-->
+							&nbsp;└ 자동
+						<!--{ : }-->
+							<!--{ @ CardCompanyCode }-->
+							<div>
+							&nbsp;└ {arrCardCompany[.value_]} {CardCompanyTerms[.index_]} 개월
+							</div>
+							<!--{ / }-->
+						<!--{ / }-->
+						<!--{ / }-->
+
+				<!--{ : }-->
+					할부기간 :  할부 미사용
+				<!--{ / }-->
+				<br/>
+				<div class='red'>무이자할부 수수료를 PG사에서 부담 (권장)</div>
+				<div class='red'>무이자할부 수수료를 쇼핑몰에서 부담(PG사와 협의)</div>
+			<!--{ : }-->
+			미사용
+			<!--{ / }-->
+		</td>
+	</tr>
+<!--{ : pgCompany === 'daumkakaopay'}-->
+	<tr>
+		<th width="160px">
+			 결제 통화 KRW
+		</th>
+		<th>PC / 모바일</th>		
+	</tr>
+	<tr>
+		<th >결제방법</th>
+		<td>
+			{=payment_opt_str}
+			<br/>
+			할부기간 : {=interestTerms}
+		</td>
+	</tr>
+<!--{ : }-->
+	<tr>
+		<th rowspan="2" width="160px">
+			 결제 통화
+			<!--{ ? pgCompany === 'lg' || pgCompany === 'inicis' || pgCompany === 'allat' || pgCompany === 'kcp' || pgCompany === 'kspay' || pgCompany === 'kicc' || pgCompany === 'naverpay' || pgCompany === 'kakaopay' }-->
+			KRW
+			<!--{ : pgCompany === 'paypal' }-->
+			{paypal_currency}
+			<!--{ : pgCompany === 'eximbay' }-->
+			{=eximBayCur}
+			<!--{ / }-->
+		</th>
+		<th colspan="2" align="center">PC</th>
+		<th colspan="2" align="center">모바일</th>
+	</tr>
+	<tr>
+		<th align="center">일반</th>
+		<th align="center">에스크로</th>
+		<th align="center">일반</th>
+		<th align="center">에스크로</th>
+	</tr>
+	<tr>
+		<th align="center">신용카드</th>
+		<td style="padding-left:10px;">
+			<!--{? in_array('card',payment)}-->
+			사용 <br/>
+				<!--{ ? interestTerms != '' }-->
+					할부기간 :
+						<!--{ ? interestTerms == '0' }-->
+						일시불
+						<!--{ : }-->
+						{ interestTerms }개월
+						<!--{ / }-->
+
+						<!--{ ? nonInterestTerms != '' }-->
+						<br/>무이자 할부<br/>
+						<!--{ ? nonInterestTerms == 'automatic' }-->
+							<div>
+							&nbsp;└ 자동
+							</div>
+						<!--{ : }-->
+							<!--{ @ pcCardCompanyCode }-->
+							<div>
+							&nbsp;└ {arrCardCompany[.value_]} {pcCardCompanyTerms[.index_]} 개월
+							</div>
+							<!--{ / }-->
+						<!--{ / }-->
+						<!--{ / }-->
+
+				<!--{ : }-->
+					할부기간 :  할부 미사용
+				<!--{ / }-->
+				<br/>
+				<!--{ ? nonInterestTerms != '' }-->
+				<div>
+					<!--{ ? nonInterestTerms == 'automatic' }-->
+					<div class='red'>무이자할부 수수료를 PG사에서 부담 (권장)</div>
+					<!--{ : }-->
+					<div class='red'>무이자할부 수수료를 쇼핑몰에서 부담(PG사와 협의)</div>	
+					<!--{ / }-->						
+				</div>
+				<!--{ / }-->			
+			<!--{ : }-->
+			미사용
+			<!--{ / }-->
+
+		</td>
+		<td align="center"> - </td>
+		<td style="padding-left:10px;">
+			<!--{? in_array('card',mobilePayment)}-->
+			사용 <br/>
+				<!--{ ? mobileInterestTerms != '' }-->
+					할부기간 :
+						<!--{ ? mobileInterestTerms == '0' }-->
+						일시불
+						<!--{ : }-->
+						{ mobileInterestTerms } 개월
+						<!--{ / }-->
+						
+						<!--{ ? mobileNonInterestTerms != '' }-->
+						<br/>무이자 할부<br/>
+						<!--{ ? mobileNonInterestTerms == 'automatic' }-->
+							<div>
+							&nbsp;└ 자동
+							</div>
+						<!--{ : }-->
+							<!--{ @ mobileCardCompanyCode }-->
+							<div>
+							&nbsp;└ {arrCardCompany[.value_]} {mobileCardCompanyTerms[.index_]} 개월
+							</div>
+							<!--{ / }-->
+						<!--{ / }-->
+						<!--{ / }-->
+
+				<!--{ : }-->
+					할부기간 :  할부 미사용
+				<!--{ / }-->
+				<br/>
+				<!--{ ? mobileNonInterestTerms != '' }-->
+				<div>
+					<!--{ ? mobileNonInterestTerms == 'automatic' }-->
+					<div class='red'>무이자할부 수수료를 PG사에서 부담 (권장)</div>
+					<!--{ : }-->
+					<div class='red'>무이자할부 수수료를 쇼핑몰에서 부담(PG사와 협의)</div>	
+					<!--{ / }-->
+				</div>
+				<!--{ / }-->				
+			<!--{ : }-->
+			미사용
+			<!--{ / }-->
+		</td>
+		<td align="center"> - </td>
+	</tr>
+	<tr>
+		<th align="center">계좌이체</th>
+
+		<!-- PC 일반 시작 -->
+		<td style="padding-left:10px;">
+			<!--{? in_array('account',payment)}-->
+			사용
+			<!--{ : }-->
+			미사용
+			<!--{ / }-->
+		</td>	
+		<!-- PC 일반 끝 -->
+
+		<!-- PC 에스크로 시작 -->
+		<!--{ ? pgCompany !== 'kspay' }-->
+		<td style="padding-left:10px;">
+			<!--{? in_array('account',escrow)}-->
+			사용<br/>
+			&nbsp;└ {escrowAccountLimit}원 이상 결제시
+			<!--{ : }-->
+			미사용
+			<!--{ / }-->
+		</td>
+		<!--{ : }-->
+		<td align="center"> - </td>
+		<!--{ / }-->
+		<!-- PC 에스크로 끝 -->
+		
+		<!-- Mobile 일반 시작 -->
+		<!--{ ? pgCompany !== 'kspay' }-->
+		<td style="padding-left:10px;">
+			<!--{? in_array('account',mobilePayment)}-->
+			사용
+			<!--{ : }-->
+			미사용
+			<!--{ / }-->
+		</td>
+		<!--{ : }-->
+		<td align="center"> - </td>
+		<!--{ / }-->
+		<!-- Mobile 일반 끝 -->
+		
+		<!-- Mobile 에스크로 시작 -->
+		<!--{ ? pgCompany !== 'kspay' }-->
+		<td style="padding-left:10px;">
+			<!--{? in_array('account',mobileEscrow)}-->
+			사용<br/>
+			&nbsp;└ {mobileEscrowAccountLimit}원 이상 결제시
+			<!--{ : }-->
+			미사용
+			<!--{ / }-->
+		</td>
+		<!--{ : }-->
+		<td align="center"> - </td>
+		<!--{ / }-->
+		<!-- Mobile 에스크로 끝 -->
+
+	</tr>
+	<tr>
+		<th align="center">가상계좌</th>
+		
+		<!-- PC 일반 시작 -->
+		<td style="padding-left:10px;">
+			<!--{? in_array('virtual',payment)}-->
+			사용 <button type="button" class="button_virtual_info btn_resp">입금 확인 URL 설정</button>
+			<!--{ : }-->
+			미사용
+			<!--{ / }-->
+		</td>
+		<!-- PC 일반 끝 -->
+		
+		<!-- PC 에스크로 시작 -->
+		<td style="padding-left:10px;">
+			<!--{? in_array('virtual',escrow)}-->
+				사용<br/>
+				&nbsp;└ {escrowVirtualLimit}원 이상 결제시
+			<!--{ : }-->
+				미사용
+			<!--{ / }-->
+		</td>
+		<!-- PC 에스크로 끝 -->
+		
+		<!-- Mobile 일반 시작 -->
+		<td style="padding-left:10px;">
+			<!--{? in_array('virtual',mobilePayment)}-->
+			사용 <button type="button" class="button_virtual_info btn_resp">입금 확인 URL 설정</button>
+			<!--{ : }-->
+			미사용
+			<!--{ / }-->
+		</td>
+		<!-- Mobile 일반 끝 -->
+
+		<!-- Mobile 에스크로 시작 -->
+		<td style="padding-left:10px;">
+			<!--{? in_array('virtual',mobileEscrow)}-->
+			사용<br/>
+			&nbsp;└ {mobileEscrowVirtualLimit}원 이상 결제시
+			<!--{ : }-->
+			미사용
+			<!--{ / }-->
+		</td>
+		<!-- Mobile 에스크로 끝 -->
+
+	</tr>
+	<tr>
+		<th align="center">핸드폰</th>
+		<td style="padding-left:10px;">
+			<!--{? in_array('cellphone',payment)}-->
+			사용
+			<!--{ : }-->
+			미사용
+			<!--{ / }-->
+		</td>
+		<td align="center"> - </td>
+		<td style="padding-left:10px;">
+			<!--{? in_array('cellphone',mobilePayment)}-->
+			사용
+			<!--{ : }-->
+			미사용
+			<!--{ / }-->
+		</td>
+		<td align="center"> - </td>
+	</tr>
+<!--{ / }-->
+</table>

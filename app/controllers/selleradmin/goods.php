@@ -4448,14 +4448,9 @@ class goods extends selleradmin_base {
 
 			$aGetParams['package_yn_suboption'] = $package_yn;
 
-			// 추가구성옵션 조회 시에는 올인원만 무조건 y / 일반은 모두 검색이 가능해야함
-			// package_yn 는 view 에 영향을 끼쳐 자주쓰는 추가구성옵션 리스트 용도로 freq_package_yn 추가함
-			if	($this->scm_cfg['use'] == 'Y'){
-				$freq_package_yn = 'y';
-			}
 			
 			//자주쓰는 추가구성옵션
-			$freqloop = $this->goodsmodel->frequentlygoods('sub',$goods_seq,defined('SOCIALCPUSE'),$freq_package_yn);
+			$freqloop = $this->goodsmodel->frequentlygoods('sub',$goods_seq,defined('SOCIALCPUSE'),$package_yn);
 			if($freqloop) {
 				$freqloophtml = '';
 				foreach( $freqloop as $freqkey => $freqdata ){
@@ -4525,9 +4520,9 @@ class goods extends selleradmin_base {
 
 		//추가구성옵션 관리
 		if($aGetParams['mode'] != 'view'){
-			$frequentlysublistAll 	= $this->goodsmodel->frequentlygoodsPaging('sub',$goods_seq,defined('SOCIALCPUSE'),$freq_package_yn,'all');
-			$frequentlysublist 		= $this->goodsmodel->frequentlygoodsPaging('sub',$goods_seq,defined('SOCIALCPUSE'),$freq_package_yn, 1, 10);
-			$frequentlysubpaginlay 	= pagingtagjs(1, 10, $frequentlysublist['total'], 'frequentlypaging([:PAGE:], \'sub\', \''.$freq_package_yn.'\', \'suboptionSettingPopup\')');
+			$frequentlysublistAll 	= $this->goodsmodel->frequentlygoodsPaging('sub',$goods_seq,defined('SOCIALCPUSE'),$package_yn,'all');
+			$frequentlysublist 		= $this->goodsmodel->frequentlygoodsPaging('sub',$goods_seq,defined('SOCIALCPUSE'),$package_yn, 1, 10);
+			$frequentlysubpaginlay 	= pagingtagjs(1, 10, $frequentlysublist['total'], 'frequentlypaging([:PAGE:], \'sub\', \''.$package_yn.'\', \'suboptionSettingPopup\')');
 		}
 
 		$this->template->assign(array('frequentlysublist'=>$frequentlysublist['result']));

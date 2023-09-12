@@ -5780,6 +5780,7 @@ class goodsExcel extends CI_Model {
 		if	(!$params['feed_pay_type'])					$params['feed_pay_type']				= '';
 		if	(!$params['feed_std_fixed'])				$params['feed_std_fixed']				= '';
 		if	(!$params['feed_add_txt'])					$params['feed_add_txt']					= '';
+		if	(!$params['feed_ship_type'])				$params['feed_ship_type']				= 'G';
 	}
 
 	// 상품 정보 insert 시 not null 컬럼 체크 후 기본값 추가

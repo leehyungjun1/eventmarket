@@ -1099,7 +1099,7 @@ class common extends front_base  {
 		$this->load->library('validation');
 		$this->validation->set_data($requestGet);
 		$this->validation->set_rules('board_id', 'board_id', 'trim|required|xss_clean');
-		$this->validation->set_rules('insert_image', 'insert_image', 'trim|required|xss_clean|alpha');
+		$this->validation->set_rules('insert_image', 'insert_image', 'trim|xss_clean|alpha');
 		if ($this->validation->exec() === false) {
 			show_error($this->validation->error_array['value']);
 			exit;

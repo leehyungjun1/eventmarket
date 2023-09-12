@@ -5980,3 +5980,47 @@ function emojiFilter($string) {
 		."\x{2700}-\x{27BF}";
 	return preg_replace('/['. $symbols . ']+/u', '', $string);
 }
+/**
+ * 모바일 기기에 대한 정보 가져오기
+ * mobilerMode는 모바일모드 여부,
+ *  _is_mobile_agent는 안드로이드인지 IPONE인지 구분
+ * 모바일 앱 설치 권장 팝업 정보 가져오기
+ */
+function getMobilePopupInfo() 
+{
+	$CI =& get_instance();
+	$app_config = config_load('app_config');
+	$mobile_agent_info = [];
+
+	if (preg_match('/iPhone|iPad/', $_SERVER['HTTP_USER_AGENT'])) {
+		$mobile_agent_info['mobile_agent'] = 'IOS';
+		$mobile_agent_info['down_url']		= $app_config['popup_url_ios'];
+	} else if (preg_match('/Android/', $_SERVER['HTTP_USER_AGENT'])) {
+		$mobile_agent_info['mobile_agent']	= 'ANDROID';
+		$mobile_agent_info['down_url']		= $app_config['popup_url_and'];
+	}
+
+	$mobile_agent_info['app_popup_use'] = $app_config['app_popup_use']; // 앱 설치 권장 팝업 사용여부
+
+	if (isset($app_config['pop_html'])) {
+		$mobile_agent_info['pop_html']	=	$app_config['pop_html'];
+	}
+
+	return $mobile_agent_info;
+}
+
+/**
+ * 모바일 기기일 경우 앱 설치 권장 팝업 노출 여부 설정
+ */
+function getMobilePopupUse() 
+{
+	$CI =& get_instance();
+
+	$popupuse = true; // 팝업 노출 여부
+	
+	if (!$_COOKIE['appsettingpopup'] && !in_array('zipcode',$CI->uri->rsegments) && !$CI->input->get('popup') && !$CI->input->get('iframe')){
+		$popupuse	=	false;
+	}
+
+	return $popupuse;
+}

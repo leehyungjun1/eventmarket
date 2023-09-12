@@ -1256,27 +1256,36 @@ class order extends front_base {
 	{
 		// 국가 선택값 넘어온 경우
 		$nation = $this->input->post("nation");
-		if($nation)	$url_parameter = '&nation='.$nation;
+		if ($nation) {
+			$urlParameter = '&nation=' . $nation;
+		}
 
 		// 결제수단 고정
-		$fix_payment			= $this->input->post("fix_payment");
-		if($fix_payment) $url_parameter .= '&fix_payment='.$fix_payment;
+		$fixPayment = $this->input->post("fix_payment");
+		if ($fixPayment) {
+			$urlParameter .= '&fix_payment=' . $fixPayment;
+		}
 
-		if( isset($_GET['mode']) ) $mode = $_GET['mode'];
-		else $mode = "cart";
+		// 장바구니 주문 방식 {cart: 전체 주문하기, choice: 선택상품 주문하기}
+		$mode = "cart";
+		if (isset($_GET['mode'])) {
+			$mode = $_GET['mode'];
+		}
 
-		if( $this->fammerceMode  || $this->storefammerceMode ) {
-			$move_target = "parent";
-		}else{
-			$move_target = "top";
+		$moveTarget = "top";
+		if ($this->fammerceMode || $this->storefammerceMode) {
+			$moveTarget = "parent";
 		}
 
 		// 배송불가 내역 체크 :: 2016-08-01 ㅣlwh
-		if($mode == 'cart' && $_POST['ship_possible']) foreach($_POST['ship_possible'] as $k => $pos){
-			if($pos != 'Y'){
-				//주문이 불가능한 상품이 있습니다.
-				openDialogAlert(getAlert('os142'),400,140,'parent',"");
-				exit;
+		$shipPossible = $this->input->post('ship_possible');
+		if ($mode == 'cart' && $shipPossible) {
+			foreach ($shipPossible as $k => $pos) {
+				if ($pos != 'Y') {
+					// 주문이 불가능한 상품이 있습니다.
+					openDialogAlert(getAlert('os142'), 400, 140, 'parent', "");
+					exit;
+				}
 			}
 		}
 
@@ -1319,62 +1328,35 @@ class order extends front_base {
 		$cart = $this->cartmodel->catalog();
 
 		// 구매 최소/최대수량 체크
-		foreach($cart['data_goods'] as $cart_goods_seq => $data){
-			$goods				= $this->goodsmodel->get_goods($cart_goods_seq);
+		foreach ($cart['data_goods'] as $cart_goods_seq => $data) {
+			$goods = $this->goodsmodel->get_goods($cart_goods_seq);
 
 			// 구매수량 체크
-			if($goods['min_purchase_ea'] && $goods['min_purchase_ea'] > $data['option_ea']){
+			if ($goods['min_purchase_ea'] && $goods['min_purchase_ea'] > $data['option_ea']) {
 				pageBack(addslashes(getAlert('oc022',array(addslashes($goods['goods_name']),$goods['min_purchase_ea']))));
 				exit;
 			}
-			if($goods['max_purchase_ea'] && $goods['max_purchase_ea'] < $data['option_ea']){
+			if ($goods['max_purchase_ea'] && $goods['max_purchase_ea'] < $data['option_ea']) {
 				pageBack(addslashes(getAlert('oc023',array(addslashes($goods['goods_name']),($goods['max_purchase_ea']+1)))));
 				exit;
 			}
 		}
 
-		if($mode == 'choice' && $_POST['cart_option_seq'] ){
+		// 주문/결제 페이지 주소
+		$url = '../order/settle?mode=' . $mode;
 
-			if(!$this->userInfo['member_seq']){
-				$return_url = "/order/settle?mode=choice".$url_parameter;
-				$url = "/member/login?return_url=" . urlencode($return_url);
-				if( $this->fammerceMode  || $this->storefammerceMode ) {
-					pageLocation($url,'',$move_target);
-				}
-				else{
-					pageLocation($url,'',$move_target);
-				}
-				exit;
-			}else{
-				if( $this->fammerceMode  || $this->storefammerceMode ) {
-					pageLocation('../order/settle?mode=choice'.$url_parameter,'',$move_target);
-				}
-				else{
-					pageLocation('../order/settle?mode=choice'.$url_parameter,'',$move_target);
-				}
-				exit;
-			}
+		// 현재 접속자가 비회원인 경우
+		if (!$this->userInfo['member_seq']) {
+			// 로그인 페이지 주소 설정
+			$url = "/member/login?return_url=" . urlencode($url);
+		}
 
-		}
-        
-		if(!$this->userInfo['member_seq']){
-			$return_url = "/order/settle?mode=cart".$url_parameter;
-			$url = "/member/login?return_url=" . urlencode($return_url);
-			if( $this->fammerceMode  || $this->storefammerceMode ) {
-				pageRedirect($url,'',$move_target);
-			}
-			else{
-				pageRedirect($url,'',$move_target);
-			}
-			exit;
-		}else{
-			if( $this->fammerceMode  || $this->storefammerceMode ) {
-				pageRedirect('../order/settle?mode='.$mode.$url_parameter,'',$move_target);
-			}else{
-				pageRedirect('../order/settle?mode='.$mode.$url_parameter,'',$move_target);
-			}
-			exit;
-		}
+		// 이동 주소 파라미터 추가
+		$url = $url . $urlParameter;
+
+		// 이동 처리
+		pageLocation($url, '', $moveTarget);
+		exit;
 	}
 
 
@@ -1686,6 +1668,7 @@ class order extends front_base {
 
 			$param['option_type']				= 'option';
 			$param['consumer_price']			= $opt['consumer_price'];
+			if($suboptions)$param['sale_price']	= 0; // 추가옵션이 있는 경우, sale->sale_price 초기화
 			$param['price']						= $opt['price'];
 			$param['ea']						= 1;
 			$param['category_code']				= $category_code;
@@ -2444,6 +2427,9 @@ class order extends front_base {
 		else					$this->load->model('cartmodel');
 		$cfg['order'] = ($this->cfg_order) ? $this->cfg_order : config_load('order');
 		$cfg_reserve	= ($this->reserves) ? $this->reserves : config_load('reserve');
+		// 마일리지 포인트 최대 금액 추출
+		$cfg_reserve['autoemoney_review'] = max([$cfg_reserve['autoemoney_video'],$cfg_reserve['autoemoney_photo'],$cfg_reserve['autoemoney_review']]);
+		$cfg_reserve['autopoint_review'] = max([$cfg_reserve['autopoint_video'],$cfg_reserve['autopoint_photo'],$cfg_reserve['autopoint_review']]);
 		$this->template->assign('cfg_reserve',$cfg_reserve);
 
 		// 장바구니 옵션 번호 리스트
@@ -7168,7 +7154,7 @@ class order extends front_base {
 				$adminorder_msgstr = trim($_POST["msg"]);
 				$adminorder_msgstr = str_replace("[주문자]", $_POST["order_user_name"], $adminorder_msgstr);
 				$adminorder_params['msg'] = $adminorder_msgstr;
-				$adminorder_commonSmsData['member']['phone'] = $_POST['cellphonre'];
+				$adminorder_commonSmsData['member']['phone'] = $_POST['cellphone'];
 				$adminorder_commonSmsData['member']['params'] = $adminorder_params;
 
 				commonSendSMS($adminorder_commonSmsData);

@@ -1421,37 +1421,40 @@ class shippingmodel extends CI_Model {
 
 	# EP 타입 받아서 분기 처리
 	public function get_ep_data($ship_type = 'G', $ship_grp_seq = null, $feed_data = null, $data_goods = null){
-		switch($ship_type){
-			case 'G' : // 그룹 설정 가져오기
-			if(true){
-				$feed_info = $this->get_shipping_ep_data($ship_grp_seq, $data_goods);
-				if(!$feed_info['std']) $feed_info['std'] = 0; // 기본값 전달
-			}
-			break;
-			case 'S' : // 통합 설정 가져오기
-			if(true){
+
+		switch ($ship_type) {
+			case 'S': // 통합 설정 가져오기
 				$feed_info = $this->get_shop_ep_data();
-				if(!$feed_info['std']) $feed_info['std'] = 0; // 기본값 전달
-			}
+				if (!$feed_info['std']) {
+					$feed_info['std'] = 0;
+				} // 기본값 전달
 			break;
-			case 'E' : // 개별 설정 파라미터로 가져와서 가공
-			if(true){
+			case 'E': // 개별 설정 파라미터로 가져와서 가공
 				// 기본배송비 추출
-				if			($feed_data['feed_pay_type'] == 'postpay'){
+				if ($feed_data['feed_pay_type'] == 'postpay') {
 					$feed_info['std'] = -1;
-				}else if	($feed_data['feed_pay_type'] == 'free'){
+				} elseif ($feed_data['feed_pay_type'] == 'free') {
 					$feed_info['std'] = '0';
-				}else if	($feed_data['feed_pay_type'] == 'fixed'){
+				} elseif ($feed_data['feed_pay_type'] == 'fixed') {
 					$feed_info['std'] = $feed_data['feed_std_fixed'];
 				}
 
 				// 추가배송 문구 추출
-				if			($feed_data['feed_add_txt']){
+				if ($feed_data['feed_add_txt']) {
 					$feed_info['add'] = $feed_data['feed_add_txt'];
 				}
-			}
+
+			break;
+			case 'G': // 그룹 설정 가져오기
+			default : 
+				$feed_info = $this->get_shipping_ep_data($ship_grp_seq, $data_goods);
+				if (!$feed_info['std']) {
+					$feed_info['std'] = 0;
+				} // 기본값 전달
+
 			break;
 		}
+
 
 
 
