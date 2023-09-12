@@ -825,7 +825,7 @@ function getSearchColorList($selected = array()) {
 	if	($colorList) foreach($colorList as $k => $data){
 		$colorPickList[$k]['name']			= $data['label_value'];
 		$colorPickList[$k]['code']			= $data['label_color'];
-		if	(in_array($data['label_color'], $selected)){
+		if	(in_array($data['label_color'], $selected, true)){
 			$colorPickList[$k]['select']	= true;
 		}else{
 			$colorPickList[$k]['select']	= false;

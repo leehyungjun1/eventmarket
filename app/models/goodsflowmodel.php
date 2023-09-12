@@ -651,11 +651,8 @@ class goodsflowmodel extends CI_Model {
 			$send_param['centerCode']= $config_goodsflow['mallId']; // 발송지코드
 			$send_param['rcvName']	= $order['recipient_user_name']; // 수신자명
 			$send_param['rcvZipCode']= str_replace("-","",$order['recipient_zipcode']); // 수신지 우편번호
-			if($order['recipient_address']){
-				$send_param['rcvAddr1']	= $order['recipient_address']; // 수신지 기본주소
-			}else{
-				$send_param['rcvAddr1']	= ($order['recipient_address_street']) ? $order['recipient_address_street'] : $order['recipient_address_street_gf'];
-			}
+			// 수신자 주소 default:도로명주소
+			$send_param['rcvAddr1']	= ($order['recipient_address_street']) ? $order['recipient_address_street'] : $order['recipient_address_street_gf'];
 			if(!$send_param['rcvAddr1'])
 				$send_param['rcvAddr1']	= $order['recipient_address'];
 			$send_param['rcvAddr2']	= str_replace("<","[",$order['recipient_address_detail']);

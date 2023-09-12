@@ -756,7 +756,8 @@ function get_auth($manager, $data , $mode, & $isperm)
 				// 비번입력후 브라우저를 닫기전까지는 접근가능함
 				$ss_pwwrite_name = 'board_pwwrite_'.$manager['id'];
 				$boardpwwritess = $CI->session->userdata($ss_pwwrite_name);
-				if(isset($data['seq']) && !strstr($boardpwwritess,'['.$data['seq'].']') && !empty($boardpwwritess) ) {
+				$user = $CI->session->userdata('user');
+				if(isset($data['seq']) && !strstr($boardpwwritess,'['.$data['seq'].']') && !empty($boardpwwritess) && empty($user)) {
 					//if(!defined('__ISADMIN__')) {
 						$isperm['isperm_'.$mode] = false;//접근불허
 						$isperm['fileperm_'.$mode] = '../board/permcheck?id='.$manager['id'];

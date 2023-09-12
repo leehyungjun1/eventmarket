@@ -1735,12 +1735,9 @@ class goods extends admin_base {
 		}
 
 		//추가입력옵션 관리
-		$frequentlyinplistAll 	= $this->goodsmodel->frequentlygoodsPaging('inp',$goods_seq,defined('SOCIALCPUSE'),$package_yn,'all');
-		$frequentlyinplist 		= $this->goodsmodel->frequentlygoodsPaging('inp',$goods_seq,defined('SOCIALCPUSE'),$package_yn, 1, 10);
-		$frequentlysinppaginlay = pagingtagjs(1, 10, $frequentlyinplist['total'], 'frequentlypaging([:PAGE:], \'inp\', \''.$package_yn.'\', \'inpoptionSettingPopup\')');
-		$this->template->assign(array('frequentlyinplistAll'=>$frequentlyinplistAll['result']));
-		$this->template->assign(array('frequentlyinplist'=>$frequentlyinplist['result']));
-		$this->template->assign('frequentlyinppaginlay', $frequentlysinppaginlay);
+		$frequentlyinplist 	= $this->goodsmodel->frequentlygoods('inp',$goods_seq,defined('SOCIALCPUSE'),$package_yn,$provider_seq);
+		$this->template->assign(array('frequentlyinplist'=>$frequentlyinplist));
+		
 
 		//상품코드양식 정보
 		$this->load->helper("goods");

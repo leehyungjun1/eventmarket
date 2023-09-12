@@ -206,7 +206,8 @@ class naverpayment extends front_base {
 
 			// 2-1. 리턴값 수신
 			// 응답 체크
-			if ($read_data['error'] == true) {
+			// 잔액부족과 같은 실패처리는 여기선 예외처리하지않고 이후 결제 실패 처리 로직 실행되도록함.
+			if ($read_data['error'] == true && $read_data['code'] !== 'Fail') {
 				throw new Exception('Error Code : [code]' . $read_data['httpCode'] . ' , message : ' . json_decode($read_data['result'])->message);
 			}
 

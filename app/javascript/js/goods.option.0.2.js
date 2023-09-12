@@ -431,8 +431,10 @@ var jscls_option_select	= function(){
 							if	(filename){
 								$('#'+id).closest('table').find('img.prevImg').attr('src', filepath+filename).show();
 								$('#'+id).closest('table').find('.prevTxt').html(filename);
-								// 이미지 즉시 반영되도록 개선
-								$('#prevImg').attr('src', filepath+filename);
+								// 반응형 스킨인 경우 이미지 변경시 즉시 반영되도록 개선
+								if (gl_operation_type === 'light') {
+									$('#prevImg').attr('src', filepath+filename);
+								}
 							}else{
 								$('#'+id).closest('table').find('img.prevImg').attr('src','about:blank;').hide();
 								$('#'+id).closest('table').find('.prevTxt').html('');
@@ -1100,58 +1102,57 @@ var jscls_option_select	= function(){
 	};
 
 	// 입력옵션 추가 html
-	this.apply_inputs		= function(){
+	this.apply_inputs = function () {
 
-		var that		= this;
-		var result		= '';
-
-		if	(this.inputoption_layout_position == 'down' && this.inputoption_data){
-			result		= this.add_input_down_form();
-		}else{
-			if	($("input[name='" + this.inputs_inputbox_name + "'],textarea[name='" + this.inputs_inputbox_name + "']").length){
-				$("input[name='" + this.inputs_inputbox_name + "'],textarea[name='" + this.inputs_inputbox_name + "']").each(function(idx){
-					inputsTitle		= $('.inputsTitle').eq(idx).text();
-					result			+= '<tr class="quanity_row inputoption_tr" opt_group="' + that.apply_option_seq + '">';
+		var that = this;
+		var result = '';
+	
+		if (this.inputoption_layout_position == 'down' && this.inputoption_data) {
+			result = this.add_input_down_form();
+		} else {
+			if ($("input[name='" + this.inputs_inputbox_name + "'],textarea[name='" + this.inputs_inputbox_name + "']").length) {
+				$("input[name='" + this.inputs_inputbox_name + "'],textarea[name='" + this.inputs_inputbox_name + "']").each(function (idx) {
+					inputsTitle = $('.inputsTitle').eq(idx).text();
+					result += '<tr class="quanity_row inputoption_tr" opt_group="' + that.apply_option_seq + '">';
 					if (typeof gl_operation_type != 'undefined' && gl_operation_type == 'light') {
-						result			+= '<td class="quantity_cell option_text" style="border-top:none;">';
+						result += '<td class="quantity_cell option_text" style="border-top:none;">';
 					} else {
-						result			+= '<td class="quantity_cell option_text" style="border-top:none;" colspan="3">';
+						result += '<td class="quantity_cell option_text" style="border-top:none;" colspan="3">';
 					}
-					result			+= inputsTitle;
-					result			+= '<input type="hidden" name="' + that.selected_inputoptionTitle_name + '[' + that.apply_option_seq + '][' + idx + ']" class="selected_inputs_title" opt_group="' + that.apply_option_seq + '" opt_seq="' + idx + '"  value="' + inputsTitle + '" />';
-					//result			+= '</td>';
-					//result			+= '</tr>';
-					//result			+= '<tr class="quanity_row inputoption_tr" opt_group="' + that.apply_option_seq + '">';
-					//result			+= '<td class="quantity_cell option_text" style="border-top:none;" colspan="3">';
-					//result			+= '<div style="width:100%;">';
+					result += inputsTitle;
+					result += '<input type="hidden" name="' + that.selected_inputoptionTitle_name + '[' + that.apply_option_seq + '][' + idx + ']" class="selected_inputs_title" opt_group="' + that.apply_option_seq + '" opt_seq="' + idx + '"  value="' + inputsTitle + '" />';
 					var inputText;
-					if			($(this).closest('.webftpFormItem').length){
-						result		+= $(this).closest('.webftpFormItem').find('.webftpFormItemInputOriName').val();
+					if ($(this).closest('.webftpFormItem').length) {
+						result += $(this).closest('.webftpFormItem').find('.webftpFormItemInputOriName').val();
 						inputText = $(this).closest('.webftpFormItem').find('.webftpFormItemInputOriName').val();
-					}else if	($(this).hasClass('fmuploadInputs')){
-						if($(this).closest('table.upload-tb').find('.prevTxt').text())
-								result		+= $(this).closest('table.upload-tb').find('.prevTxt').text();
-						else	result		+= ' : ' + getAlert('gv112');
-
-						if ( $(this).closest('table.upload-tb').find('.prevTxt').text() )
+					} else if ($(this).hasClass('fmuploadInputs')) {
+						if ($(this).closest('table.upload-tb').find('.prevTxt').text()) {
+							result += $(this).closest('table.upload-tb').find('.prevTxt').text();
+						} else {
+							result += ' : ' + getAlert('gv112');
+						}
+						if ($(this).closest('table.upload-tb').find('.prevTxt').text()) {
 							inputText = "data/tmp/" + $(this).closest('table.upload-tb').find('.prevTxt').text();
-						else
+						} else {
 							inputText = $(this).closest('table.upload-tb').find('.prevTxt').text();
-					}else{
-						checkVal	= $.trim($(this).val());
-						if(checkVal.length > 0)		result	+= ' : ' + $(this).val();
-						else						result	+= ' : ' + getAlert('gv111');
+						}
+						if (inputText != '') {
+							result += '<img src="/' + inputText + '" id="prevImg" style="height:20px;" />';
+						}
+					} else {
+						checkVal = $.trim($(this).val());
+						if (checkVal.length > 0) result += ' : ' + $(this).val();
+						else result += ' : ' + getAlert('gv111');
 						inputText = $(this).val();
 					}
 					inputText = inputText.replace(/\"/gm, "&quot;");
-					//result			+= '</div>';
-					result			+= '<input type="hidden" name="' + that.selected_inputoption_name + '[' + that.apply_option_seq + '][' + idx + ']" class="selected_inputs" opt_group="' + that.apply_option_seq + '" opt_seq="' + idx + '" value="' + inputText + '" />';
-					result			+= '</td>';
-					result			+= '</tr>';
+					result += '<input type="hidden" name="' + that.selected_inputoption_name + '[' + that.apply_option_seq + '][' + idx + ']" class="selected_inputs" opt_group="' + that.apply_option_seq + '" opt_seq="' + idx + '" value="' + inputText + '" />';
+					result += '</td>';
+					result += '</tr>';
 				});
 			}
 		}
-
+	
 		return result;
 	};
 
@@ -1172,7 +1173,6 @@ var jscls_option_select	= function(){
 
 	// 입력옵션 하단 폼 추가
 	this.add_input_down_form	= function(){
-
 		var result		= '';
 		var addRequire	= '';
 		var data		= '';

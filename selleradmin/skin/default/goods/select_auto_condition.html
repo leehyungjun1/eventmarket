@@ -1,0 +1,629 @@
+<script type="text/javascript">
+var displayKind = '{displayKind}';
+$(document).ready(function(){
+	//DaumEditorLoader.init(".daumeditor");
+
+	/* 카테고리 불러오기 */
+	{? kind == 'admin' }
+		category_admin_select_load('','selectCategory1','');
+		$("div#select_auto_condition select[name='selectCategory1']").bind("change",function(){
+			category_admin_select_load('selectCategory1','selectCategory2',$(this).val());
+			category_admin_select_load('selectCategory2','selectCategory3',"");
+			category_admin_select_load('selectCategory3','selectCategory4',"");
+		});
+		$("div#select_auto_condition select[name='selectCategory2']").bind("change",function(){
+			category_admin_select_load('selectCategory2','selectCategory3',$(this).val());
+			category_admin_select_load('selectCategory3','selectCategory4',"");
+		});
+		$("div#select_auto_condition select[name='selectCategory3']").bind("change",function(){
+			category_admin_select_load('selectCategory3','selectCategory4',$(this).val());
+		});
+
+		/* 브랜드 불러오기 */
+		brand_admin_select_load('','selectBrand1','');
+		$("div#select_auto_condition select[name='selectBrand1']").bind("change",function(){
+			brand_admin_select_load('selectBrand1','selectBrand2',$(this).val());
+			brand_admin_select_load('selectBrand2','selectBrand3',"");
+			brand_admin_select_load('selectBrand3','selectBrand4',"");
+		});
+		$("div#select_auto_condition select[name='selectBrand2']").bind("change",function(){
+			brand_admin_select_load('selectBrand2','selectBrand3',$(this).val());
+			brand_admin_select_load('selectBrand3','selectBrand4',"");
+		});
+		$("div#select_auto_condition select[name='selectBrand3']").bind("change",function(){
+			brand_admin_select_load('selectBrand3','selectBrand4',$(this).val());
+		});
+
+		/* 지역 불러오기 */
+		location_admin_select_load('','selectLocation1','');
+		$("div#select_auto_condition select[name='selectLocation1']").bind("change",function(){
+			location_admin_select_load('selectLocation1','selectLocation2',$(this).val());
+			location_admin_select_load('selectLocation2','selectLocation3',"");
+			location_admin_select_load('selectLocation3','selectLocation4',"");
+		});
+		$("div#select_auto_condition select[name='selectLocation2']").bind("change",function(){
+			location_admin_select_load('selectLocation2','selectLocation3',$(this).val());
+			location_admin_select_load('selectLocation3','selectLocation4',"");
+		});
+		$("div#select_auto_condition select[name='selectLocation3']").bind("change",function(){
+			location_admin_select_load('selectLocation3','selectLocation4',$(this).val());
+		});
+	{/}
+		/*
+		$('div#select_auto_condition .date_month').click(function(){
+			click_d = 1;
+			click_date = $(this).index();
+			if(click_date > -1) click_d += click_date;
+			$("input[name='month']").val(click_d);
+			$('.date_month').removeClass('date_active');
+			$(this).addClass('date_active');
+		}).eq(0).click();
+		*/
+	
+		/*
+		$("select[name='act']").on("change",function(){
+			if($(this).val() == "review"){
+				$("input[name='review_cnt']").show();
+			}else{
+				$("input[name='review_cnt']").hide();
+			}
+		});
+		*/
+	
+	$('div#select_auto_condition .auto_check').click(function(){
+		$(this).closest('label').parent().find('input:radio').prop('checked',true);
+	});
+
+	$("input[name='age'], input[name='sex'], input[name='agent']").on("click",function(){
+		if($(this).val() == "each"){
+			$(this).closest("td").find(".each_detail_view").removeClass('hide');
+		}else{
+			$(this).closest("td").find(".each_detail_view").addClass('hide');
+		}
+	});
+
+	// 통계대상 행동 선택 :: 2018-11-26 lwh
+	$("select[name='act']").on('change',function(){
+		$('.stat_act_div').removeClass('select');
+		$(this).closest('.stat_act_div').addClass('select');
+
+		if($(this).val() == 'review_sum'){
+			$('.date_month').hide();
+			$('.date_desc').text('누적 기간동안');
+		}else{
+			$('.date_month').show();
+			$('.date_desc').text('동안');
+		}
+
+		{? config_system.operation_type != 'light' }
+			if ($(this).val() == 'recently'){
+				$('.detail_act').hide();
+			}else{
+				$('.detail_act').show();
+			}
+		{:}
+			$('.detail_act').hide();
+		{/}
+	}).change();
+
+	var condition = "{condition}";
+	if(condition) {
+		condition = condition.split(",");
+		
+		for(var i=0;i<condition.length;i++){
+			var div = condition[i].split("=");
+			var name = div[0];
+			var value = decodeURIComponent(div[1]);
+			//bigdata일 경우엔 최근등록순이 없다.
+			if ((displayKind == 'bigdata' || displayKind == 'bigdata_catalog') && name == 'act' && value == 'recently') value = 'order_cnt';
+
+			var obj = $("#select_auto_condition_form *[name='"+name+"']");
+			if (obj.length){
+				if(obj[0].tagName.toUpperCase()=='INPUT' && (obj.attr('type')=='checkbox' || obj.attr('type')=='radio')){
+					$("#select_auto_condition_form input[name='"+name+"'][value='"+value+"']").prop("checked",true);
+				}else if(obj[0].tagName=='SELECT'){
+					obj.val(value).attr("defaultValue",value);
+				}else{
+					obj.val(value);
+				}
+			}
+		}
+	}
+
+	$('.same_admin').click(check_same).each(check_same);
+
+	$('.close_condition').click(function(){
+		$(this).closest('.ui-dialog').remove();
+		closeDialog("condition_change_option");
+	});
+
+});
+	
+	function check_same(){
+		flag = false;
+		if	($(this).is(':checked')) flag = true;
+		switch($(this).attr('name')){
+			case 'same_category'	: $('.select_category').prop('disabled',flag);	break;
+			case 'same_brand'		: $('.select_brand').prop('disabled',flag);		break;
+			case 'same_location'	: $('.select_location').prop('disabled',flag);	break;
+			case 'same_seller'		: $('.select_seller').prop('disabled',flag);	break;
+		}
+	};
+	
+	//확인
+	var set_auto_condition = function(that){
+		that = $(that).closest('#select_auto_condition');
+		if	(readyEditorForm(document.select_auto_condition_form)){
+	
+			<!--{ ? kind != 'admin' && displayKind != 'mshop'}-->
+			if($("input[name='same_category']",that).is(':checked') == false && $("input[name='same_brand']",that).is(':checked') == false && $("input[name='same_location']",that).is(':checked') == false && $("input[name='same_seller']",that).is(':checked') == false){
+				openDialogAlert('고객(소비자) 기준을 선택해주세요.','400','160',function(){$("input[name='same_category']",that).focus();});
+				return false;
+			}
+			<!--{ / }-->
+	
+			if	($("input[name='age']:checked",that).val() == 'each' && $(".each_age:checkbox:checked",that).length < 1){
+				openDialogAlert('나이를 선택해주세요.','400','160',function(){$("input[name='each_age_10']",that).focus();});
+				return;
+			}
+	
+			if	($("input[name='sex']:checked",that).val() == 'each' && $(".each_sex:checkbox:checked",that).length < 1){
+				openDialogAlert('성별을 선택해주세요.','400','160',function(){$("input[name='sex_male']",that).focus();});
+				return;
+			}
+	
+			if	($("input[name='agent']:checked",that).val() == 'each' && $(".each_agent:checkbox:checked",that).length < 1){
+				openDialogAlert('환경을 선택해주세요.','400','160',function(){$("input[name='agent_pc']",that).focus();});
+				return;
+			}
+	
+			if	($("input[name='act']:checked",that).val() == 'review_sum' && $("input[name='review_cnt']",that).val() < 1){
+				openDialogAlert('몇 회 이상의 상품후기 횟수 입력은 필수 사항입니다.','400','160',function(){$("input[name='review_cnt']",that).focus();});
+				return;
+			}
+	
+			if	($("input[name='min_ea']",that).val() < 1){
+				openDialogAlert('최소 노출 개수는 필수 사항입니다.','400','160',function(){$("input[name='min_ea']",that).focus();});
+				return;
+			}
+	
+			var formParams_arr 	= $('#select_auto_condition_form',that).serializeArray();
+			var params 			= new Array();
+			var arr 			= new Array();
+			var provider_flag	= false;
+			for(var i in formParams_arr){
+				if	(formParams_arr[i].name == 'daumedit' || formParams_arr[i].name == 'isFirst') continue;
+				if	(formParams_arr[i].name == 'provider' && formParams_arr[i].value == 'seller') provider_flag = true;
+				if	(!provider_flag){
+					if	(formParams_arr[i].name == 'provider_seq_selector' || formParams_arr[i].name == 'provider_seq' || 	formParams_arr[i].name == 'provider_name') continue;
+				}
+				if	(formParams_arr[i].value!=null && formParams_arr[i].value.length>0) {
+					var val = formParams_arr[i].name+"="+encodeURIComponent(formParams_arr[i].value);
+					if	(formParams_arr[i].name=='selectCategory1' || formParams_arr[i].name=='selectCategory2' || formParams_arr[i].name=='selectCategory3' || formParams_arr[i].name=='selectCategory4' || formParams_arr[i].name=='selectBrand1' || formParams_arr[i].name=='selectBrand2' || formParams_arr[i].name=='selectBrand3' || formParams_arr[i].name=='selectBrand4' || formParams_arr[i].name=='selectLocation1' || formParams_arr[i].name=='selectLocation2' || formParams_arr[i].name=='selectLocation3' || formParams_arr[i].name=='selectLocation4'){
+						val = val+"="+$("#select_auto_condition_form select[name='"+formParams_arr[i].name+"'] option:selected",that).text();
+					}
+					params.push(val);
+				}
+			}
+	
+			if(typeof bigdata_test == "undefined") bigdata_test = "";
+			<!--{ ? kind == 'none'}-->
+				$("input[name='auto_condition']").val(params.join(","));
+				auto_light_condition_set();
+			<!--{ : }-->
+				<!--{ ? bigdata_test == 1 }-->
+					$("input[name='displayCriteria']").val('{kind}'+'∀'+params.join(","));
+					top.setCriteriaDescription_upgrade();
+					get_test_list();
+				<!--{ : }-->
+					$("input[name='condition[]'][value='{=kind}'").closest("tr").find("input[name='auto_condition[]']").val(params.join(","));
+					//setAutoConditionDescription('{displayKind}');
+				<!--{ / }-->
+			<!--{ / }-->
+	
+	
+			$("#goodsSelectorAuto input[name='condition[]'][value='{=kind}']").closest("tr").find('span.condition_status').html("설정완료").removeClass("gray");
+			closeDialog("condition_change_option");
+			$("#condition_change_option").addClass("hide");
+			$(that).closest('.ui-dialog').remove();
+		}
+	};
+	
+	<!--{ ? kind == 'none'}-->
+	// 자동 1 전용 콜백 함수
+	function auto_light_condition_set(){
+		var tabIdx 	= $("#{inputGoods}").closest('.displayTabGoodsContainer').attr('tabIdx');
+		condition 	= new Array();
+		temp 		= 'none∀'+$("#select_auto_condition input[name='auto_condition']").val();
+		condition.push(temp);
+		$("#{inputGoods}").val(condition.join('Φ'));
+	
+		<!--{? displayKind !='relation_seller'}-->
+			$("#{auto_condition_use_id}").val(1);
+		<!--{ / }-->
+		
+		<!--{? displayKind =='relation'}-->
+			$("input[name='relation_type'][value='AUTO']").attr("checked",true).change();
+		<!--{:}-->
+			$("input.contents_type").eq(tabIdx).val("auto").change();
+		<!--{/}-->
+	
+		setCriteriaDescription_upgrade("goodsview");
+	}
+	<!--{ / }-->
+</script>
+	
+	
+<div  id="select_auto_condition">
+	<div class="content">
+		<input type="hidden" class="display_kind" value="{displayKind}" />
+		<input type="hidden" name="select_kind" value="{kind}"/>
+		<form name="select_auto_condition_form" id="select_auto_condition_form">
+		<input type="hidden" name="type" value="select_auto" />
+		<input type="hidden" name="isFirst" value="" />
+		<!--{ ? kind == 'none'}-->
+		<input type="hidden" name="auto_condition" value="" />
+		<!--{ / }-->
+
+			<table class="table_basic">
+				<colgroup>
+					<col width="18%">
+					<col width="82%">
+				</colgroup>
+				<tr>
+					<th>조건</th>
+					<td>
+						<!--{ ? config_system.operation_type == 'light' && (displayKind == 'relation' || displayKind == 'relation_seller') }-->
+							해당 상품
+						<!--{ : config_system.operation_type != 'light' && (displayKind == 'bigdata' || displayKind == 'bigdata_catalog') }-->
+							해당 고객이 보고 있는 상품
+						<!--{ : }-->
+							{=bigdata_title_arr[kind]}
+						<!--{ / }-->
+					</td>
+				</tr>
+				<tr>
+					<th>타이틀</th>
+					<td>
+						<div class="resp_limit_text limitTextEvent">
+							<input type="text" name="display_title" size='70' class="resp_text" maxlength="255" />
+						</div>
+					</td>
+				</tr>
+				<tr>
+					<th>기준 <span class="required_chk"></span></th>
+					<td>
+					<!--{ ? config_system.operation_type == 'light' && (displayKind == 'category' || displayKind == 'brand' || displayKind == 'location' || displayKind == 'mshop') }-->
+						<div class="resp_checkbox">
+							<input type="checkbox" name="same_{displayKind}" class="hide same_admin" value="1" checked /> 
+						</div>
+						해당 {?displayKind=='category'}카테고리{:displayKind=='location'}지역{:displayKind=='brand'}브랜드{:displayKind=='mshop'}판매자{/} 상품 중에서
+					<!--{ : kind == 'admin' }-->
+						<table class="table_basic">
+							<colgroup>
+								<col width="15%">
+								<col width="85%">
+							</colgroup>
+							<tr>
+								<th>카테고리</th>
+								<td>
+									<select name="selectCategory1" class="select_category" style="width:110px">
+									<option value="">1차 카테고리</option>
+									</select>
+									<select name="selectCategory2" class="select_category" style="width:110px">
+									<option value="">2차 카테고리</option>
+									</select>
+									<select name="selectCategory3" class="select_category" style="width:110px">
+									<option value="">3차 카테고리</option>
+									</select>
+									<select name="selectCategory4" class="select_category" style="width:110px">
+									<option value="">4차 카테고리</option>
+									</select>
+									<!--{ ? displayKind == 'relation_seller' || displayKind == 'relation' }-->
+									<label class="resp_checkbox">
+										<input type="checkbox" name="same_category" class="same_admin" value="1" /> 동일 카테고리
+									</label>
+									<!--{ / }-->
+								</td>
+							</tr>
+							<tr>
+								<th>브랜드</th>
+								<td>
+								<select name="selectBrand1" class="select_brand" style="width:110px">
+								<option value="">1차 브랜드</option>
+								</select>
+								<select name="selectBrand2" class="select_brand" style="width:110px">
+								<option value="">2차 브랜드</option>
+								</select>
+								<select name="selectBrand3" class="select_brand" style="width:110px">
+								<option value="">3차 브랜드</option>
+								</select>
+								<select name="selectBrand4" class="select_brand" style="width:110px">
+								<option value="">4차 브랜드</option>
+								</select>
+								<!--{ ? displayKind == 'relation_seller' || displayKind == 'relation' }-->
+								<label class="resp_checkbox">
+									<input type="checkbox" name="same_brand" class="same_admin" value="1" /> 동일 브랜드
+								</label>
+								<!--{ / }-->
+								</td>
+							</tr>
+							<tr>
+								<th>지역</th>
+								<td>
+								<select name="selectLocation1" class="select_location" style="width:110px">
+								<option value="">1차 지역</option>
+								</select>
+								<select name="selectLocation2" class="select_location" style="width:110px">
+								<option value="">2차 지역</option>
+								</select>
+								<select name="selectLocation3" class="select_location" style="width:110px">
+								<option value="">3차 지역</option>
+								</select>
+								<select name="selectLocation4" class="select_location" style="width:110px">
+								<option value="">4차 지역</option>
+								</select>
+								<!--{ ? displayKind == 'relation_seller' || displayKind == 'relation' }-->
+								<label class="resp_checkbox">
+									<input type="checkbox" name="same_location" class="same_admin" value="1" /> 동일 지역
+								</label>
+								<!--{ / }-->
+								</td>
+							</tr>
+							<!--{ ? serviceLimit('H_AD') }-->
+								<!--{ ? provider_seq == 1 || provider_seq == '' }-->
+							<tr>
+								<th>판매자</th>
+								<td>
+									<div class="resp_radio">
+										<label><input type="radio" name="provider" class="select_seller" value="all" checked /> 전체</label>
+										<label><input type="radio" name="provider" class="select_seller" value="1"/> 본사</label>
+										<label><input type="radio" name="provider" class="select_seller" value="seller"/> 판매자</label>
+									</div>
+									<select name="provider_seq_selector" class="select_seller" style="vertical-align:middle;">
+									<option value="0">- 입점사 검색 -</option>
+									<option value="999999999999">입점사 전체(본사제외)</option>
+										<!--{ @ provider }-->
+									<option value="{.provider_seq}">{.provider_name}({.provider_id})</option>
+										<!--{ / }-->
+									</select>
+									<input type="hidden" class="provider_seq" name="provider_seq" value="{provider_seq}" />
+									<input type="hidden" name="provider_name" class="select_seller" value="{provider_name}" readonly />
+									<script>
+									$(function(){
+										$( "select[name='provider_seq_selector']" )
+										.combobox()
+										.change(function(){
+											if( $(this).val() > 0 ){
+												$("input[name='provider_seq']",$('#select_auto_condition')).val($(this).val());
+												$("input[name='provider_name']",$('#select_auto_condition')).val($("option:selected",this).text());
+												$("input[name='provider'][value='seller']").prop('checked',true)
+											}else{
+												$("input[name='provider_seq']",$('#select_auto_condition')).val('');
+												$("input[name='provider_name']",$('#select_auto_condition')).val('');
+											}
+										})
+										.next(".ui-combobox").children("input")
+										.bind('focus',function(){
+											if($(this).val()==$( "select[name='provider_seq_selector'] option:first-child" ).text()){
+												$(this).val('');
+											}
+										})
+										.bind('mouseup',function(){
+											if($(this).val()==''){
+												$( "select[name='provider_seq_selector']").next(".ui-combobox").children("a.ui-combobox-toggle").click();
+											}
+										});
+									});
+									</script>
+									<!--{ ? displayKind == 'relation_seller' || displayKind == 'relation' }-->
+									<label class="resp_checkbox">
+										<input type="checkbox" name="same_seller" class="same_admin" value="1" /> 동일 판매자
+									</label>
+									<!--{ / }-->
+								</td>
+							</tr>
+								<!--{ : }-->
+							<input type="hidden" name="same_seller" value="1"/>
+								<!--{ / }-->
+							<!--{ / }-->
+						</table>
+					<!--{ : }-->
+						<div class="resp_checkbox">
+							<span>
+								<!--{ ? config_system.operation_type == 'light' && (displayKind == 'relation' || displayKind == 'relation_seller') }-->
+									해당 상품과
+								<!--{ : config_system.operation_type != 'light' && (displayKind == 'bigdata' || displayKind == 'bigdata_catalog') }-->
+									○○○고객이 보고 있는 이상품과
+								<!--{ : }-->
+									○○○고객이 최근
+									<!--{ ? kind == 'view' }-->
+									본
+									<!--{ :kind == 'cart' }-->
+									장바구니에 담은
+									<!--{ :kind == 'review' }-->
+									리뷰를 쓴
+									<!--{ :kind == 'wish' }-->
+									위시리스트에 찜한
+									<!--{ :kind == 'restock' }-->
+									'재입고 알림요청'한
+									<!--{ :kind == 'search' }-->
+									검색한 검색결과 최상위
+									<!--{ :kind == 'order' }-->
+									구매한
+									<!--{ / }-->
+									상품과
+								<!--{ / }-->
+							</span>
+							<label class="ml10">
+								<input type="checkbox" name="same_category" class="same_condition" value="1"/>
+								동일한 카테고리
+							</label>
+							<label class="ml10">
+								<input type="checkbox" name="same_brand" class="same_condition" value="1"/>
+								동일한 브랜드
+							</label>
+							<label class="ml10">
+								<input type="checkbox" name="same_location" class="same_condition" value="1"/>
+								동일한 지역
+							</label>
+						
+							<!--{ ? serviceLimit('H_AD') && (displayKind == 'relation_seller' || displayKind == 'design') }-->
+							<label class="ml10">
+								<!--{ ? config_system.operation_type == 'light' && displayKind == 'relation_seller' }-->
+								<input type="hidden" name="same_seller" value="1" />
+								<input type="checkbox" class="same_condition" value="1" checked disabled />
+								<!--{ : }-->
+								<input type="checkbox" class="same_condition" name="same_seller" value="1" />
+								<!--{ / }-->
+								동일한 판매자의
+							</label>
+							<!--{ / }-->
+						상품 중에서
+						</div>
+						<!--{ ? displayKind == 'bigdata' || displayKind == 'bigdata_catalog' }-->
+							해당 상품을
+							<select name="bigdata_month">
+								<option value="6">최근 6개월 안에</option>
+								<option value="3">최근 3개월 안에</option>
+								<option value="1">최근 1개월 안에</option>
+							</select>
+							<!--{ ? kind == 'view' }-->
+							본
+							<!--{ :kind == 'cart' }-->
+							장바구니에 담은
+							<!--{ :kind == 'wish' }-->
+							위시리스트에 찜한
+							<!--{ :kind == 'review' }-->
+							상품후기 작성한
+							<!--{ :kind == 'order' }-->
+							구매한
+							<!--{ / }-->
+							다른 고객이
+						<!--{ / }-->
+					<!--{ / }-->
+
+					</td>
+				</tr>
+				<tr>
+					<th>통계 대상</th>
+					<td>
+						<table class="table_basic thl">
+							<col width="25%"/>
+							<col width="75%"/>
+							<tr>
+								<th>기간</th>
+								<td>최근 
+									<select name="month" class="date_month">
+										<option value="1">1개월</option>
+										<option value="2">2개월</option>
+										<option value="3">3개월</option>
+										<option value="4">4개월</option>
+										<option value="5">5개월</option>
+										<option value="6">6개월</option>
+									</select>
+								</td>
+							</tr>
+							<tr class="detail_act">
+								<th>연령 <span class="required_chk"></span></th>
+								<td class="left relative">
+									<div class="resp_radio">
+										<label><input type="radio" name="age" value="all" checked/> 전체</label>
+										<label class="ml10 each_detail"><input type="radio" name="age" value="each" /> 연령 지정</label>
+										<label class="ml10"><input type="radio" name="age" value="same"/> 고객과 동일 연령</label>
+									</div>
+									<div class="each_detail_view hide mt5 pd5" style="border-top:1px dashed #ddd ">
+										<div class="resp_checkbox">
+											<label><input type="checkbox" name="each_age_10" class='auto_check each_age' value="10"/> 10대</label>
+											<label class="ml5"><input type="checkbox" name="each_age_20" class='auto_check each_age' value="20"/> 20대</label>
+											<label class="ml5"><input type="checkbox" name="each_age_30" class='auto_check each_age' value="30"/> 30대</label>
+											<label class="ml5"><input type="checkbox" name="each_age_40" class='auto_check each_age' value="40"/> 40대</label>
+											<label class="ml5"><input type="checkbox" name="each_age_50" class='auto_check each_age' value="50"/> 50대</label>
+											<label class="ml5"><input type="checkbox" name="each_age_60" class='auto_check each_age' value="60"/> 60대</label>
+										</div>
+									</div>
+								</td>
+							</tr>
+							<tr class="detail_act">
+								<th>성별 <span class="required_chk"></span></th>
+								<td class="left relative">
+									<div class="resp_radio">
+										<label><input type="radio" name="sex" value="all" checked> 전체</label>
+										<label class="ml10 each_detail"><input type="radio" name="sex" value="each" > 성별 지정</label>
+										<label class="ml10"><input type="radio" name="sex" value="same"> 고객과 동일 성별</label>
+									</div>
+									<div class="each_detail_view hide mt5 pd5" style="border-top:1px dashed #ddd ">
+										<div class="resp_checkbox">
+											<label><input type="checkbox" name="each_sex_male" class='auto_check each_sex' value="male"/> 남성</label>
+											<label><input type="checkbox" name="each_sex_female" class='auto_check each_sex' value="female"/> 여성</label>
+											<label><input type="checkbox" name="each_sex_none" class='auto_check each_sex' value="none"/> 모름</label>
+										</div>
+									</label>
+								</td>
+							</tr>
+							<tr class="detail_act">
+								<th>환경 <span class="required_chk"></span></th>
+								<td class="left relative">
+									<div class="resp_radio">
+										<label><input type="radio" name="agent" value="all" checked/> 전체</label>
+										<label class="ml10 each_detail"><input type="radio" name="agent" value="each" /> 환경 지정</label>
+										<label class="ml10"><input type="radio" name="agent" value="same"/> 고객과 동일 환경</label>
+									</div>
+									<div class="each_detail_view hide mt5 pd5" style="border-top:1px dashed #ddd ">
+										<div class="resp_checkbox">
+											<label><input type="checkbox" name="each_agent_pc" class='auto_check each_agent' value="pc"/> PC환경</label>
+											<label><input type="checkbox" name="each_agent_mobile" class='auto_check each_agent' value="mobile"/> Mobile환경</label>
+										</div>
+									</label>
+								</td>
+							</tr>
+							<tr>
+								<th>상품 기준</th>
+								<td>
+									<select name="act">
+										<option value="order_cnt" selected>구매(횟수)량이 높은</option>
+										<option value="order_ea">구매(수량)량이 높은</option>
+										<option value="cart">많이 장바구니에 담은</option>
+										<option value="wish">많이 위시리스트에 찜한</option>
+										<option value="view">많이 본</option>
+										<option value="review">상품후기가 많이 작성된</option>
+										<option value="review_sum">베스트 상품 후기가 많은 상품</option>
+										<!--{ ? displayKind != 'bigdata' && displayKind != 'bigdata_catalog' }-->
+										<option value="recently">최근에 등록한 상품</option>
+										<!--{ / }-->
+									</select>
+									<input type="hide" name="review_cnt" class="onlynumber hide" size="2" value="1" />
+								</td>
+							</tr>
+							<!--{ ? config_system.operation_type != 'light' }-->
+							<tr>
+								<th>최소 통계 상품 수</th>
+								<td>
+									최소 <input type="text" name="min_ea" class="onlynumber" size="2" value="1" /> 개 이상일때 노출
+									<span class="gray">(승인, 노출, 정상 상품)</span>
+								</td>
+							</tr>
+							<!--{ / }-->
+						</table>
+						
+					</td>
+				</tr>
+				<!--{ ? config_system.operation_type == 'light' }-->
+				<tr>
+					<th>최소 노출 상품 수</th>
+					<td>
+						최소 <input type="text" name="min_ea" class="onlynumber" size="2" value="1" /> 개 이상일때 노출
+						<span class="gray">(승인, 노출, 정상 상품)</span>
+					</td>
+				</tr>
+				<!--{ / }-->
+			</table>
+
+		</form>
+	</div>
+
+	<div class="footer">
+		<button type="button" onclick="set_auto_condition(this);" class="resp_btn active size_XL" >확인</button>
+		<button type="button" class="close_condition resp_btn v3 size_XL">취소</button>
+	</div>
+</div>

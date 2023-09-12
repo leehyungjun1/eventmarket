@@ -1413,4 +1413,16 @@ if(!$.isFunction("appClosepopup")){
 	}
 }
 
+document.addEventListener("DOMContentLoaded", () => {
+	// 목록화면 새로고침 시, 스크롤 최상단으로 이동
+	const list = document.querySelector("#searchedItemDisplay");
+	const mutationObserver = new MutationObserver(() => {
+		window.scrollTo({top:0, left:0, behavior:'instant'});
+	})
+	list && mutationObserver.observe(list, {
+		childList: true,
+		attributes: true,
+	});
+})
+
 $.getScript('/app/javascript/js/echo.js');

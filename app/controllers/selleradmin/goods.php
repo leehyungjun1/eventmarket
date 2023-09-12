@@ -1408,13 +1408,8 @@ class goods extends selleradmin_base {
 			if($relation_seller) $this->template->assign('relation_seller',$relation_seller);
 
 		}
-
-
-		$frequentlyoptlist = $this->goodsmodel->frequentlygoods('opt',$goods_seq,defined('SOCIALCPUSE'));
-		$frequentlysublist = $this->goodsmodel->frequentlygoods('sub',$goods_seq,defined('SOCIALCPUSE'));
+		
 		$frequentlyinplist = $this->goodsmodel->frequentlygoods('inp',$goods_seq,defined('SOCIALCPUSE'));
-		$this->template->assign(array('frequentlyoptlist'=>$frequentlyoptlist));
-		$this->template->assign(array('frequentlysublist'=>$frequentlysublist));
 		$this->template->assign(array('frequentlyinplist'=>$frequentlyinplist));
 
 		// 구매대상제한

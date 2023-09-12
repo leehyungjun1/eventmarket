@@ -602,6 +602,11 @@ class ordermodel extends CI_Model
 					$this->db->insert('fm_order_memo', $aOrder_memo);
 				}
 			}
+
+			// 관리자 주문시 유입경로 정보 불필요로 초기화 
+			unset($_COOKIE['marketplace']);
+			unset($_COOKIE['shopReferer']);
+			unset($_COOKIE['refererDomain']);
 		}
 
 		//판매환경

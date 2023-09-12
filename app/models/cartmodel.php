@@ -194,10 +194,38 @@ class cartmodel extends CI_Model {
 		else $this->db->where('session_id', session_id());
 		$this->db->where('distribution',$mode);
 		$query = $this->db->get('fm_cart');
+		
+		$tmp_cart = $this->session->userdata('tmp_cart');
+
 		foreach ($query->result_array() as $row)
 		{
-			$tables = array('fm_cart_option', 'fm_cart_input', 'fm_cart_suboption', 'fm_cart');
-			$this->db->delete($tables,array('cart_seq' => $row['cart_seq']));
+			// 장바구니에서 선택한 상품만 구매할 경우 결제 후 선택하지 않는 장바구니 데이터는 남아있도록 수정
+			if ($tmp_cart && $mode == 'choice') {
+				$tables = array('fm_cart_input', 'fm_cart_suboption');
+				$this->db->where_in('cart_option_seq', $tmp_cart[$row['cart_seq']]);
+				$this->db->where('cart_seq',$row['cart_seq']);
+				$this->db->delete($tables);
+
+				$this->db->where_in('cart_option_seq', $tmp_cart[$row['cart_seq']]);
+				$this->db->where(['cart_seq' => $row['cart_seq'], 'choice' => 'y']);
+				$this->db->delete('fm_cart_option');
+	
+				// 남은 장바구니 옵션이 없는지 확인 후 장바구니 삭제
+				$this->db->select('*');
+				$this->db->where('cart_seq',$row['cart_seq']);
+				$result = $this->db->count_all_results('fm_cart_option');
+				
+				if ($result == 0){
+					$this->db->delete('fm_cart',array('cart_seq' => $row['cart_seq']));
+				}
+
+				$this->session->unset_userdata('tmp_cart');
+
+			} else {
+				$tables = array('fm_cart_option', 'fm_cart_input', 'fm_cart_suboption', 'fm_cart');
+				$this->db->delete($tables,array('cart_seq' => $row['cart_seq']));
+			}
+
 		}
 	}
 

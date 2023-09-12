@@ -1,7 +1,7 @@
 <!-- 오픈마켓 검색어 미리보기 -->
 <div id="keyword_linkage_info_dialog" class="hide">
 	<div class="content">
-		<span class="item-title">연동 정보</span>
+		<span class="item-title">연동 정보</span> 
 		<table class="table_basic thl mb10">
 			<colgroup>
 				<col width="30%" />
@@ -71,12 +71,11 @@
 			<th>가용 재고</th>
 			<td>
 				<input type="text" name="ableStockLimit" size="5" value="{cfg_order.ableStockLimit}" class="right line onlynumber_signed"> 이하 일 때 품절 또는 재고 확보 중 처리
-				<div class="gray">※ 가용재고 = 상품의 재고 - 출고 예약량 - 불량재고</div>
+				<div class="resp_message">※ 가용재고 = 상품의 재고 - 출고 예약량 - 불량재고</div>
 			</td>
 		</tr>
 		</table>
 	</div>
-
 	<div class="footer">
 		<input type="button" class="resp_btn active size_XL" value="확인" onClick="check_runout('popup_runout_setting')" />
 		<input type="button" class="resp_btn v3 size_XL" onclick="closeDialog('popup_runout_setting')" value="취소" />
@@ -140,6 +139,7 @@
 		<!--{ ? (provider_seq == '1' || sc.provider == 'base') }-->
 		<th style="min-width:90px;">매입가(평균)</th>
 		<!--{ / }-->
+
 	<!--{:}-->
 		<!--{ @ range(1,package_count) }-->
 		<th style="min-width:100px;" class="reg_package_option_title_tbl">상품{.value_}</th>
@@ -180,21 +180,22 @@
 			<input type="text" name="goodsCode"  id="goodsCode" value="" class="wp80" />
 		</td>
 		<!--{ ? !socialcpuse }-->
-			<td class="center"><input class="line onlyfloat input-box-default-text right" name="weight[]" value="0" size="3" type="text"></td>
+			<td class="center"><input class="line onlyfloat input-box-default-text right" name="weight[]" value="0" size="4" type="text"></td>
 		<!--{/}-->
 	<!--{/}-->
 
 	<!--{ ? socialcpuse }-->
 		<td class="pdr10 couponinputtitle"><input type="text" name="coupon_input[]" class="right onlynumber" size="10" value=""/></td>
 	<!--{/}-->
+
 	<!--{ ? package_yn == 'y' }-->
-		<input type="hidden" name="stock[]" value="50" />
-		<!--{ @ range(1,package_count) }-->
+			<input type="hidden" name="stock[]" value="50" />
+			<!--{ @ range(1,package_count) }-->
 		<td class="center reg_package_option_tbl">
-			<div>
+					<div>
 			<span class="reg_package_goods_seq{=.value_}"></span>
 			<span class="reg_package_goods_name{=.value_}"></span>
-			</div>
+					</div>
 			<div class="reg_package_option{=.value_}"></div>
 			<div class="reg_package_unit_ea{=.value_}">
 				주문당 <input type="text" name="package_unit_ea{=.value_}[]" size="3" value="1" class="right">
@@ -203,7 +204,7 @@
 			<div class="reg_package_option_seq{=.value_}">
 			</div>
 			<input type="hidden" name="reg_package_option_seq{=.value_}[]" value="">
-		</td>
+			</td>
 		<!--{/}-->
 	<!--{:}-->
 		<td class="center  _stock">
@@ -232,31 +233,8 @@
 		<td class="center _stock">
 			<input type="text" name="safe_stock[]" value="0" size="5" class="right onlynumber"/>
 		</td>
-		<!--{? provider_seq == 1}-->
-		<td class="right pdr10">
-		<!--{ ? scm_cfg['use'] == 'Y' && (provider_seq == '1' || sc.provider == 'base') }-->
-			<span>0</span>
-			<input type="hidden" name="supplyPrice[]" value="0" />
-		<!--{ : }-->
-			<input type="text" name="supplyPrice[]" value="0" class="onlyfloat right wp80"/>
-		<!--{/}-->
-		</td>
-		<!--{/}-->
 	<!--{/}-->
 
-	<!--{? provider_seq == 1}-->
-		<td class="right pdr10 settlementAmount not_for_seller hide"><input type="hidden" name="optionSeq[]" value="" /></td>
-		<td class="right pdr10 not_for_seller hide">
-			<input class="right onlyfloat input-box-default-text" name="commissionRate[]" value="{=provider.charge}" size="4" type="text">
-			<span class="commission_type SACO_unit">%</span>
-			<span class="commission_type SUPPLY_unit" style="display:none;">
-				<select name="commissionType[]" class="commission_type_sel">
-					<option value="SUCO">%</option>
-					<option value="SUPR">{=basic_currency_info['currency_symbol']}</option>
-				</select>
-			</span>
-		</td>
-	<!--{ : }-->
 		<td class="pdr10 settlementAmount right"><input type="hidden" name="optionSeq[]" value="" /></td>
 		<td class="center">
 			<!--공급가액 방식-->
@@ -268,24 +246,23 @@
 			{:}
 				<input type="hidden" class="right onlyfloat input-box-default-text" name="commissionRate[]" value="{=provider.charge}"> {=provider.charge}
 			{/}
-			<span class="commission_type SACO_unit">%</span>
-			<span class="commission_type SUPPLY_unit" style="display:none;">
-			{? sellermode == 'SELLER'}
+				<span class="commission_type SACO_unit">%</span>
+				<span class="commission_type SUPPLY_unit" style="display:none;">
+				{? sellermode == 'SELLER'}
 					<input type="hidden" name="commissionType[]" value="{=provider.commission_type}">{? provider.commission_type == 'SUCO'}%{:}{=basic_currency_info['currency_symbol']}{/}
-			{:}
-				<select name="commissionType[]" class="commission_type_sel">
-					<option value="SUCO">%</option>
+				{:}
+					<select name="commissionType[]" class="commission_type_sel">
+						<option value="SUCO">%</option>
 					<option value="SUPR">{=basic_currency_info['currency_symbol']}</option>
-				</select>
-			</span>
-			{/}
+					</select>
+				</span>
+				{/}
 		</td>
-	<!--{ / }-->
 
-		<td class="center pricetd"><input type="text" name="consumerPrice[]" value="0" class="onlyfloat right black wp70" /></td>
-		<td class="center pricetd"><input type="text" name="price[]" value="0" class="onlyfloat right wp70" /></td>
+		<td class="center pricetd"><input type="text" name="consumerPrice[]" value="0" class="onlyfloat right black wp80" /></td>
+		<td class="center pricetd"><input type="text" name="price[]" value="0" class="onlyfloat right wp80" /></td>
 		<td class="right pdr10 tax">{=get_currency_price(0)}</td>
-		<td class="center">
+		<td class="right pdr10">
 
 			{? sellermode != 'SELLER'}
 				<select name="reserve_policy" readonly>
@@ -295,7 +272,7 @@
 			{/}
 			{? sellermode != 'SELLER'}
 			<input type="text" name="reserveRate[]" value="0" size="4" class="onlyfloat right" />
-			<select name="reserveUnit[]" class="wx50">
+			<select name="reserveUnit[]" class="wx40">
 				<option value="percent">%</option>
 				<option value="{=config_system['basic_currency']}">{=config_system['basic_currency']}</option>
 			</select>
@@ -463,7 +440,6 @@
 		</table>
 
 		<div class="item-title mt10">추가 입력 옵션 상세</div>
-		
 		<table class="table_row_basic optionList">
 		<thead>
 		<colgroup>
@@ -471,7 +447,7 @@
 			<col width="60"/>
 			<col/>
 			<col width="300"/>
-			
+			<col />
 		</colgroup>
 		<thead>
 			<tr>
@@ -543,8 +519,7 @@
 			<label class="resp_checkbox" id="frequentlyinplay">
 				<input type="checkbox" name="frequentlyinpbtn" value="1" {? goods.frequentlyinp==1} checked="checked" {/}> 옵션 정보 저장
 			</label>
-		</div>
-		
+		</div>		
 	</div>
 	<div class="footer">
 		<button type="button" id="memberInputMakeApply" class="resp_btn active size_XL">확인</button>
@@ -569,7 +544,7 @@
 		<input type="hidden" name="contents_type" value="" />
 		<input type="hidden" name="r_info" value="create_info" />
 		<input type="hidden" name="info_select_seq" value="" />
-		<table class="table_basic v7" style="height:300px">
+		<table class="table_basic" style="height:300px">
 			<tr class="view_common_info">
 				<th>상품 공통 정보명</th>
 				<td>
@@ -653,22 +628,19 @@
 					</td>
 				</tr>
 				<tr>
-					<th class="left">통합 전자 결제</th>
+					<th class="left">통합전자결제</th>
 					<td>
-						<div class="resp_checkbox">
-							<label><input type="checkbox" name="possible_pay[]" class="chkall" value="all"> 전체</label>
-						</div>
 						<div class="resp_checkbox">
 							<label><input type="checkbox" name="possible_pay[]" value="card" { ? !payment.card }disabled{ / } { ? payment_check.card }checked{ / }> 신용카드</label>
 							<label><input type="checkbox" name="possible_pay[]" value="cellphone" { ? !payment.cellphone }disabled{ / } { ? payment_check.cellphone }checked{ / }> 핸드폰</label>
 						</div>
 						<div class="resp_checkbox">
-							<label><input type="checkbox" name="possible_pay[]" value="account" { ? !payment.account }disabled{ / } { ? payment_check.account }checked{ / }> 계좌이체</label>
-							<label><input type="checkbox" name="possible_pay[]" value="escrow_account" { ? !escrow.account }disabled{ / } { ? escrow_check.account }checked{ / }> 계좌이체 에스크로</label><br />
+							<label><input type="checkbox" name="possible_pay[]" value="account" { ? !payment.account }disabled{ / } { ? payment_check.account }checked{ / }> 계좌 이체</label>
+							<label><input type="checkbox" name="possible_pay[]" value="escrow_account" { ? !escrow.account }disabled{ / } { ? escrow_check.account }checked{ / }> 계좌 이체 에스크로</label><br />
 						</div>
 						<div class="resp_checkbox">
-							<label><input type="checkbox" name="possible_pay[]" value="virtual" { ? !payment.virtual }disabled{ / } { ? payment_check.virtual }checked{ / }> 가상계좌</label>
-							<label><input type="checkbox" name="possible_pay[]" value="escrow_virtual" { ? !escrow.virtual }disabled{ / } { ? escrow_check.virtual }checked{ / }> 가상계좌 에스크로</label>
+							<label><input type="checkbox" name="possible_pay[]" value="virtual" { ? !payment.virtual }disabled{ / } { ? payment_check.virtual }checked{ / }> 가상 계좌</label>
+							<label><input type="checkbox" name="possible_pay[]" value="escrow_virtual" { ? !escrow.virtual }disabled{ / } { ? escrow_check.virtual }checked{ / }> 가상 계좌 에스크로</label>
 						</div>
 					</td>
 				</tr>
@@ -676,21 +648,14 @@
 					<th class="left">간편 결제</th>
 					<td>
 						<div class="resp_checkbox">
-							<label><input type="checkbox" name="possible_pay[]" class="chkall" value="all"> 전체</label>
-						</div>
-						<div class="resp_checkbox">
-							<label><input type="checkbox" name="possible_pay[]" value="kakaopay" { ? config_system.not_use_kakao == 'y' && config_system.not_use_daumkakaopay == 'y' }disabled{ / } { ? payment_check.kakaopay }checked{ / }> 카카오페이</label>
+							<label><input type="checkbox" name="possible_pay[]" value="kakaopay" { ? config_system.not_use_kakao == 'y' }disabled{ / } { ? payment_check.kakaopay }checked{ / }> 카카오 페이</label>
 							<label><input type="checkbox" name="possible_pay[]" value="payco" { ? config_system.not_use_payco == 'y' }disabled{ / } { ? payment_check.payco }checked{ / }> 페이코</label>
-							<label><input type="checkbox" name="possible_pay[]" value="naverpayment" { ? config_system.not_use_naverpayment == 'y' }disabled{ / } { ? payment_check.naverpayment }checked{ / }> 네이버페이 결제형</label>
 						</div>
 					</td>
 				</tr>
 				<tr>
 					<th class="left">해외 결제</th>
 					<td>
-						<div class="resp_checkbox">
-							<label><input type="checkbox" name="possible_pay[]" class="chkall" value="all"> 전체</label>
-						</div>
 						<div class="resp_checkbox">
 							<label><input type="checkbox" name="possible_pay[]" value="paypal" { ? config_system.not_use_paypal == 'y' }disabled{ / } { ? payment_check.paypal }checked{ / }> 페이팔</label>
 							<label><input type="checkbox" name="possible_pay[]" value="eximbay" { ? config_system.not_use_eximbay == 'y'}disabled{ / } { ? payment_check.eximbay }checked{ / }> 엑심베이</label>
@@ -699,17 +664,6 @@
 				</tr>
 			</tbody>
 		</table>
-		<ul class="bullet_hyphen resp_message">
-			<li>
-				네이버페이 주문형(상세페이지 內 네이버페이 구매 버튼 노출)은 
-				<span class="link_blue_01" onClick="window.open('/admin/marketing/marketplace_url?type=naverpay')">네이버 마케팅</span> or
-				<span class="link_blue_01" onClick="window.open('/admin/setting/pg')">전자결제 설정</span>에서 가능합니다.
-			</li>
-			<li>
-				<span class="link_blue_01" onClick="window.open('https://help.admin.pay.naver.com/faq/list.help?categoryNo=945')">네이버페이 취급 불가 상품</span>
-				에 해당하는 경우 네이버페이 결제형은 제외 처리해 주셔야 합니다.
-			</li>
-		</ul>
 	</div>
 	<div class="footer">
 		<button type="button" id="possible_pay_button" class="resp_btn active size_XL">확인</button>
@@ -725,7 +679,7 @@
 	<div class="content">
 		<form name='iconUpdateForm' enctype="multipart/form-data" method="post" action="../goods_process/icon" target="actionFrame">
 		<input type="hidden" name="iconIndex" value="0" />
-		<table class="table_basic">
+		<table class="table_basic v7">
 			<colgroup>
 				<col width="25%">
 				<col width="75%">
@@ -749,11 +703,11 @@
 		</form>
 		<table class="table_basic mt10 icon_list">
 			<colgroup>
+				<col width="10%">
 				<col width="15%">
-				<col width="20%">
 				<col width="15%">
 				<col>
-				<col width="20%">
+				<col width="15%">
 			</colgroup>
 		<thead>
 		<tr>
@@ -779,7 +733,7 @@
 <!-- 빅데이터 : 조건 선택 팝업 -->
 <!--{? !batchModify }-->
 <div id="displayGoodsSelectPopup">
-	<div id="displayGoodsSelect" class="hx100"></div>
+	<div id="displayGoodsSelect"></div>
 </div>
 <!--{ / }-->
 
@@ -854,8 +808,8 @@
 <!-- 적용된 이벤트 -->
 <div id="eventDetailViewLay" class="eventView hide">
 	<div class="content">
-	<div class="item-title">할인 이벤트</div>
-	<table class="table_row_basic">
+	<span class="item-title">할인 이벤트</span>
+	<table class="table_basic">
 		<colgroup>
 			<col width="15%" />
 			<col />
@@ -875,7 +829,7 @@
 			<tr class="row-event">
 				<th>할인 이벤트</th>
 				<td>
-					<a href="../event/regist?event_seq={.common.event_seq}" target="_blank"><span class="underline black">{.common.title}</span></a>
+					{.common.title}
 				</td>
 				<td class="center">
 					{.common.start_date} ~ {.common.end_date}
@@ -905,7 +859,7 @@
 							포인트 {..event_point}% 추가 적립<span class="event-date"> (유효기간 : {pointtitle})</span>
 						</div>
 						{/}
-					</div>
+						</div>
 					{/}
 					<!--{ / }-->
 				</td>
@@ -929,8 +883,8 @@
 		</tbody>
 	</table>
 
-	<div class="item-title">모바일 할인</div>
-	<table class="table_row_basic">
+	<span class="item-title mt20">모바일 할인</span>
+	<table class="table_basic">
 		<colgroup>
 			<col />
 			<col width="16%" />
@@ -962,14 +916,14 @@
 				</td>
 				<td>
 					<!--{? .sale_emoney}-->
-					마일리지 {.sale_emoney}% 추가적립  (유효기간 : {reservetitle})
+					마일리지 {.sale_emoney}% 추가적립  (유효기간: {reservetitle})
 					<!--{ : }-->
 					마일리지 추가 적립 없음
 					<!--{ / }-->
 				</td>
 				<td>
 					<!--{? .sale_point}-->
-					포인트 {.sale_point}% 추가적립 (유효기간 : {pointtitle})
+					포인트 {.sale_point}% 추가적립 (유효기간: {pointtitle})
 					<!--{ : }-->
 					포인트 추가 적립 없음
 					<!--{ / }-->
@@ -989,6 +943,7 @@
 	</div>
 
 </div>
+
 
 <!-- 회원 등급별 할인 이벤트 상세보기-->
 <div id="viewMemberGradeEvent" class="hide">
@@ -1080,7 +1035,6 @@
 	</div>
 </div>
 
-
 <!-- 티켓 상품 : 엑셀 등록 -->
 <div id="coupon_serial_upload_lay" class="hide">
 	<div class="content">
@@ -1117,8 +1071,8 @@
 	<td class="center">
 		<input type="hidden" name="iconSeq[]" value="" />
 		<span>
-		<input type="text" name="iconStartDate[]" value="" class="line"  maxlength="10" size="8" /> ~
-		<input type="text" name="iconEndDate[]" value="" class="line"  maxlength="10" size="8" />
+		<input type="text" name="iconStartDate[]" value="" maxlength="10" size="10" />~
+		<input type="text" name="iconEndDate[]" value="" maxlength="10" size="10" />
 		</span>
 	</td>
 	<td class="center">
@@ -1133,161 +1087,6 @@
 	<td class="center"><button type="button" class="iconDel btn_minus"></button></td>
 </tr>
 </table>
-
-<!-- 티켓 상품 : 엑셀 등록 -->
-<div id="bigdata_test" class="hide">
-	<style>
-		#bigdata_test .goods_list .table_basic td:first-child { border-left:0px !important;}
-		#bigdata_test .goods_list_header .table_basic,#bigdata_test .goods_list_header .table_basic tr, #bigdata_test .goods_list_header .table_basic th {border-top:0px;}
-	</style>
-	<div class="content mt10">
-		<div class="goods_list_header" style="border:1px solid #ccc !important;">
-		<table class="table_basic">
-			<colgroup>
-				<!--{ ? serviceLimit('H_AD') }-->
-				<col width="30%" />
-				<col width="50%" />
-				<!--{ : }-->
-				<col width="80%" />
-				<!--{ / }-->
-				<col width="20%" />
-			</colgroup>
-			<thead>
-				<tr>
-					<!--{ ? serviceLimit('H_AD') }-->
-					<th>입점사명</th>
-					<!--{ / }-->
-					<th>상품명</th>
-					<th>판매가</th>
-				</tr>
-			</thead>
-		</table>
-		</div>
-		<div class="goods_list long" style="border:1px solid #ccc;max-height:300px;border-right:0px;">
-			<table class="table_basic" style="border-top:0px;border-left:0px;border-bottom:0px;">
-				<colgroup>
-					<!--{ ? serviceLimit('H_AD') }-->
-					<col width="30%" />
-					<col width="50%" />
-					<!--{ : }-->
-					<col width="80%" />
-					<!--{ / }-->
-					<col width="20%" />
-				</colgroup>
-				<tbody>
-				</tbody>
-			</table>
-		</div>
-	</div>
-	<div class="footer">
-		<button class="resp_btn v3 size_XL" onClick="closeDialog('bigdata_test')">닫기</button>
-	</div>
-</div>
-
-<!-- 입점 마케팅: 필수 항목 자세히보기 -->
-<div id="regist_marketing_required" class="hide">
-	<div class="content">
-		<ul class="resp_message" style="margin-top:0px;">
-			<li>입점 마케팅 상품 데이터 전달을 위한 필수 입력 항목입니다. 필수 항목 미 설정 시, 상품이 전달되지 않으니 주의하세요.</li>
-		</ul>
-
-		<table class="table_basic v7 mt5">
-		<colgroup>
-			<col width="25%" />
-		</colgroup>
-		<thead>
-		<tr>
-			<th>구분</th><th>네이버</th><th>다음</th><th>페이스북</th><th>구글</th>
-		</tr>
-		</thead>
-		<tbody>
-		<tr>
-			<th>상품명</th>
-			<td class="center"><span style="color:orange; font-weight:bold;">필수</span></td>
-			<td class="center"><span style="color:orange; font-weight:bold;">필수</span></td>
-			<td class="center"><span style="color:orange; font-weight:bold;">필수</span></td>
-			<td class="center"><span style="color:orange; font-weight:bold;">필수</span></td>
-		</tr>
-		<tr>
-			<th>대표 카테고리</th>
-			<td class="center"><span style="color:orange; font-weight:bold;">필수</span></td>
-			<td class="center"><span style="color:orange; font-weight:bold;">필수</span></td>
-			<td class="center">선택</td>
-			<td class="center">선택</td>
-		</tr>
-		<tr>
-			<th>검색어</th>
-			<td class="center">선택</td>
-			<td class="center">선택</td>
-			<td class="center">해당 없음</td>
-			<td class="center">해당 없음</td>
-		</tr>
-		<tr>
-			<th>간략설명</th>
-			<td class="center">해당 없음</td>
-			<td class="center">해당 없음</td>
-			<td class="center"><span style="color:orange; font-weight:bold;">필수</span></td>
-			<td class="center"><span style="color:orange; font-weight:bold;">필수</span></td>
-		</tr>
-		<tr>
-			<th>재고</th>
-			<td class="center">해당 없음</td>
-			<td class="center">해당 없음</td>
-			<td class="center"><span style="color:orange; font-weight:bold;">필수</span></td>
-			<td class="center"><span style="color:orange; font-weight:bold;">필수</span></td>
-		</tr>
-		<tr>
-			<th>판매방식 구분</th>
-			<td class="center"><span style="color:orange; font-weight:bold;">해당상품필수</span></td>
-			<td class="center">해당 없음</td>
-			<td class="center">해당 없음</td>
-			<td class="center">해당 없음</td>
-		</tr>
-		<tr>
-			<th>상품 상태</th>
-			<td class="center"><span style="color:orange; font-weight:bold;">필수</span></td>
-			<td class="center"><span style="color:orange; font-weight:bold;">필수</span></td>
-			<td class="center"><span style="color:orange; font-weight:bold;">필수</span></td>
-			<td class="center"><span style="color:orange; font-weight:bold;">필수</span></td>
-		</tr>
-		<tr>
-			<th>별도 설치비 유무</th>
-			<td class="center"><span style="color:orange; font-weight:bold;">해당상품필수</span></td>
-			<td class="center">선택</td>
-			<td class="center">해당 없음</td>
-			<td class="center">해당 없음</td>
-		</tr>
-		<tr>
-			<th>병행수입 및 주문 제작</th>
-			<td class="center"><span style="color:orange; font-weight:bold;">해당상품필수</span></td>
-			<td class="center">해당 없음</td>
-			<td class="center">해당 없음</td>
-			<td class="center">해당 없음</td>
-		</tr>
-		<tr>
-			<th>이벤트</th>
-			<td class="center">선택</td>
-			<td class="center">선택</td>
-			<td class="center">해당 없음</td>
-			<td class="center">해당 없음</td>
-		</tr>
-		<tr>
-			<th>노출 배송비</th>
-			<td class="center"><span style="color:orange; font-weight:bold;">필수</span></td>
-			<td class="center"><span style="color:orange; font-weight:bold;">필수</span></td>
-			<td class="center">선택</td>
-			<td class="center"><span style="color:orange; font-weight:bold;">필수</span></td>
-		</tr>
-	</tbody>
-	</table>
-	</div>
-	<div class="footer">
-		<button class="resp_btn v3 size_XL" onClick="closeDialog('regist_marketing_required')">닫기</button>
-	</div>
-</div>
-
-
-
 <!-------------------- ↓↓↓↓↓ 미확인 팝업 레이어 -------------------->
 
 <!-- 이미지 업로드 다이얼로그 -->
@@ -1354,8 +1153,7 @@
 <div id="special_newlist" class="hide"><img src="../images/design/img_speinfo.jpg" /></div>
 
 <div id="coupon_serial_list_lay" class="hide">
-	<div class="content">
-	<table class="table_basic">
+	<table width="100%" cellpadding="0" cellspacing="0" border="0" class="info-table-style">
 		<colgroup>
 			<col />
 			<col width="40%" />
@@ -1369,10 +1167,6 @@
 		<tbody id="coupon_serial_list">
 		</tbody>
 	</table>
-	</div>
-	<div class="footer">
-		<button type="button" class="resp_btn size_XL v3" onClick="closeDialog('coupon_serial_list_lay')">확인</button>
-	</div>
 </div>
 
 <div id="openmarket_lay" class="hide"></div>
@@ -1450,19 +1244,19 @@
 			<tr>
 				<td class="left pd5">
 					<input type="text" id="hscode_type_all" value="{goodsHscodeInfo.hscodeTypeCode}" style="width:43px"/>
-					<span class="btn small black"><button type="button" class="hscode_all_btn resp_btn v2 arrow" target="hscode_type" target_name="류">▼</button></span>
+					<span class="btn small black"><button type="button" class="hscode_all_btn" target="hscode_type" target_name="류">▼</button></span>
 				</td>
 				<td class="left pd5">
 					<input type="text" id="hscode_unit_all" value="{goodsHscodeInfo.hscodeUnitCode}" style="width:43px"/>
-					<span class="btn small black"><button type="button" class="hscode_all_btn resp_btn v2 arrow" target="hscode_unit" target_name="호">▼</button></span>
+					<span class="btn small black"><button type="button" class="hscode_all_btn" target="hscode_unit" target_name="호">▼</button></span>
 				</td>
 				<td class="left pd5">
 					<input type="text" id="hscode_num_all" class="" style="width:90px"/>
-					<span class="btn small black"><button type="button" class="hscode_all_btn resp_btn v2 arrow" target="hscode_num" target_name="번호">▼</button></span>
+					<span class="btn small black"><button type="button" class="hscode_all_btn" target="hscode_num" target_name="번호">▼</button></span>
 				</td>
 				<td class="left pd5">
 					<input type="text" id="hscode_tax_all" class="onlyfloat" style="width:53px"/>
-					<span class="btn small black"><button type="button" class="hscode_all_btn resp_btn v2 arrow" target="hscode_tax"  target_name="세율">▼</button></span>
+					<span class="btn small black"><button type="button" class="hscode_all_btn" target="hscode_tax"  target_name="세율">▼</button></span>
 				</td>
 			</tr>
 		</thead>
@@ -1525,8 +1319,8 @@
 	<div class="content">
 		<table  class="table_basic">
 			<colgroup>
-				<col width="80%" />
-				<col width="20%" />
+				<col width="80%" /><col/>
+				<col width="20%" /><col/>
 			</colgroup>
 			<thead>
 				<tr>

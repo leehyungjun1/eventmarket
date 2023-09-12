@@ -99,13 +99,13 @@ $(function(){
 	singleFileUpload.event.singleDone(function (response) {
 		if (response.result[0].status === 1) {
 			var result = response.result[0];
-
+			
 			if (result.fileInfo.is_image === true ){
 				uploadImageView(result);
 				// 첨부파일
 				realfilename.push(result.fileInfo.orig_name + '^^' + result.fileInfo.client_name + '^^' + result.fileInfo.file_size + '^^' + result.fileInfo.file_type);
 				// 첨부내용 base64 인코딩
-				var incFile = btoa('<img src="' + result.filePath + '" width="' + result.fileInfo.image_height + '" height="'+ result.fileInfo.image_height + '" class="txc-image" alt="" />');
+				var incFile = btoa('<img src="' + result.filePath + '" width="' + result.fileInfo.image_width + '" height="'+ result.fileInfo.image_height + '" class="txc-image" alt="" />');
 				incimage.push(incFile);
 			}
 		} else {

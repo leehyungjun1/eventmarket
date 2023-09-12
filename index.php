@@ -79,6 +79,13 @@
 	) {
 		$_SERVER['HTTPS'] = 'on';
 	}
+	
+	
+	// 보안강화에 대한 대응  [register_argc_argv = off ]
+	// ex : $_SERVER['QUERY_STRING'] 는 /goods/view 라는 값을 전달함, 배열의 0번은 불필요, 1번이 goods 인게 맞으므로 맨앞에 /는 없애지 않는다
+	if (empty($_SERVER['argv']) && !empty($_SERVER['QUERY_STRING']) ) {
+		$_SERVER['argv'] = explode("/", $_SERVER['QUERY_STRING']);
+	}
 
 /*
  *---------------------------------------------------------------

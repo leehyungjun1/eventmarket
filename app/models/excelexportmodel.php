@@ -176,7 +176,7 @@ class Excelexportmodel extends CI_Model {
 		}
 		$query = "
 			SELECT
-				D.*,
+				D.*,C.ea,
 				(select purchase_goods_name from fm_goods where goods_seq = D.goods_seq) as purchase_goods_name,
 				C.option_seq,
 				C.suboption_seq
@@ -202,9 +202,10 @@ class Excelexportmodel extends CI_Model {
 				$tot['hscode'] .= $item['hscode'].',';
 
 				if($options) foreach($options as $k => $data) {
-					$data['out_supply_price'] = $data['supply_price']*$data['ea'];
-					$data['out_consumer_price'] = $data['consumer_price']*$data['ea'];
-					$data['out_price'] = $data['price']*$data['ea'];
+					$data['out_supply_price'] = $data['supply_price'];
+					$data['out_consumer_price'] = $data['consumer_price'];
+					$data['out_price'] = $data['price'];
+					$data['ea_price'] = $data['price'] * $item['ea'];
 
 					//promotion sale
 					$data['out_member_sale']				= $data['member_sale']*$data['ea'];
@@ -223,6 +224,7 @@ class Excelexportmodel extends CI_Model {
 					$tot['supply_price'] += $data['out_supply_price'];
 					$tot['consumer_price'] += $data['out_consumer_price'];
 					$tot['price'] += $data['out_price'];
+					$tot['ea_price'] += $data['ea_price'];
 
 					//promotion sale
 					$tot['member_sale'] += $data['out_member_sale'];
@@ -288,9 +290,10 @@ class Excelexportmodel extends CI_Model {
 				$suboptions = $this->ordermodel->get_suboption_for_item($item['item_seq'],$suboptwhere);
 
 				if($suboptions) foreach($suboptions as $data){
-					$data['out_supply_price'] = $data['supply_price']*$data['ea'];
-					$data['out_consumer_price'] = $data['consumer_price']*$data['ea'];
-					$data['out_price'] = $data['price']*$data['ea'];
+					$data['out_supply_price'] = $data['supply_price'];
+					$data['out_consumer_price'] = $data['consumer_price'];
+					$data['out_price'] = $data['price'];
+					$data['ea_price'] = $data['price'] * $item['ea'];
 					$data['out_reserve'] = $data['reserve']*$data['ea'];
 					$data['out_point'] = $data['point']*$data['ea'];
 
@@ -299,6 +302,7 @@ class Excelexportmodel extends CI_Model {
 					$tot['supply_price'] 	+= $data['out_supply_price'];
 					$tot['consumer_price'] 	+= $data['out_consumer_price'];
 					$tot['price'] 			+= $data['out_price'];
+					$tot['ea_price'] 		+= $data['ea_price'];
 
 					$tot['reserve'] 		+= $data['out_reserve'];
 					$tot['point'] 			+= $data['out_point'];

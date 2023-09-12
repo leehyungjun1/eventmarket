@@ -1879,19 +1879,12 @@
 				var sel_payment	= $("input[name='payment']:checked").val();
 
 				// 카카오페이
-				if ( sel_payment == 'kakaopay' ) {
+				var target_actionFrame = ['kakaopay','payco','naverpayment'];
+				if ( $.inArray(sel_payment, target_actionFrame) > 0 ) {
+					// 카카오페이, 페이코, 네이버페이
 					f.attr("target","actionFrame");
 					$("iframe[name='actionFrame']").hide();
-				} else if ( sel_payment == 'payco' ) {
-					// 페이코
-					f.attr("target","actionFrame");
-					$("iframe[name='actionFrame']").hide();
-					// window.open('about:blank','childwin','width=420,height=550');
-				} else if ( sel_payment == 'naverpayment' ) {
-					// 네이버페이
-					f.attr("target","_self");
-					$("iframe[name='actionFrame']").hide();
-				}  else if ( sel_payment == 'eximbay' || sel_payment == 'paypal' ) {
+				} else if ( sel_payment == 'eximbay' || sel_payment == 'paypal' ) {
 					// 엑심베이, 페이팔
 					f.attr("target","tar_opener");
 					mobile_pay_layer();

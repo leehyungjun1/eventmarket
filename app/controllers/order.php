@@ -6111,10 +6111,13 @@ class order extends front_base {
 		$total_ea		= 0;
 		$goods_info		= array();
 		$package_yn		= 'n';
-
+		$tmp_cart = [];
+	
 		foreach($this->cart['list'] as $k => $data){
 			if($data['package_yn'] == 'y')				$package_yn = 'y';
 
+			// 현재 구매하고자하는 상품의 장바구니 번호 및 옵션 번호 담음
+			$tmp_cart[$this->cart['list'][$k]['cart_seq']][] =  $this->cart['list'][$k]['cart_option_seq'];
 			/**
 			 * 20210416(kjw)
 			 * shipping_seq 누락 이슈에 대한 예외 처리 및 log 삽입
@@ -7078,6 +7081,8 @@ class order extends front_base {
 			}
 		}
 
+		$this->session->set_userdata(array('tmp_cart'=>$tmp_cart));
+
 		// pg 모듈 로드
 		if($pgCompany && $_POST['payment'] != "bank"){
 			// pg사로 전달할 상품명 생성
@@ -7157,7 +7162,7 @@ class order extends front_base {
 					exit;
 				}else if($pgCompany == 'naverpayment' && $this->config_system['not_use_naverpayment'] == 'n'){
 					$jsonParam = base64_encode(json_encode($this->pg_param));
-					echo("<form name='".$pgCompany."_settle_form' method='".$pgMethod."' action='../".$pgCompany."/request'>");
+					echo("<form name='".$pgCompany."_settle_form' target='_parent' method='".$pgMethod."' action='../".$pgCompany."/request'>");
 					echo("<input type='hidden' name='jsonParam' value='".$jsonParam."' />");
 					echo("</form>");
 					echo("<script>document.".$pgCompany."_settle_form.submit();</script>");

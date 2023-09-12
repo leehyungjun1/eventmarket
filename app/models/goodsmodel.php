@@ -9565,18 +9565,25 @@ class Goodsmodel extends CI_Model {
 	}
 
 	//자주사용하는 상품 필수/추가구성/추가입력 옵션
-	public function frequentlygoods($Type='opt',$goods_seq=null,$socialcp=null,$package_yn=null){
+	public function frequentlygoods($Type='opt',$goods_seq=null,$socialcp=null,$package_yn=null,$provider_seq=null){
+		if	(!$this->scm_cfg)	$this->scm_cfg	= config_load('scm');
+
 		$result = false;
+		$query = $this->db->select("goods_name,goods_seq")->from("fm_goods")->where("frequently".$Type, 1);
 		if($goods_seq){
-			$query = "select goods_name,goods_seq from fm_goods where frequently".$Type."=1 and goods_seq!='".$goods_seq."'";
-		}else{
-			$query = "select goods_name,goods_seq from fm_goods where frequently".$Type."=1 ";
+			$query->where("goods_seq !=",$goods_seq);
 		}
 		// 입점사 일경우 입점사 상품 목록내에서만 노출되도록 수정 :: 2018-01-29 lkh
 		if (defined('__SELLERADMIN__') === true) {
-			$query .= " and provider_seq = '".$this->providerInfo['provider_seq']."'";
+			$query->where("provider_seq",$this->providerInfo['provider_seq']);
+		}else if($provider_seq){
+			$query->where("provider_seq",$provider_seq);
 		}
-		$query .= ($socialcp)? " and goods_kind ='coupon' ":" and goods_kind ='goods' ";
+		if($socialcp) {
+			$query->where("goods_kind","coupon");
+		} else {
+			$query->where("goods_kind","goods");
+		}
 
 		$package_field = "package_yn";
 		if( $Type == 'sub' ) {
@@ -9585,14 +9592,16 @@ class Goodsmodel extends CI_Model {
 
 		// 올인원이면 무조건 package_yn = 'y' - selleradmin 은 항상 모두가져옴
 		// 일반은 package_yn 값에 따라 'y', 'n', ''(all)
-		if	(!$this->scm_cfg)	$this->scm_cfg	= config_load('scm');
-		if	($this->scm_cfg['use'] == 'Y' && defined('__SELLERADMIN__') === false){
-			$query .=" and ".$package_field."='y'";
-		} else if($package_yn){
-			$query .=" and ".$package_field."='".$package_yn."'";
+		// 입력옵션은 재고와 무관하여 package 고려안함
+		if($Type != "inp") {
+			if	($this->scm_cfg['use'] == 'Y' && defined('__SELLERADMIN__') === false){
+				$query->where($package_field,"y");
+			} else if($package_yn){
+				$query->where($package_field,$package_yn);
+			}
 		}
 
-		$query = $this->db->query($query);
+		$query = $query->get();
 		$result = $query->result_array();
 		return $result;
 	}

@@ -2410,7 +2410,7 @@ C : 상세설명참조\n\n▶인증코드\n인증품목코드 시트에서 확�
 		$res['supply_price']		= $items['supply_price']; //매입가
 		$res['price']				= $items['price']; //판매가
 		$res['consumer_price']		= $items['consumer_price']; //정가
-		$res['ea_price']			= $items['ea']*$items['price']; //판매가x출고수량
+		$res['ea_price']			= $items['ea_price']; //판매가x출고수량
 
 		if( $res['international'] == 'international' ){
 			$res['shipping_method']				= $res['international_shipping_method'];
