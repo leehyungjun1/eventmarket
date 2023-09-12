@@ -1069,7 +1069,7 @@ class setting_process extends selleradmin_base {
 			$this->template->assign("idx",$params['idx']);
 		}
 
-		# 해당 배송정책이 네이버페이/카카오페이 구매 주문시 사용가능한지 체크 @2016-10-17
+		# 해당 배송정책이 네이버페이/톡체크아웃 주문시 사용가능한지 체크 @2016-10-17
 		list($npay_possible,$npay_impossible_message) = $this->shippingmodel->add_shipping_partner_possible_check($params);
 		$ship_set['npay_order_possible']		= ($npay_possible)? "Y":"N";
 		$ship_set['npay_order_impossible_msg']	= ($npay_impossible_message)? implode(", ",$npay_impossible_message):"";
@@ -1273,7 +1273,7 @@ class setting_process extends selleradmin_base {
 				$ship_set['npay_order_possible']		= $_POST['npay_order_possible'][$nation][$setKey];
 				$ship_set['npay_order_impossible_msg']	= $_POST['npay_order_impossible_msg'][$nation][$setKey];
 
-				// 카카오톡구매 주문시 해당 배송정책 사용 가능여부
+				// 톡체크아웃 주문시 해당 배송정책 사용 가능여부
 				$ship_set['talkbuy_order_possible']		 = $_POST['talkbuy_order_possible'][$nation][$setKey];
 				$ship_set['talkbuy_order_impossible_msg']= $_POST['talkbuy_order_impossible_msg'][$nation][$setKey];
 

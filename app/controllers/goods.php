@@ -1500,7 +1500,7 @@ class goods extends board {
 		$talkbuy = $this->partnerlib->getPartnerSettingInfo('talkbuy', $goods, $marketing_admin);
 
 		$filePath	= $this->template_path();
-		// 카카오페이 구매 사용 시
+		// 톡체크아웃 사용 시
 		$browsers = getBrowser();
 		// IE는 지원안함
 		if ($talkbuy['use'] && $browsers['nickname'] !== 'MSIE') {
@@ -4778,7 +4778,8 @@ class goods extends board {
 	//모바일스킨>최근 본상품 삭제
 	public function goods_del()
 	{
-		$goods_seq_ar = $_POST['goods_seq'];
+		$goods_seq_ar = $this->input->post('goods_seq');
+		$domain = $this->input->server('HTTP_HOST');
 
 		$today_num = 0;
 		$today_view = $_COOKIE['today_view'];
@@ -4791,7 +4792,7 @@ class goods extends board {
 		}
 
 		if( $data_today_view ) $data_today_view = serialize($data_today_view);
-		setcookie('today_view',$data_today_view,time()+86400,'/');
+		setcookie('today_view',$data_today_view,time()+86400,'/',".".$domain);
 		$callback = "parent.document.location.reload();";
 		//최근 본상품을 삭제하였습니다.
 		openDialogAlert(getAlert('et067'),400,140,'parent',$callback);
@@ -4800,7 +4801,8 @@ class goods extends board {
 
 	/* 우측퀵메뉴 기능개선 선택한 최근본상품 삭제 leewh 2014-06-05 */
 	public function goods_recent_del() {
-		$goods_seq = (int) $_POST['goods_seq'];
+		$goods_seq = (int) $this->input->post('goods_seq');
+		$domain = $this->input->server('HTTP_HOST');
 		$msg = "fail";
 
 		$today_view = unserialize($_COOKIE['today_view'], ['allowed_classes' => false]);
@@ -4811,9 +4813,9 @@ class goods extends board {
 			$tmp_data = array_values($today_view);
 			if ($tmp_data) {
 				$today_view = serialize($tmp_data);
-				setcookie('today_view',$today_view,time()+86400,'/');
+				setcookie('today_view',$today_view,time()+86400,'/',".".$domain);
 			} else {
-				setcookie('today_view','',time()-3600,'/');
+				setcookie('today_view','',time()-3600,'/',".".$domain);
 			}
 			$msg="ok";
 		}

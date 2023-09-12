@@ -1117,7 +1117,9 @@ class design_process extends admin_base {
 				$result_imagehosting = $this->imagehostinglibrary->uploadImage($params_imagehosting);
 				$imagehosting_path = $result_imagehosting['new_path'];
 			}else{
-				if(extension_loaded('imagick') && ($exe == "jpg" || $exe == "jpeg")){
+				// 이미지 변경시에 svg는 copy가 되지 않음 백터타입이라 따라서 imagick 사용 
+				$exeArr = ["jpg","jpeg","svg"];
+				if(extension_loaded('imagick') && in_array($exe,$exeArr)){
 					$img = new Imagick();
 					$img->readImage($_POST['newDesignImgPath']);
 					$img->setImageCompression(Imagick::COMPRESSION_JPEG);
@@ -1273,7 +1275,7 @@ class design_process extends admin_base {
 		$tmpExe = explode(".", $newDesignImgPath);
 		$exe = end($tmpExe);
 		// 기본 이미지 확장자 목록
-		$defaultImageTypes = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'ico'];
+		$defaultImageTypes = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'ico','svg'];
 		// 이미지 여부 체크
 		if (!in_array($exe, $defaultImageTypes)) {
 			openDialogAlert(getAlert('et001'), 400, 140, 'parent');
@@ -1562,7 +1564,6 @@ class design_process extends admin_base {
 			//새 이미지 파일 압축 18.06.18 kmj
 			$tmpExe = explode(".", $params['newImgPath']);
 			$exe = end($tmpExe);
-
 			if(extension_loaded('imagick') && ($exe == "jpg" || $exe == "jpeg")){
 				$img = new Imagick();
 				$img->readImage($params['newImgPath']);
@@ -1842,7 +1843,6 @@ class design_process extends admin_base {
 			//새 이미지 파일 압축 18.06.18 kmj
 			$tmpExe = explode(".", $params['newImgPath']);
 			$exe = end($tmpExe);
-
 			if(extension_loaded('imagick') && ($exe == "jpg" || $exe == "jpeg")){
 				$img = new Imagick();
 				$img->readImage(ROOTPATH.$params['newImgPath']);

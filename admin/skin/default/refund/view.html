@@ -1432,16 +1432,16 @@ function open_sale_contents(obj)
 <div style="text-align:Center;padding:20px;">
 	<input type="hidden" name="status" value="complete" />
 	<!--{? data_refund.refund_type == 'return' && data_refund.status == "request" }-->
-	이 환불건은 카카오페이 구매 반품건이므로 직접 처리 불가합니다..</div>
+	이 환불건은 톡체크아웃 반품건이므로 직접 처리 불가합니다..</div>
 	<!--{ : data_refund.refund_type == 'cancel_payment' && data_refund.status == "request"}-->
 	<div style="line-height:30px;">
-		카카오페이 구매 환불요청 승인 처리를 합니다. 실제 환불은 카카오페이 구매에서 처리됩니다.
+		톡체크아웃 환불요청 승인 처리를 합니다. 실제 환불은 톡체크아웃에서 처리됩니다.
 	</div>
 	<span class="btn large black"><input type="submit" value="취소요청승인" /></span>
 	<!--{ : data_refund.status == "complete" }-->
-	<div style="line-height:30px;">카카오페이 구매 환불완료 되었습니다.</div>
+	<div style="line-height:30px;">톡체크아웃 환불완료 되었습니다.</div>
 	<!--{ : }-->
-	<div style="line-height:30px;">카카오페이 구매 파트너센터에서 환불 진행중이므로, 환불상태(환불신청/환불처리중) 변경이 불가합니다.</div>
+	<div style="line-height:30px;">톡체크아웃 관리자센터에서 환불 진행중이므로, 환불상태(환불신청/환불처리중) 변경이 불가합니다.</div>
 	<!--{ / }-->
 </div>
 <!--{ : }-->

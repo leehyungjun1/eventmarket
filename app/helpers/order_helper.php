@@ -1619,7 +1619,7 @@ function npay_useck(){
 	return $npay_use;
 }
 
-# 카카오톡구매 사용 여부 2021-04-29 hyem
+# 톡체크아웃 사용 여부 2021-04-29 hyem
 function talkbuy_useck(){
 	$talkbuy = getTalkbuyConfig();
 	if(in_array($talkbuy['use'],array('y','test'))){
@@ -1636,16 +1636,16 @@ function getTalkbuyConfig()
 	$talkbuyConfigs = config_load("talkbuy");
 	
 	/**
-	 * 카카오페이구매 "사용안함" 상태지만 "연동심사" 진행을 위해서 "카카오페이 구매" 버튼을 노출 시킨다.
+	 * 톡체크아웃 "사용안함" 상태지만 "연동심사" 진행을 위해서 "톡체크아웃" 버튼을 노출 시킨다.
 	 * 
 	 * 조건
 	 * 1. 상점인증키가 등록 되어 있어야한다.
-	 * 2. 카카오페이 구매 API에 상점 상태 조회시 값 "INACTIVE(미연동)" 
+	 * 2. 톡체크아웃 API에 상점 상태 조회시 값 "INACTIVE(미연동)" 
 	 */
 	if (
 		// 상점키 존재
 		strlen($talkbuyConfigs['shopKey']) > 0 
-		// 카카오페이 구매 미연동 상태
+		// 톡체크아웃 미연동 상태
 		&& $talkbuyConfigs['talkbuy_service_status'] === 'INACTIVE'
 	) {
 		$talkbuyConfigs['use'] = 'y';
@@ -1903,7 +1903,7 @@ function search_arr_field(){
 	$return['arr_order_pg']		= array(
 							"normal"		=> "일반PG사",
 							"kakaopay"		=> "카카오페이",
-							"talkbuy"		=> "카카오페이 구매",
+							"talkbuy"		=> "톡체크아웃",
 							"payco"			=> "페이코",
 							"npay"			=> "네이버페이 주문형",
 							"naverpayment"	=> "네이버페이 결제형",
@@ -1978,7 +1978,7 @@ function order_market_name($order) {
 	if($order["npay_order_id"]) {
 		$marketname = "네이버페이";
 	} else if($order["talkbuy_order_id"]) {
-		$marketname = "카카오페이 구매";
+		$marketname = "톡체크아웃";
 	}
 	return $marketname;
 }

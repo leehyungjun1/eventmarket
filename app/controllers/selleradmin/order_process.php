@@ -29,7 +29,7 @@ class order_process extends selleradmin_base {
 
 		# 간편결제 API 주문건 배송정보 변경 불가 처리
 		$npay_use		= npay_useck();			//Npay v2.1 사용여부
-		$talkbuy_use	= talkbuy_useck();		//카카오페이 구매사용여부
+		$talkbuy_use	= talkbuy_useck();		//톡체크아웃사용여부
 		if(($npay_use && $orders['npay_order_id']) || ($talkbuy_use && $orders['talkbuy_order_id'])) {
 			$marketname = order_market_name($orders);
 			openDialogAlert("<span class=\'fx12\'>".$marketname." 주문건은 직접 배송지 변경이 불가합니다.<br />".$marketname." 어드민에서 처리할 수 있습니다.</span>",400,180,'parent',"");

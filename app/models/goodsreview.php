@@ -140,7 +140,7 @@ class Goodsreview extends CI_Model {
 			$sqlWhereClause .= " and ifnull(npay_reviewid,'')!='' ";
 		}
 
-		if( !empty($sc['talkbuy']) && $sc['talkbuy'] == 'checked' || $sc['review_type'] === 'talkbuy') {//카카오페이 구매 상품후기 검색
+		if( !empty($sc['talkbuy']) && $sc['talkbuy'] == 'checked' || $sc['review_type'] === 'talkbuy') {//톡체크아웃 상품후기 검색
 			$sqlWhereClause .= " and ifnull(talkbuy_review_id,'')!='' ";
 		}
 

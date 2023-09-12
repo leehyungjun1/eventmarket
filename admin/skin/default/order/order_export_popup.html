@@ -515,7 +515,7 @@ table.table-export-info td.suboption {background-color:#f6f6f6;height:25px;}
 						<label><input type="checkbox" name="search_npay_order" value='y' {? _GET.search_npay_order == 'y'}checked{/}> 네이버페이 주문</label>
 						{ / }
 						{? talkbuy_use }
-						<label><input type="checkbox" name="search_talkbuy_order" value='y' {? _GET.search_talkbuy_order == 'y'}checked{/}> 카카오페이 구매 주문</label>
+						<label><input type="checkbox" name="search_talkbuy_order" value='y' {? _GET.search_talkbuy_order == 'y'}checked{/}> 톡체크아웃 주문</label>
 						{ / }
 					</td>
 				</tr>
@@ -971,7 +971,7 @@ table.table-export-info td.suboption {background-color:#f6f6f6;height:25px;}
 									<!--{ ? (order[..order_seq].linkage_id == 'pos') }-->
 									onclick="alert('오프라인 주문은 매장을 변경할 수 없습니다.{order[..order_seq].linkage_id}');"
 									<!--{ : (order[..order_seq].pg == 'talkbuy')}-->
-									onclick='openDialog("카카오페이 구매", "talkbuy_delivary_dialog", {"width":"450","height":"150"});'
+									onclick='openDialog("톡체크아웃", "talkbuy_delivary_dialog", {"width":"450","height":"150"});'
 									<!--{ : }-->
 									onclick="ship_chg_popup('{..shipping_seq}','order','after');"
 									<!--{ / }-->
@@ -1132,7 +1132,7 @@ table.table-export-info td.suboption {background-color:#f6f6f6;height:25px;}
 						<div class='red'>! 네이버페이 판매자센터에서 출고진행중인 주문입니다.</div>
 						{ / }
 						{? ...talkbuy_pay_delivery == 'y' }
-						<div class='red'>! 카카오페이 구매 판매자센터에서 출고진행중인 주문입니다.</div>
+						<div class='red'>! 톡체크아웃 관리자센터에서 출고진행중인 주문입니다.</div>
 						{ / }
 						</td>
 					</tr>
@@ -1933,7 +1933,7 @@ table.table-export-info td.suboption {background-color:#f6f6f6;height:25px;}
 
 <div id="talkbuy_delivary_dialog" class="hide">
 	<div class="center">
-		<p>카카오페이 구매 주문은 주문 시 선택된 배송방법을 변경할 수 없습니다.</p>
+		<p>톡체크아웃 주문은 주문 시 선택된 배송방법을 변경할 수 없습니다.</p>
 	</div>
 	<div class="pd10 center">
 		<span class="btn medium" ><button type="button" onclick="closeDialog('talkbuy_delivary_dialog');">확인</button></span>

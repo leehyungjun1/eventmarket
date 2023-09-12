@@ -474,15 +474,15 @@ function gift_use_log(order_seq,item_seq){
 	<input type="hidden" name="status" value="complete" />
 	{? data_return.return_type == "return"}
 		{? data_return.status == "request" }
-		카카오페이 구매 파트너센터에서 처리한 주문입니다. 카카오페이 구매 파트너센터에서 반품완료시 자동 처리완료 됩니다.</div>
+		톡체크아웃 관리자센터에서 처리한 주문입니다. 톡체크아웃 관리자센터에서 반품완료시 자동 처리완료 됩니다.</div>
 		{ : }
-		<div style="line-height:30px;">카카오페이 구매 반품요청 승인 처리한 주문입니다. 카카오페이 구매 파트너센터에서 반품완료시 자동 처리완료 됩니다.</div>
+		<div style="line-height:30px;">톡체크아웃 반품요청 승인 처리한 주문입니다. 톡체크아웃 관리자센터에서 반품완료시 자동 처리완료 됩니다.</div>
 		{ / }
-	{ : data_return.return_type == "exchange"}
+	{ : data_return.return_type == "exchange"}ㅇ
 		{? data_return.status == "request" }
-		<div style="line-height:30px;">카카오페이 구매 파트너센터 교환요청 건입니다. </div>
+		<div style="line-height:30px;">톡체크아웃 관리자센터 교환요청 건입니다. </div>
 		{ : }
-		<div style="line-height:30px;">카카오페이 구매 파트너센터에서 교환완료 처리한 주문입니다.</div>
+		<div style="line-height:30px;">톡체크아웃 관리자센터에서 교환완료 처리한 주문입니다.</div>
 		{ / }
 	{ / }
 </div>

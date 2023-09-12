@@ -57,7 +57,7 @@ class accountAllmodel extends CI_Model {
 	var $order_referer_ar	 = array(	'shop'		=> '내사이트', //무통장
 										'pg'		=> 'PG', 
 										'kakaopay'	=> '카카오페이', 
-										'talkbuy'	=> '카카오페이 구매', 
+										'talkbuy'	=> '톡체크아웃', 
 										'npay'		=> '네이버페이', 
 										'npg'		=> '네이버PG');
 

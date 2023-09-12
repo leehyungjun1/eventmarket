@@ -1,0 +1,324 @@
+<script type="text/javascript">
+var board_id = '{_GET.id}';
+var boardlistsurl = '{boardurl->lists}';
+var boardwriteurl = '{boardurl->write}';
+var boardviewurl = '{boardurl->view}';
+var boardmodifyurl = '{boardurl->modify}';
+var boardreplyurl = '{boardurl->reply}';
+var file_use = '{=manager.file_use}';
+</script>
+<script type="text/javascript" src="/app/javascript/js/admin-board.js?mm={=date('Ymd')}"></script>
+<script type="text/javascript" src="/app/javascript/jquery/jquery.form.js"></script>
+<script type="text/javascript" src="/app/javascript/js/admin/gSearchForm.js?mm={=date('Ymd')}"></script>
+
+<!-- 페이지 타이틀 바 : 시작 -->
+<div id="page-title-bar-area">
+	<div id="page-title-bar">
+		<!-- 타이틀 -->
+		<div class="page-title">
+			<h2>{manager.name}</h2>
+		</div>
+
+		
+
+		<!-- 우측 버튼 -->
+		<ul class="page-buttons-right">
+			<li>
+				<button type="button" name="boardwrite" id="boad_write_btn" title="{manager.name}" class="resp_btn active size_L">게시글 등록</button>
+			</li>
+		</ul>
+
+		<!-- 좌측 버튼 -->
+		<ul class="page-buttons-left">
+			<li>
+				<select id="boardgo" onchange="if(this.value){document.location.href='./board?id='+this.value;}">
+					<option value>주요게시판</option>
+					{@ boardmanagerlist }
+					<option value="{.id}"{? _GET.id == .id } selected{/}>{=getstrcut(.name, 10)} ({=number_format(.totalnum)})</option>
+					{/}
+				</select>
+			</li>
+		</ul>
+
+	</div>
+</div>
+<!-- 페이지 타이틀 바 : 끝 -->
+
+<!-- 게시글리스트검색폼 : 시작 -->
+<div id="search_container" class="search_container">
+	<form name="boardsearch" id="boardsearch">
+		<input type="hidden" name="id" value="{_GET.id}" defaultValue="{_GET.id}">
+		<input type="hidden" name="perpage" id="perpage" value="{_GET.perpage}">
+		<input type="hidden" name="page" id="page" value="{_GET.page}">
+		<input type="hidden" name="category" id="category" value="{_GET.category}">
+		<input type="hidden" name="score" id="score" value="{_GET.score}">
+		<input type="hidden" name="score_avg" id="score_avg" value="{_GET.score_avg}">
+		<input type="hidden" name="member_seq" id="member_seq" value="{_GET.member_seq}">
+		<input type="hidden" name="mseq" id="mseq" value="{_GET.mseq}">
+
+		<table class="table_search">
+			<tr>
+				<th>검색어</th>
+				<td>
+					<select name="search_type">
+						<option value>전체</option>
+{? _GET.id === 'goods_qna' || _GET.id === 'goods_review' || _GET.id === 'bulkorder' }
+						<option value="goods_name">상품명</option>
+						<option value="goods_summary">상품간략설명</option>
+						<option value="goods_content">상품설명</option>
+{/}
+{? _GET.id === 'bulkorder' }
+						<option value="company">회사명</option>
+{/}
+						<option value="name">작성자</option>
+						<option value="user_id">아이디</option>
+						<option value="subject">제목</option>
+						<option value="content">내용</option>
+					</select>
+					<input type="text" name="search_text" id="search_text" value="{_GET.search_text}" size="80">
+					{? _GET.id != 'faq'}
+						<span class="resp_checkbox">
+							<label>
+								<input type="checkbox" name="hidden" id="searchhidden" value="1"{? _GET.hidden == '1' } checked{/}>
+								<span>비밀글 제외</span>
+							</label>
+							<label>
+								<input type="checkbox" name="display" id="searchdisplay" value="1"{? _GET.display == '1' } checked{/}>
+								<span>삭제글 제외</span>
+							</label>
+						</span>
+					{/}
+				</td>
+			</tr>
+			<tr>
+				<th>등록일</th>
+				<td>
+					<div class="date_range_form">
+						<input type="text" name="rdate_s" class="datepicker sdate" maxlength="10">
+						-
+						<input type="text" name="rdate_f" class="datepicker edate" maxlength="10">
+						<div class="resp_btn_wrap">
+							<input type="button" range="today" value="오늘" class="select_date resp_btn">
+							<input type="button" range="3day" value="3일간" class="select_date resp_btn">
+							<input type="button" range="1week" value="일주일" class="select_date resp_btn">
+							<input type="button" range="1month" value="1개월" class="select_date resp_btn">
+							<input type="button" range="3month" value="3개월" class="select_date resp_btn">
+							<input type="button" range="select_date_all"  value="전체" class="select_date resp_btn">
+							<input name="select_date_regist" class="select_date_input" type="hidden">
+						</div>
+					</div>
+				</td>
+			</tr>
+			{? categorylist}
+			<tr>
+				<th>분류</th>
+				<td>
+					<select name="category">
+						<option value>전체</option>
+						{@ categorylist}
+							<option value="{.value_}"{? _GET.category == .value_} selected{/}>{.value_}</option>
+						{/}
+					</select>
+				</td>
+			</tr>
+			{/}
+			{? _GET.id == 'goods_qna' || _GET.id == 'mbqna' || _GET.id == 'bulkorder' || _GET.id == 'gs_seller_qna' || _GET.id == 'naverpay_qna' || _GET.id == 'talkbuy_qna' }
+			<tr>
+				<th>답변 상태</th>
+				<td>
+					<span class="resp_radio">
+						<label>
+							<input type="radio" name="searchreply" value{? !_GET.searchreply} checked{/}>
+							<span>전체</span>
+						</label>
+						<label>
+							<input type="radio" name="searchreply" value="y"{? _GET.searchreply == 'y'} checked{/}>
+							<span>답변 대기</span>
+						</label>
+						<label>
+							<input type="radio" name="searchreply" value="n"{? _GET.searchreply == 'n'} checked{/}>
+							<span>답변 완료</span>
+						</label>
+					</span>
+				</td>
+			</tr>
+			{/}
+			{? _GET.id == 'store_review'}
+			<tr>
+				<th>평점</th>
+				<td>
+					<select name="score_avg">
+						<option value>평점 전체</option>			
+						<option value="1"{? _GET.score_avg == 1} selected{/}>1점</option>
+						<option value="2"{? _GET.score_avg == 2} selected{/}>2점</option>
+						<option value="3"{? _GET.score_avg == 3} selected{/}>3점</option>
+						<option value="4"{? _GET.score_avg == 4} selected{/}>4점</option>
+						<option value="5"{? _GET.score_avg == 5} selected{/}>5점</option>
+						<option value="6"{? _GET.score_avg == 6} selected{/}>6점</option>
+						<option value="7"{? _GET.score_avg == 7} selected{/}>7점</option>
+						<option value="8"{? _GET.score_avg == 8} selected{/}>8점</option>
+						<option value="9"{? _GET.score_avg == 9} selected{/}>9점</option>
+						<option value="10"{? _GET.score_avg == 10} selected{/}>10점</option>
+					</select>
+				</td>
+			</tr>
+			{/}
+			{? _GET.id == 'goods_review'}
+			<tr>
+				<th>주문번호</th>
+				<td>
+					<input type="text" name="order_seq" id="order_seq" value="{_GET.order_seq}" size="33">
+				</td>
+			</tr>
+			<tr>
+				<th>평점</th>
+				<td>
+					{? isplusfreenot && manager.goods_review_type != 'IMAGE'  }
+					<select name="score" class="line">
+						<option value selected>평점 전체</option>
+						<option value="1"{? _GET.score == 1} selected{/}>0~20</option>
+						<option value="2"{? _GET.score == 2} selected{/}>21~40</option>
+						<option value="3"{? _GET.score == 3} selected{/}>41~60</option>
+						<option value="4"{? _GET.score == 4} selected{/}>61~80</option>
+						<option value="5"{? _GET.score == 5} selected{/}>81~100</option>
+					</select>
+					{:}
+					<select name="score" class="line">
+						<option value selected>평점 전체</option>
+						<option value="1"{? _GET.score == 1} selected{/}>★</option>
+						<option value="2"{? _GET.score == 2} selected{/}>★★</option>
+						<option value="3"{? _GET.score == 3} selected{/}>★★★</option>
+						<option value="4"{? _GET.score == 4} selected{/}>★★★★</option>
+						<option value="5"{? _GET.score == 5} selected{/}>★★★★★</option>
+					</select>
+					{/}
+				</td>
+			</tr>
+			<tr>
+				<th>구매 여부</th>
+				<td>
+					<div class="resp_radio">
+						<label>
+							<input type="radio" name="ordered_review" checked>
+							전체
+						</label>
+						<label>
+							<input type="radio" name="ordered_review" value="y">
+							구매 상품
+						</label>
+						<label>
+							<input type="radio" name="ordered_review" value="n">
+							미구매 상품
+						</label>
+					</div>
+				</td>
+			</tr>
+			<tr>
+				<th>회원 여부</th>
+				<td>
+					<div class="resp_radio">
+						<label>
+							<input type="radio" name="member_review" checked>
+							전체
+						</label>
+						<label>
+							<input type="radio" name="member_review" value="y">
+							회원
+						</label>
+						<label>
+							<input type="radio" name="member_review" value="n">
+							비회원
+						</label>
+					</div>
+				</td>
+			</tr>
+			<tr>
+				<th>기타 후기</th>
+				<td>
+					<div class="resp_radio">
+						<label>
+							<input type="radio" name="review_type" checked>
+							전체
+						</label>
+						<label>
+							<input type="radio" name="review_type" value="best">
+							베스트 후기
+						</label>
+						<label>
+							<input type="radio" name="review_type" value="npay">
+							네이버페이 후기
+						</label>
+						<label>
+							<input type="radio" name="review_type" value="talkbuy">
+							톡체크아웃 후기
+						</label>
+					</div>
+				</td>
+			</tr>
+			{/}
+			{? _GET.id == 'faq'}
+			<tr>
+				<th>노출/미노출</th>
+				<td>
+					<div class="resp_radio">
+						<label>
+							<input type="radio" name="hidden" checked>
+							전체
+						</label>
+						<label>
+							<input type="radio" name="hidden" value="2">
+							노출
+						</label>
+						<label>
+							<input type="radio" name="hidden" value="1">
+							미노출
+						</label>
+					</div>
+				</td>
+			</tr>
+			{/}
+		</table>
+		<div class="footer search_btn_lay">
+			<span class="search">
+				<button type="button" class="search_submit resp_btn active size_XL">검색</button>
+				<button type="button" class="search_reset resp_btn v3 size_XL">초기화</button>
+			</span>
+		</div>
+	</form>
+</div>
+<script>
+	// gSearchForm.init({=json_encode(sc)});
+	gSearchForm.init({'pageid':'board_list','search_mode':'{=sc.search_mode}','sc':{=json_encode(sc)}});
+</script>
+<!-- 게시글리스트검색폼 : 끝 -->
+
+<div id="boardmovecopyPopup" class="hide">
+	<form name="BoardCopy" id="BoardCopy" method="post" action="../board_process" target="actionFrame">
+		<input type="hidden" name="mode" id="board_mode" value>
+		<input type="hidden" name="board_id" id="orignalboardid" value="{_GET.id}">
+		<input type="hidden" name="delseq" id="delseq" value>
+		<input type="hidden" name="queryString" id="queryString" value>
+		<div class="content">
+			<table class="table_basic thl">
+				<tbody>
+					<tr>
+						<th>게시판</th>
+						<td >
+							<select name="copyid" id="copyid" required>
+								<option value>선택</option>
+								{@ boardmanagercopylist }
+								<option value="{.id}">{=getstrcut(.name, 10)} ({=number_format(.totalnum)})</option>
+								{/}
+							</select>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+		<div class="footer">
+			<button class="resp_btn size_XL active" type="submit" id="boardcopybtn" name="boardcopybtn">제출</button>
+			<button class="resp_btn size_XL v3" type="reset" onclick="$(this).closest('.ui-dialog').find('.ui-dialog-content').dialog('close')">취소</button>
+		</div>
+	</form>
+</div>
+{#emoneyform}

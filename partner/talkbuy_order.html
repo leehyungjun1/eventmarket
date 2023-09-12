@@ -1,0 +1,226 @@
+<!--{?talkbuy.debug == 'y'}-->
+<script type="text/javascript" src="https://t1.kakaocdn.net/checkout/pay-testtool/sdk.js" charset="UTF-8"></script>
+<!--{:}-->
+<script type="text/javascript" src="https://t1.kakaocdn.net/checkout/pay/sdk.js" charset="UTF-8"></script>
+<!--{/}-->
+<script type="text/javascript" src="https://t1.daumcdn.net/adfit/static/kp.js" charset="UTF-8"></script>
+<script>
+
+	var talkbuyObj = (function () {
+		var talkbuyData = {};
+		var setData = function(res){ talkbuyData = res; }
+		var getData = function () { return talkbuyData; }
+		return { setData: setData, getData: getData }
+	})();
+
+	// 톡구매 버튼 생성
+	kakaoCheckout.createButton({
+		// 판매점 인증 key (required)
+		authKey		 : "{=talkbuy.button_key}",
+		// shop 제품 id - 장바구니 인 경우 falsy(null, undefined, ‘’, 0, false 중 선택입력)
+		shopProductId   : "{=goods.goods_seq}",
+		// 버튼 유형 - 285x88(default) | 210x38 | 236x88 | 124x115
+		buttonType	  : "{=talkbuy_btn[0]}",
+		// 다크 모드 (default false)
+		darkMode		: parseInt('{=talkbuy_btn[1]}'),
+		// 컨테이너 id
+		containerId	 : "create-kakao-checkout-button",
+		// 찜하기 버튼 노출 여부 (default true)
+		showWishButton  : parseInt("{=talkbuy_btn[2]}"),
+		// 버튼 활성 여부 (default true)
+		enable		  : true,
+		// '간편결제수단:카카오페이 적용 여부 
+		usePayOrder		: "{=not_use_daumkakaopay}" ? true : false,
+		// 쇼핑몰 로그인 여부
+		isLogin			: "{=userInfo.member_seq}" ? true : false,
+		// 스낵모드 (카카오 인앱에서 자체적으로 구매버튼을 띄움 / 단일상품은 수량 선택 화면이 보이지 않아서 false 처리)
+		snackMode : false,
+		// 주문하기 이벤트 핸들러 (required)
+		onOrder: function() {
+			var mode	= "{? goods.goods_seq }direct{:}cart{/}";
+			if(mode == "direct") {
+				if (typeof check_option == 'function') {
+					if( !check_option() ){
+						return;
+					}
+				}
+			}
+
+			// 제품 옵션 유효성 검사
+			var isValid = true;
+			var message = "not valid order option";
+			
+			$.ajaxSetup({async:false, dataType: "json"});
+
+			// 상품상세에서만 장바구니 담기
+			if(mode == "direct") {
+				$.ajax({
+					type	: "POST",
+					url		: "/order/add?mode=direct&order_mode=talkbuy&skin_version={=skin_version}&no={=goods.goods_seq}",
+					data	: $("form[name='goodsForm']").serialize(),
+					success	: function(result){
+						console.log(result);
+						if(typeof result != "undefined" && result.result != "success") {
+							alert("ERROR:" + result.message);
+							isValid = false;
+							return null;
+						}
+					}
+				});
+			}
+			if(!isValid) return;
+
+			if(mode == "direct") {
+				var orderValidation = "goodsSeq={=goods.goods_seq}&mode=direct";
+			} else {
+				var orderValidation = $("form[name='cart_form']").serialize();
+			}
+			$.ajax({
+				type	: "GET",
+				url		: "/talkbuy/talkbuyOrderValidation",
+				data	: orderValidation,
+				success	: function(result){
+					if(typeof result != "undefined" && result.result != "success") {
+						openDialogAlert(result.message, 400, 160, '', '');
+						isValid = false;
+						return null;
+					}
+
+				}
+			});
+			if(!isValid) return;
+
+			if(mode == "direct") {
+				var buyData = "mode="+mode+"&order_mode=talkbuy&skin_version={=skin_version}&goodsSeq={=goods.goods_seq}";
+			} else {
+				var buyData = $("form[name='cart_form']").serialize();
+			}
+			$.ajax({
+				type	: "POST",
+				url		: "/talkbuy/buy",
+				data	: buyData,
+				success	: function(result){
+					if(typeof result != "undefined" && result.result == "error") {
+						openDialogAlert(result.message, 400, 160, '', '');
+						isValid = false;
+						return null;
+					}else{
+						talkbuyObj.setData(result);
+					}
+				}
+			});
+			if(!isValid) return;
+
+			$.ajaxSetup({async:true});
+
+			var params = talkbuyObj.getData();
+			if($.isEmptyObject(params) || !isValid) {
+				console.log("카카오톡 주문서 생성 중 오류가 발생했습니다.")
+				return null;
+			} else {
+				return createOrderSheet;
+			}
+			// 제품 옵션이 유효하면 주문서 생성 콜백 리턴
+			// 콜백에는 onSuccess, onFailure 리스너가 주입됨
+			//return createOrderSheet;
+			
+		},
+		onPayOrder: function () {
+			var mode	= "{? goods.goods_seq }direct{:}cart{/}";
+			if(mode == 'direct') {
+				if( check_option() ){
+					var f = $("form[name='goodsForm']");
+					f.append("<input type='hidden' name='fix_payment' value='kakaopay'>");
+					f.attr("action","../order/add?mode=direct");
+					f.submit();
+				}
+			} else {
+				var f = $("form[name='cart_form']");
+				f.append("<input type='hidden' name='fix_payment' value='kakaopay'>");
+				var selected_order = '';
+				var ship_possible = true;
+				$("input[name='cart_option_seq[]']").each(function(e, el) {
+					if( $(el).attr('checked') == 'checked' ){
+						if( $(el).attr('stat') != 'Y' ){
+							ship_possible = false;
+							return false;
+						}
+						selected_order += $(el).val() + ",";
+					}
+				});
+
+				if(!ship_possible){
+					// 주문이 불가능한 상품이 있습니다.
+					openDialogAlert(getAlert('os142'),'400','140');
+					return false;
+				}
+
+				if(!selected_order){
+					//주문할 상품을 선택해 주세요.
+					openDialogAlert(getAlert('oc042'),'400','140');
+					return false;
+				}
+
+				f.attr("action","addsettle?mode=choice");
+				f.attr("target","");
+				f[0].submit();
+				f.attr("target","actionFrame");
+
+			}
+
+		},
+		// 찜하기 버튼 이벤트
+		onWish: function(err) {
+			console.log("wish button clicked!", err);
+		}
+	});
+		
+	// 구매하기 이벤트 핸들러(주문서 생성)
+	function createOrderSheet (onSuccess, onFailure) {
+
+		console.log("createOrderSheet >> ");
+		// Server to Server API 호출을 위한 설정
+		var mallApiHost			 = "{=talkbuy.mallApiHost}";
+		var orderSheetCreatePath	= "{=talkbuy.orderSheetCreatePath}";
+
+		var params = talkbuyObj.getData();
+		fetch(mallApiHost + orderSheetCreatePath, {
+				method: "POST",
+				mode: "cors",
+				cache: "no-cache",
+				body: JSON.stringify({
+					shopKey:"{=talkbuy.shopKey}",
+					shopProductId: "{=goods.goods_seq}",
+					selectedOptions: params
+				})
+			}).then(function (res) {
+				console.log("success > ");
+				console.log(res);
+				res.json().then(function (data) {
+					// 중요! 카카오 톡구매 서비스에서 수신한 `orderSheetId`를 전달
+					onSuccess(data.orderSheetId);
+				});
+			}).catch(function (err) {
+				console.log("error > ");
+				onFailure(err);
+		});
+	}
+
+
+	// 찜하기 핸들러
+	function handleWish(error) {
+		// 제품 찜하기 요청에서 오류가 발생한 경우 에러 객체 반환
+		if (error) {
+		// console.log(error.message); //=> 이미 찜한 상품입니다.
+		return;
+		}
+		// console.log(‘톡구매 관심 목록에 추가되었습니다.’);
+	}
+
+</script>
+<div id="talkbuy_btn" style="margin-top:20px;text-align:center;">
+	<div id="create-kakao-checkout-button"></div>
+	<!--{ ? talkbuy.debug=='y' }-->
+		<div style="color:red;line-height:20px;">※ 톡체크아웃 테스트모드 입니다</div>
+	<!--{ / }-->
+</div>

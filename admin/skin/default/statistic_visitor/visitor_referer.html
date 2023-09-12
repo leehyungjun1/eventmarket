@@ -1,0 +1,236 @@
+{ #layout_header }
+  
+<!--[if IE]><script language="javascript" type="text/javascript" src="/app/javascript/plugin/jqplot/excanvas.min.js"></script><![endif]-->
+<script language="javascript" type="text/javascript" src="/app/javascript/plugin/jqplot/jquery.jqplot.min.js"></script>
+<script language="javascript" type="text/javascript" src="/app/javascript/plugin/jqplot/plugins/jqplot.barRenderer.min.js"></script>
+<script language="javascript" type="text/javascript" src="/app/javascript/plugin/jqplot/plugins/jqplot.categoryAxisRenderer.min.js"></script>
+<script language="javascript" type="text/javascript" src="/app/javascript/plugin/jqplot/plugins/jqplot.pointLabels.min.js"></script>
+<link class="include" rel="stylesheet" type="text/css" href="/app/javascript/plugin/jqplot/jquery.jqplot.min.css" />
+<script type="text/javascript" src="/app/javascript/js/admin/statisticVisitor.js?mm={=date('Ymd')}"></script>
+<script type="text/javascript" src="/app/javascript/js/admin/gSearchForm.js?mm={=date('Ymd')}"></script>
+<script type="text/javascript">
+	$(function(){
+		gSearchForm.init({'pageid':'visitor_basic', 'sc':{=scObj}});
+	});
+</script>
+<div id="statsSettingLayer"></div>
+
+<!-- 페이지 타이틀 바 : 시작 -->
+<div id="page-title-bar-area">
+	<div id="page-title-bar">
+	
+		<!-- 좌측 버튼 -->
+		<ul class="page-buttons-left">
+		</ul>
+		
+		<!-- 타이틀 -->
+		<div class="page-title">
+			<h2>방문 유입경로 통계</h2>
+		</div>
+		
+		<!-- 우측 버튼 -->
+		<ul class="page-buttons-right">
+			<li><input type="button" value="설정" onclick="openStatsSettingLayer()" class="resp_btn active size_L"/></li>
+		</ul>
+
+	</div>
+</div>
+<!-- 페이지 타이틀 바 : 끝 -->
+
+<div id="search_container" class="search_container">
+	<form class='search_form' >						
+	<table class="table_search">
+		<tr>
+			<th>방문일</th>
+			<td>
+				<div class="resp_radio dateType">
+					<label><input type="radio" name="date_type" value="month" {? sc.date_type=="month"}checked{/}/> 월별</label>
+					<label><input type="radio" name="date_type" value="daily" {? sc.date_type=="daily"}checked{/}/> 일별</label>						
+				</div>
+			</td>
+		</tr>
+		<tr>
+			<th>기간</th>
+			<td class="date_type_form">
+				<select name="year" class="wx80" defaultValue="{=date('Y')}">					
+				{@range(date('Y'),2010)}
+					<option value="{.value_}">{.value_}</option>
+				{/}
+				</select>					
+				
+				<select name="month" class="wx80 {? !in_array('sc_month',sc_form.default_field)}hide{/}" defaultValue="{=date('m')}" >					
+				{@range(1,12)}					
+					<option value="{? .value_<10 }0{.value_}{:}{.value_}{/}" {? sc.month==.value_}selected{/}>{? .value_<10 }0{.value_}{:}{.value_}{/}</option>
+				{/}
+				</select>
+			
+				<span class="thisMonthBtn {? !in_array('sc_month',sc_form.default_field)}hide{/}"><input type="button" value="이번달" class="resp_btn v3"/></span>							
+			</td>
+		</tr>
+	</table>
+	<div class="search_btn_lay"></div>
+	</form>
+</div>
+
+<div class="contents_dvs v2">
+	<div class="item-title">유입경로</div>	
+	<div class="chart_frame"><div id="chart1"></div></div>
+</div>
+
+<div class="contents_dvs v2">
+	<div class="title_dvs">
+		<div class="item-title">통계 상세</div>
+		<button type="button" class="resp_btn v3" onclick="divExcelDownload('유입경로_방문통계','#visitor_referer')" > <img src="../images/common/btn_img_ex.gif" align="absmiddle" /> <span>다운로드</span></button>
+	</div>					
+	<div id="visitor_referer">
+		<table class="table_basic tdc v7 pdlr5">
+			<thead>
+				<tr>
+					<th width="3%"></th>
+					<th>유입경로별 방문횟수</th>
+				{ @ table_title }
+					<th {?_GET.date_type!='daily'}width="6%"{/}>{.value_}</th>
+				{ / }
+					<th width="7%">합계</th>
+				</tr>
+			</thead>
+			<tbody>
+				{ @ total_referer }
+				<tr>
+					<td><label class="resp_checkbox"><input type="checkbox" name="cntCode[]" value="{.key_}" titleName="{.key_}" {?.index_==0}checked{/} /></label></td>
+					<td>{.key_}</td>
+					{ @ statlist[.key_].list }
+					<td class="right">{=number_format(..cnt)}</td>
+					{ / }
+					<td class="right">{=number_format(statlist[.key_].total_cnt)}</td>
+				</tr>
+				{ / }
+			</tbody>
+		</table>
+	</div>
+</div>
+
+<div class="box_style_05">
+	<div class="title">안내</div>
+	<ul class="bullet_circle">					
+		<li>네이버 광고를 통한 유입 분석(방문/가입/구매)이 가능하기 위해서는 네이버 광고 시 반드시 추적 URL을 설정해주세요. <a href=" https://saedu.naver.com/help/faq/ncc/view.naver?faqSeq=120" target="_blank" class="resp_btn_txt">자세히 보기</a></li>			
+	</ul>	
+</div>
+
+
+
+
+<script class="code" type="text/javascript">
+	$(document).ready(function(){		
+		$("input[name='date_type']").each(function(){
+			$(this).live('click', function(){
+				if	($(this).val() == 'daily'){
+					$(".scMonth").removeClass('hide');
+					$(".btn_scMonth").removeClass('hide');
+				}else{
+					$(".scMonth").addClass('hide');
+					$(".btn_scMonth").addClass('hide');
+				}
+			});
+		});
+
+		$("input[name='cntCode[]']").each(function(){
+			$(this).live('click', function(){
+				if	(!(chkCheckCode('cnt') > 0)) {
+					alert('1개 이상 체크되어야 합니다.');
+					$(this).attr('checked', true);
+				}
+				makePlotCnt();
+			});
+		});
+		
+		makePlotCnt();
+	});
+
+	function chkCheckCode(type){
+		var retVal	= 0;
+		if	(type == 'cnt'){
+			$("input[name='cntCode[]']").each(function(){
+				if	($(this).attr('checked'))	retVal++;
+			});
+		}else{
+			$("input[name='priceCode[]']").each(function(){
+				if	($(this).attr('checked'))	retVal++;
+			});
+		}
+
+		return retVal;
+	}
+
+	function makePlotCnt(){
+
+		var listData	= new Object();
+		{ @ dataForChart }
+		listData['{.key_}']	= {=json_encode(.value_)};
+		{ / }
+
+		var dataList	= [];
+		var titles		= [];
+		var cnt			= 0;
+		$("input[name='cntCode[]']").each(function(){
+			if	($(this).attr('checked')){
+				cnt++;
+				dataList.push(listData[$(this).val()]);
+				titles.push({'label':$(this).attr('titleName')});
+			}
+		});
+
+		$("#chart1").html('');
+		if	(cnt > 0){
+			var maxCnt		= '{maxCnt}';
+			var gapCnt		= parseInt(maxCnt.toString().substring(0,1)) < 2 ? Math.pow(10,maxCnt.toString().length-2) : Math.pow(10,maxCnt.toString().length-1);
+			var yaxisMaxCnt	= parseInt(maxCnt.toString().substring(0,1)) < 2 ? gapCnt * (parseInt(maxCnt.toString().substring(0,2))+2) : gapCnt * (parseInt(maxCnt.toString().substring(0,1))+2);
+			yaxisMaxCnt = yaxisMaxCnt > 100 ? yaxisMaxCnt : 100;
+			var cntPlot		= $.jqplot('chart1', dataList, {
+				seriesDefaults: { 
+					showMarker:true,
+					pointLabels: { show:true }
+				},
+				seriesColors:{=json_encode(seriesColors)},
+				series: titles,
+				axes: {
+					xaxis: {
+						renderer: $.jqplot.CategoryAxisRenderer,
+					},
+					yaxis: {
+						min: 0,
+						max: yaxisMaxCnt,
+						numberTicks: 11
+					}
+				},
+				legend: { 
+					show:true, 
+					location: 'e',
+					xoffset: 15,
+					yoffset: 15,
+					placement: 'outside'
+				},
+				grid: {
+					drawGridLines: true,
+					gridLineColor: '#dddddd',
+					background: '#fffdf6',
+					borderWidth: 0,
+					shadow: false
+				}
+			});
+		}
+	}
+
+	function openStatsSettingLayer(){
+		$.ajax({
+			type: "get",
+			url: "../statistic_visitor/visitor_setting",
+			success: function(result){	
+				$("div#statsSettingLayer").html(result);
+			}
+		});
+		openDialog("방문자 통계 설정", "statsSettingLayer", {"width":"900","height":"510","show" : "fade","hide" : "fade"});
+	}
+</script>
+
+{ #layout_footer }

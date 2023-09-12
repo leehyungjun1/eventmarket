@@ -1,0 +1,439 @@
+{? _GET.mainview }
+<script type="text/javascript">
+var board_id		= '{_GET.id}';
+var boardlistsurl	= '{boardurl->lists}';
+var boardwriteurl	= '{boardurl->write}';
+var boardviewurl	= '{boardurl->view}';
+var boardmodifyurl	= '{boardurl->modify}';
+var boardreplyurl	= '{boardurl->reply}';
+var file_use		= '{=manager.file_use}';
+</script>
+{/}
+<form name="writeform" id="writeform" method="post" action="../board_process" enctype="multipart/form-data" target="actionFrame">
+<input type="hidden" name="mode" id="mode" value="{mode}">
+<input type="hidden" name="board_id" id="board_id" value="{_GET.id}">
+<input type="hidden" name="reply" id="reply" value="{_GET.reply}">
+<input type="hidden" name="talkbuy_inquiry_id" id="talkbuy_inquiry_id" value="{talkbuy_inquiry_id}">
+<input type="hidden" name="talkbuy__answer_id" id="talkbuy_answer_id" value="{talkbuy_answer_id}">
+{? _GET.mainview }
+	<input type="hidden" name="mainview" id="mainview" value="{_GET.mainview}">
+{/}
+{? seq }
+	<input type="hidden" name="seq" id="seq" value="{seq}">
+{/}
+
+<input type="hidden" name="returnurl" id="returnurl" value="{? backtype=='view' }{boardurl->view}{:}{boardurl->lists}{boardurl->querystr}{/}">
+
+<div class="content">
+	<div class="item-title">게시글</div>
+{? _GET.reply == 'y' }
+<table class="table_basic">
+<colgroup>
+	<col width="10%">
+	<col width="40%">
+	<col width="10%">
+	<col width="40%">
+</colgroup>
+<tbody>
+</tbody>
+</table>
+<br>
+{/}
+
+<table class="table_basic thl">
+<tbody>
+
+{? goods_seq && goodsview }
+<tr>
+	<th>상품정보</th>
+	<td >{goodsview}</td>
+</tr>
+{/}
+
+{? order_seq }
+<tr>
+	<th>주문번호</th>
+	<td > <span class="hand orderview blue bold" order_seq="{order_seq}">{order_seq}</span></td>
+</tr>
+{/}
+
+
+{? _GET.reply == 'y' }
+
+	<tr>
+		<th>작성자</th>
+		<td >{? mseq=='-1' }
+			{manager.writetitle}
+			<input type="hidden" name="name" id="name" value="{real_name}" title="작성자를 입력해 주세요" class="required line">
+		{:}
+			{name}
+			<input type="hidden" name="name" id="name" value="{real_name}" title="작성자를 입력해 주세요" class="required line">
+		{/}(IP:{ip})
+
+		<input type="hidden" name="subject" id="subject" value="{subject}" class="required line" size="70">
+		<textarea name="contents" id="contents" class="hide" style='width:95%; height:100px;'  class="required">{contents}</textarea>
+		</td>
+	</tr>
+
+	{? categorylist}
+	<tr>
+		<th>질문유형</th>
+		<td >
+		{category}
+		<input type="text" name="newcategory" id="newcategory" value="" title="질문유형을 입력해 주세요" class="hide line" size="30">
+		</td>
+	</tr>
+	{/}
+	<tr>
+		<th>질문</th>
+		<td >
+			{subject}
+			{? notice ==1 }<input type="hidden" name="notice" id="notice" value="1">{/}
+			<span class="{hiddenlay}">{? hidden ==1 }<input type="hidden" name="hidden" id="hidden" value="1">{/}</span>
+		</td>
+	</tr>
+
+	<tr>
+		<th>내용</th>
+		<td ><div class="view-content">{contents}</div></td>
+	</tr>
+	<tr class='hide'>
+		<th>답변제목</th>
+		<td >
+			<input type="text" name="re_subject" id="re_subject" value="톡체크아웃은 답변제목 없음" class="required line" title="답변제목을 입력해 주세요" size="70">
+		</td>
+	</tr>
+	<tr>
+		<th>답변내용</th>
+		<td >
+			<textarea name="re_contents" id="re_contents" class="daumeditor" style='width:95%; height:200px;'  class="required">{re_contents}</textarea>
+		</td>
+	</tr>
+{:}
+
+	<tr>
+		<th>작성자</th>
+		<td >
+			{? !_GET.seq || (_GET.seq && (mseq=='-1' || _GET.reply=='y')) }
+				{manager.writetitle}
+				<input type="hidden" name="name" id="name" value="{manager.write_admin}" title="작성자를 입력해 주세요" class="required line">
+			{:}
+				{? mseq }
+					{name}
+					<input type="hidden" name="name" id="name" value="{real_name}" title="작성자를 입력해 주세요" class="required line">
+				{:}
+					<input type="text" name="name" id="name" value="{real_name}" title="작성자를 입력해 주세요" class="required line">
+				{/}
+			{/}(IP:{_SERVER.REMOTE_ADDR})
+
+		</td>
+	</tr>
+
+	<tr>
+		<th>제목</th>
+		<td>
+			{? categorylist}
+			<select name="category" id="addcategory" class="required line">
+				<option value>분류 선택</option>
+				{@ categorylist}
+				<option value="{.value_}"{? (category) == (.value_) } selected{/}>{.value_}</option>
+				{/}
+				<option value="newadd">- 신규분류 -</option>
+			</select>
+			<input type="text" name="newcategory" id="newcategory" value title="분류 이름" class="hide line" size="30">
+			{/}
+			<input type="text" name="subject" id="subject" value="{subject}" class="required line" size="70">
+			{displayckeck}
+		</td>
+	</tr>
+	{ #noticehidden }
+
+	<tr>
+		<th>내용</th>
+		<td >
+			<textarea name="contents" id="contents" class="daumeditor" style='width:95%; height:100px;'  class="required">{contents}</textarea>
+		</td>
+	</tr>
+	<input type="hidden" name="re_contents" id="re_contents" value="{=htmlspecialchars(re_contents)}">
+{/}
+
+{? manager.file_use == 'Y' || filelist //첨부파일 사용중이거나 첨부파일이 있는 경우 }
+<tr class="{? !ismobile //모바일접속시 첨부파일추가}hide{/}" id="filelistlay">
+	<th>첨부파일</th>
+	<td >
+		<div>
+			<table class="table_basic boardfileliststyle" id="BoardFileTable">
+			<colgroup>
+				<col width="10%">
+				<col width="60%">
+				<col width="20%">
+			</colgroup>
+			<thead>
+			<tr>
+				<th>순서</th>
+				<th>파일</th>
+				<th><span class="btn-plus gray"><button type="button" id="boardfileadd"></button></span></th>
+			</tr>
+			</thead>
+			<tbody>
+			{? filelist}
+				{@ filelist}
+				<tr>
+					<td align="center">↕</td>
+					<td align="left"> <input type="file" name="file_info[]" value=""/>
+					<input type="hidden" name="orignfile_info[]" class="orignfile_info" value="{.realfilename}^^{.orignfile}^^{.sizefile}^^{.typefile}"/>
+					<span class="realfilelist hand highlight-link" realfiledir="{.realfiledir}" realfilename="{.orignfile}" board_id="{boardid}" filedown="../board_process?mode=board_file_down&board_id={boardid}&realfiledir={.realfiledir}&realfilename={.orignfile}">{.orignfile}</span> </td>
+					<td align="center"><span class="btn-minus gray"><button type="button" class="etcDel"></button></span></td>
+				</tr>
+				{/}
+				{? manager.file_use == 'Y' //첨부파일사용인경우}
+				<tr>
+					<td align="center">↕</td>
+					<td align="center"><input type="file" name="file_info[]"/></td>
+					<td align="center"><span class="btn-minus gray"><button type="button" class="etcDel"></button></span></td>
+				</tr>
+				{/}
+			{:}
+				{? manager.file_use == 'Y' //첨부파일사용인경우}
+				<tr>
+					<td align="center">↕</td>
+					<td align="center"><input type="file" name="file_info[]"/></td>
+					<td align="center"><span class="btn-minus gray"><button type="button" class="etcDel"></button></span></td>
+				</tr>
+				{/}
+			{/}
+			</tbody>
+			</table>
+		</div>
+	</td>
+</tr>
+{/}
+</tbody>
+</table>
+</div>
+<div class="footer">
+	<button type="submit" name="data_save_btn" id="data_save_btn" class="resp_btn size_XL active">{?_GET.seq && (_GET.reply !== 'y' || re_contents) }수정{:}저장{/}</button>
+	<button class="resp_btn v3 size_XL" type="reset" onclick="$(this).closest('.ui-dialog').find('.ui-dialog-content').dialog('close')">취소</button>
+</div>
+</form>
+
+<script type="text/javascript">
+$(document).ready(function() {
+	//게시판글쓰기공통
+	boardwrite();
+
+	$(".orderview").click(function(){
+		var order_seq = $(this).attr("order_seq");
+		var href = "/admin/order/view?no="+order_seq;
+		var a = window.open(href, 'orderdetail'+order_seq, '');
+		if ( a ) {
+			a.focus();
+		}
+	});
+
+
+
+	/* 첨부파일추가*/
+	$("#boardfileadd").click(function(){
+		var trObj = $("#BoardFileTable tbody tr");
+		var trClone = trObj.eq(0).clone();
+		trClone.find("input[type='file']").each(function(){
+			$(this).val("");
+		});
+		trClone.find("span.realfilelist").remove();
+		trClone.find("input.orignfile_info").remove();
+		trObj.parent().append(trClone);
+	});
+
+	/* 첨부파일정보 삭제 */
+	$("#BoardFileTable button.etcDel").click(function(){
+		var deletefile = $(this).parent().parent().parent();
+
+		if(deletefile.find("span.realfilelist").attr("realfiledir")){
+			if(confirm("정말로 파일을 삭제하시겠습니까?") ) {
+				var realfiledir = deletefile.find("span.realfilelist").attr("realfiledir");
+				var realfilename = deletefile.find("span.realfilelist").attr("realfilename");
+				var board_id =deletefile.find("span.realfilelist").attr("board_id");
+				$.ajax({
+					'url' : '../board_process',
+					'data' : {'mode':'board_file_delete', 'realfiledir':realfiledir,  'realfilename':realfilename, 'board_id':board_id},
+					'type' : 'post',
+					'target' : 'actionFrame'
+				});
+
+				$(this).parent().parent().parent().remove();
+			}
+		}else{
+			if($("#BoardFileTable tbody tr").length > 1) $(this).parent().parent().parent().remove();
+		}
+	});
+
+	$("span.realfilelist").click(function(){
+		var filedown = $(this).attr("filedown");
+		if(confirm("다운받으시겠습니까?") ) {
+			document.location.href=filedown;
+		}
+	});
+
+		/* 첨부파일순서변경 */
+	$("table.boardfileliststyle tbody").sortable({items:'tr'});
+
+	//
+	$(".sms_contents").live("keydown",function(){
+		str = $(this).val();
+		$(this).parent().parent().parent().find(".sms_byte").html(BoardchkByte(str));
+	});
+	$(".sms_contents").live("keyup",function(){
+		str = $(this).val();
+		$(this).parent().parent().parent().find(".sms_byte").html(BoardchkByte(str));
+	});
+
+	$("#backtype2").click(function() {
+		$("#returnurl").val('{boardurl->view}');
+	});
+
+	$("#backtype1").click(function() {
+		$("#returnurl").val('{boardurl->lists}');
+	});
+
+
+	// 게시글저장
+	$('#data_save_btn').click(function() {
+		$("#writeform").submit();
+	});
+
+	$('body,input,textarea,select').bind('keydown','Ctrl+s',function(event){
+		event.preventDefault();
+
+		$("#writeform").submit();
+	});
+
+	$('#writeform').validate({
+		onkeyup: false,
+		rules: {
+			subject: { required:true},
+			contents: { required:true}
+		},
+		messages: {
+			name: { required:'<font color="red">작성자를 입력해 주세요.</font>'},
+			category: { required:'질문유형을 선택해 주세요.'},
+			subject: { required:'문의를 입력해 주세요.'}
+		},
+		errorPlacement: function(error, element) {
+			error.appendTo(element.parent());
+		},
+		submitHandler: function(f) {
+			if(readyEditorForm(f)){
+
+				{? _GET.reply == 'y' }
+					if(!$("#re_subject").val() || $("#re_subject").val() == $("#re_subject").attr('title') ){
+						alert('답변제목을 입력해 주세요.');
+						return false;
+					}
+				{:}
+					if(!$("#subject").val() || $("#subject").val() == $("#subject").attr('title') ){
+						alert('제목을 입력해 주세요.');
+						return false;
+					}
+				{/}
+
+				if($("#addcategory").val() == "newadd"){//신규분류
+					if(!$("#newcategory").val() ) {
+						alert('질문유형을 입력해 주세요.');
+						$("#newcategory").focus();
+						return false;
+					}
+				}
+
+				{? _GET.reply == 'y' }
+					if(!$("#re_contents").val() || $("#re_contents").val() == "<p>&nbsp;</p>" ){
+						alert('답변을 입력해 주세요.');
+						return false;
+					}
+				{:}
+					if(!$("#contents").val() || $("#contents").val() == "<p>&nbsp;</p>" ){
+						alert('내용을 입력해 주세요.');
+						return false;
+					}
+				{/}
+				f.submit();
+				loadingStart();
+			}
+		}
+	});
+
+
+	$("#addcategory").bind("change",function(){
+		if( $(this).val() == 'newadd') {
+			$("#newcategory").removeClass("hide").addClass("show");
+		}else{
+			$("#newcategory").removeClass("show").addClass("hide");
+		}
+	});
+
+	$("select[name='board_reserve_select']").live("change",function(){
+		span_controller_view('board_reserve');
+	});
+
+
+});
+
+function readfilelistNew(attachments){
+{? (manager.file_use == 'Y' || filelist) && !ismobile //첨부파일 사용중이거나 첨부파일이 있는 경우  }
+{? filelist}
+attachments['image'] = [];
+attachments['file'] = [];
+{@ filelist}
+	var  filePath = '{.realfiledir}';
+	var  filePathurl = '{.realfileurl}';
+	{? realthumbfile }
+		var  realthumbfile = '{.realthumbfiledir}';
+		var  thumbfilePathurl = 'http://{_SERVER.HTTP_HOST}{.realthumbfileurl}';
+	{/}
+	var  orig_name = '{.orignfile}';
+	var  file_size = {.sizefile};
+	var  typefile = '{.typefile}';
+
+	{? .is_image || strstr(.typefile,'image') || in_array(.typefile, array('jpg','jpeg','png','gif','bmp','tif','pic')) }
+		attachments['image'].push({
+			'attacher': 'image',
+			'data': {
+				'imageurl': filePathurl,
+				'filename': orig_name,
+				'filesize': file_size,
+				'imagealign': 'C',
+				'originalurl': filePath,
+				'thumburl': {? realthumbfile } thumbfilePathurl {:}filePathurl{/}
+			}
+		});
+	{:}
+		attachments['file'].push({
+			'attacher': 'file',
+			'data': {
+				'filename': orig_name,
+				'filesize': file_size,
+				'filemime':typefile,
+				'originalurl': filePath,
+				'attachurl': filePath
+			}
+		});
+	{/}
+{/}
+return attachments;
+{/}
+{/}
+}
+</script>
+
+<script type="text/javascript">
+
+$(".content img").load(function() {
+	//이미지 가로가 큰경우
+	$(".content img").each(function() {
+		var default_width = '600';
+		if( $(this).width() > default_width || $(this).height() > default_width ) {
+			imageResize(this);
+		}
+	});
+});
+</script>

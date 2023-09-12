@@ -1567,7 +1567,7 @@ class exportmodel extends CI_Model {
 				);
 				$this->db->where($arr_where);
 				$this->db->where('npay_order_id IS NULL', NULL, FALSE);		// 네이버페이건이 아님
-				$this->db->where('talkbuy_order_id IS NULL', NULL, FALSE);		// 카카오페이 구매 아님
+				$this->db->where('talkbuy_order_id IS NULL', NULL, FALSE);		// 톡체크아웃 아님
 				$this->db->where('complete_date IS NULL', NULL, FALSE);		// 출고완료일이 없음
 				$this->db->update('fm_goods_export',$data);
 			}

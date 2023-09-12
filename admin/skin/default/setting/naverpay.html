@@ -743,3 +743,22 @@
 
 <div id="lay_goods_select"></div><!-- 상품선택 레이어 -->
 <div id="lay_category_select"></div><!-- 카테고리 선택 레이어 -->
+
+<script>
+	const mutationObserver = new MutationObserver(() => {
+		const iframeInModals = document.querySelectorAll(".ui-dialog iframe");
+		iframeInModals.forEach(iframe => {
+			iframe && setTimeout(() => {
+				iframe.contentDocument.body.classList.add("modal-iframe");
+				const iframeContent = iframe.contentDocument.querySelector(".content");
+				iframe.parentElement.style.padding = 0;
+				iframeContent && iframe.parentElement.style.setProperty("height", iframeContent.scrollHeight + 87 + "px", "important")
+			}, 500)
+		})
+	})
+	mutationObserver.observe(document.body, {
+		childList: true,
+		attributes: true,
+		attributeFilter: ["class"]
+	});
+</script>

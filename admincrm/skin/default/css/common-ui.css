@@ -577,34 +577,45 @@ div.search_container{margin:15px 0; width: auto; background: #FFF !important; pa
 
 /*다이얼로그*/
 .popup_wrap .btn_wrap{text-align:center; margin-top:20px;}
-.popup_wrap .btn_wrap{text-align:center; margin-top:20px;}
+.ui-widget-content {background:#FFF; }
+.ui-widget-content .ui-state-default {background:none;}
+.ui-widget-overlay {position: fixed !important; width: 100% !important; height: 100% !important; background: rgba(0,0,0,.5); opacity: 1;}
 
-.ui-dialog {position: fixed !important; top: 50% !important; left: 50% !important; transform: translate(-50%, -50%) !important; height: auto !important; max-height: 90vh; display: flex !important; flex-direction: column;}
+.ui-dialog {position: fixed !important; top: 50% !important; left: 50% !important; transform: translate(-50%, -50%) !important; height: auto !important; max-height: 90vh; display: flex !important; flex-direction: column; height: auto !important; max-height: 90vh}
 .ui-dialog[style*="display: none"] {display: none !important}
-.ui-widget-content {height: auto !important; max-height: 90vh}
 .ui-dialog-titlebar.ui-widget-header {z-index:1; margin-top: -1px}
 .ui-dialog-content .header{text-align:right; margin-bottom:5px;}
 .ui-dialog-content .footer, .footer, .contents_dvs .footer{margin-top:20px; text-align:center; }
 .ui-dialog-content {line-height:1.8;}
-.ui-dialog .content, .contents_container .content {flex: 1 1 auto; overflow-y:auto; overflow-x:hidden;}
 .ui-dialog .content_wrap {width:90%; margin:0 auto;}
 
-.ui-dialog .content + .footer, .contents_container .content + .footer {background:#FFF; border-top:1px solid #e0e0e0; width: calc(100% + 40px); left: 0; margin: 20px -20px -20px; padding: 15px 0 15px; box-shadow: 0px -5px 8px #eee; bottom: 0;}
-.contents_container {display: flex; flex-direction: column;}
-.contents_container #table-grid {max-height: 435px; height: auto !important;}
-.contents_container .content + .footer {margin: 20px 0 0}
+.contents_container, .contents_container > form {display: flex; flex-direction: column; overflow: hidden;}
+.contents_container {background-color: white; padding: 0; margin: 0}
+.contents_container .content {padding: 0 1rem}
 .ui-dialog .ui-dialog-buttonpane {box-shadow: 0px -5px 8px #eee;}
-.ui-widget-content {background:#FFF; }
-.ui-widget-content .ui-state-default {background:none;}
+.ui-dialog .contents_container {margin: 0; padding: 0;}
+.ui-dialog .contents_container .table_row_frame {border-top: 0;}
+.ui-dialog .content, .contents_container .content {flex: 1 1 auto; overflow-y:auto; overflow-x:hidden; padding-bottom: 70px}
+.ui-dialog .content + .footer, .contents_container .content + .footer {background:#FFF; border-top:1px solid #e0e0e0; left: 0;  padding: 15px 0 15px; box-shadow: 0px -5px 8px #eee; bottom: 0; position: fixed}
+.ui-dialog .content + .footer {margin: 0; width: 100%;}
 
+.contents_container, .contents_container form {display: flex; flex-direction: column; padding: 0;}
+.contents_container {background-color: white; padding: 0 !important;}
+.contents_container .content, .contents_container > div:not(.list_info_container) {padding: 1rem}
 .contents_wrap .content {height:calc(100% - 65px); overflow:auto;}
 .contents_wrap .footer{margin-top:20px; text-align:center; }
 
-.ui-widget-overlay {position: fixed !important; width: 100% !important; height: 100% !important; background: rgba(0,0,0,.5); opacity: 1;}
-.ui-dialog .contents_container {margin:0; padding:0;}
-.ui-dialog .contents_container .table_row_frame {border-top: 0;}
 
-/*--------------------------------------------------------------------------------------------------------------------------------*/
+/* 팝업 안에 아이프레임이 있는 경우 */
+.modal-iframe {margin: 0;}
+.modal-iframe .contents_container {padding: 0}
+.modal-iframe .contents_container .content {padding: 1rem 1rem 0}
+
+/* 레이아웃 변종 팝업 */
+.ui-dialog-content #dlg_content .content {padding-bottom: 0}
+.contents_container #table-grid {max-height: 435px; height: auto !important; overflow: auto}
+.contents_container form:not(.content form) > div:not(.content, .noprint[align="center"]) {padding: 1rem !important}
+
 
 /************* pg **********************************************/
 .pg_list {display:table; width:100%;  margin:15px 0;}

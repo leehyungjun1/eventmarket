@@ -109,12 +109,12 @@ class returns_process extends admin_base {
 		$data_origin_order	= $this->ordermodel->get_order($order_seq);
 		$private_masking    = $this->authmodel->manager_limit_act('private_masking');
 
-		// 카카오페이 구매 반품건은 관리자에서 처리할 수 없음
+		// 톡체크아웃 반품건은 관리자에서 처리할 수 없음
 		$kakao_pay_chk = talkbuy_useck();
 
 		if ($kakao_pay_chk && $data_origin_order["pg"] === "talkbuy" && $data_origin_order["talkbuy_order_id"]) {
 			$callback = "parent.document.location.reload();";
-			openDialogAlert("카카오페이 구매의 대한 반품처리는 불가능합니다.",400,140,'parent',$callback);
+			openDialogAlert("톡체크아웃의 대한 반품처리는 불가능합니다.",400,140,'parent',$callback);
 			exit;
 		}
 

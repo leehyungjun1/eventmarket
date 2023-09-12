@@ -1050,7 +1050,7 @@ class common extends front_base  {
 
 	public function mybag_goods_today_del(){
 
-		$goods_seq = $_POST['goods_seq'];
+		$goods_seq = $this->input->post('goods_seq');
 
 		// 오늘본 상품 쿠키
 		$today_num = 0;
@@ -1062,7 +1062,9 @@ class common extends front_base  {
 			}
 		}
 		if( $data_today_view ) $data_today_view = serialize($data_today_view);
-		setcookie('today_view',$data_today_view,time()+86400,'/');
+
+		$domain = $this->input->server('HTTP_HOST');
+		setcookie('today_view',$data_today_view,time()+86400,'/',".".$domain);
 
 	}
 
@@ -2174,7 +2176,7 @@ class common extends front_base  {
 		}
 
 		// 기본 이미지 확장자 목록
-		$this->defaultImageTypes = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'ico'];
+		$this->defaultImageTypes = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'ico', 'svg'];
 
 		// 파일 확장자 목록 정의 :: default = 이미지파일확장자
 		$this->fileExtList = !empty($params['allow_types']) ? explode('|', $params['allow_types']) : $this->defaultImageTypes;
@@ -2502,7 +2504,7 @@ class common extends front_base  {
 		$this->load->model('shippingmodel');
 		$shipping_set = $this->shippingmodel->get_shipping_set($shipping_set_seq, 'shipping_set_seq');
 
-		//상품 상세에서 네이버페이/카카오페이구매 사용여부 체크
+		//상품 상세에서 네이버페이/톡체크아웃 사용여부 체크
 		$this->load->helper('order');
 
 		$shipping_set['npay'] 		= npay_useck();

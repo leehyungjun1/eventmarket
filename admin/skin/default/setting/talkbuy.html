@@ -1,0 +1,51 @@
+<script type="text/javascript">
+var marketingData = {};
+$(function(){
+	setContentsRadio("talkbuy_culture", "{? talkbuy.culture}{talkbuy.culture}{:}n{/}");	
+})
+</script>
+<script type="text/javascript" src="/app/javascript/js/admin-shipping.js?dummy={=date('Ymd')}"></script>
+<script type="text/javascript" src="/app/javascript/js/admin/gCategorySelectList.js?mm={=date('Ymd')}"></script>
+<script type="text/javascript" src="/app/javascript/js/admin/gGoodsSelectList.js?mm={=date('Ymd')}"></script>
+<script type="text/javascript" src="/app/javascript/js/admin/marketingRegist.js?mm={=date('Ymd')}"></script>
+<div class="clearbox">
+<!--/setting/_talkbuy_config.html-->
+{# talkbuy_config}
+	<div class="box_style_05 mt15">
+		<div class="title">안내</div>
+		<ul class="bullet_hyphen">					
+			<li>톡체크아웃은 톡체크아웃 관리자센터에서 최종 검수 이후 사용 가능합니다.</li>				
+			<li>
+				톡체크아웃 주문금액의 과세/비과세 여부는 '사업자 유형'에 따라 결정됩니다.<br/>
+				과세 : 개인사업자중 일반과세자, 법인사업자, 비과세 : 개인사업자중 면세사업자 및 간이과세자
+			</li>
+			<li>과세/비과세 처리에 대한 자세한 문의는 톡체크아웃 고객센터로 문의해 주세요.</li>
+		</ul>
+	</div>
+</div>
+
+<div id="lay_npay_btn_style" class="hide">
+	<iframe name="npay" id="npay" frameborder=0 border=0 src="" style="width:100%;height:100%;" scrolling="no"></iframe>
+</div>
+
+<div id="lay_goods_select"></div><!-- 상품선택 레이어 -->
+<div id="lay_category_select"></div><!-- 카테고리 선택 레이어 -->
+
+<script>
+	const mutationObserver = new MutationObserver(() => {
+		const iframeInModals = document.querySelectorAll(".ui-dialog iframe");
+		iframeInModals.forEach(iframe => {
+			iframe && setTimeout(() => {
+				iframe.contentDocument.body.classList.add("modal-iframe");
+				const iframeContent = iframe.contentDocument.querySelector(".content");
+				iframe.parentElement.style.padding = 0;
+				iframeContent && iframe.parentElement.style.setProperty("height", iframeContent.scrollHeight + 87 + "px", "important")
+			}, 500)
+		})
+	})
+	mutationObserver.observe(document.body, {
+		childList: true,
+		attributes: true,
+		attributeFilter: ["class"]
+	});
+</script>

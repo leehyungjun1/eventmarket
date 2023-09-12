@@ -375,7 +375,7 @@ class order extends selleradmin_base {
 
 		//npay 사용확인
 		$npay_use = npay_useck();
-		//카카오톡구매 사용확인
+		//톡체크아웃 사용확인
 		$talkbuy_use = talkbuy_useck();
 		if($npay_use || $talkbuy_use){
 			$this->load->library('partnerlib');
@@ -5035,7 +5035,7 @@ class order extends selleradmin_base {
 			$this->load->library('naverpaylib');
 			$npay_hold_reason = $this->naverpaylib->get_npay_code("return_hold");	//npay 반품 보류 코드
 		}
-		$talkbuy_use = talkbuy_useck();	//카카오페이 구매 사용여부
+		$talkbuy_use = talkbuy_useck();	//톡체크아웃 사용여부
 
 		// 기본 배송책임 지정
 		$provider_seq = $this->providerInfo['provider_seq'];
@@ -5207,7 +5207,7 @@ class order extends selleradmin_base {
 			$bind[] = $_GET['search_npay_order'];
 		}
 
-		// 카카오페이 구매 주문 검색
+		// 톡체크아웃 주문 검색
 		if($_GET['search_talkbuy_order'] == 'y'){
 			$where_order[] = "ord.pg='talkbuy'";
 			$bind[] = $_GET['search_talkbuy_order'];

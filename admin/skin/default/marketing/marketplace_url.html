@@ -32,7 +32,7 @@
 		<!-- 타이틀 -->
 		<div class="page-title">
 			<h2>
-				{? _GET.type=="naverpay"}네이버페이{: _GET.type=="navershopping"}네이버 쇼핑{:_GET.type=="daum"}다음 쇼핑하우{:_GET.type=="facebook"}페이스북 쇼핑{:_GET.type=="google"}구글 스마트 쇼핑{:_GET.type=="talkbuy"}카카오페이 구매{/}
+				{? _GET.type=="naverpay"}네이버페이{: _GET.type=="navershopping"}네이버 쇼핑{:_GET.type=="daum"}다음 쇼핑하우{:_GET.type=="facebook"}페이스북 쇼핑{:_GET.type=="google"}구글 스마트 쇼핑{:_GET.type=="talkbuy"}톡체크아웃{/}
 			</h2>
 		</div>
 
@@ -60,7 +60,7 @@
 <ul class="tab_01 v2 tabEvent" style="display:none;">
 	<li><a href="#naverpay" data-showcontent="naverpay">네이버페이</a></li>
 	<li><a href="#navershopping" data-showcontent="navershopping">네이버 쇼핑</a></li>
-	<li><a href="#talkbuy" data-showcontent="talkbuy">카카오페이 구매</a></li>
+	<li><a href="#talkbuy" data-showcontent="talkbuy">톡체크아웃</a></li>
 	<li><a href="#daum" data-showcontent="daum" >다음 쇼핑하우</a></li>
 	<li><a href="#facebook" data-showcontent="facebook" >페이스북 마케팅</a></li>
 	<li><a href="#google" data-showcontent="google" >구글 마케팅</a></li>
@@ -347,15 +347,15 @@
 </div>
 <!-- 구글 마케팅 : 끝 -->
 
-<!-- 카카오페이 구매 : 시작 -->
+<!-- 톡체크아웃 : 시작 -->
 <div class="talkbuy hide">
 	<div class="contents_dvs">
-		<div class="item-title">카카오페이 구매 설정</div>		
+		<div class="item-title">톡체크아웃 설정</div>		
 		<!--/setting/_talkbuy_config.html-->
 		{# talkbuy_config}
 	</div>
 </div>
-<!-- 카카오페이 구매 : 끝 -->	
+<!-- 톡체크아웃 : 끝 -->	
 
 <div class="navershopping daum google facebook hide">	
 	<div class="contents_dvs">	
@@ -374,10 +374,10 @@
 		<div class="title">안내</div>
 		<ul class="bullet_hyphen">	
 			<li>
-				<span class="navershopping hide">네이버 업데이트 주기 : 01시, 10시, 14시, 18시 (일 4회)</span>
+				<span class="navershopping hide">DB URL 생성은 00:10 / 09:00 / 13:00 / 17:00에 진행되며 네이버쇼핑에는 01:00 / 10:00 / 14:00 / 18:00에 적용됩니다.</span>
 				<span class="facebook hide">페이스북 업데이트 주기 : 01시 (일 1회)</span>
 				<span class="google hide">구글 업데이트 주기 : 01시 (일 1회)</span>
-				<span class="talkbuy hide">카카오페이 구매 업데이트 주기 : 01시 (일 1회)</span>
+				<span class="talkbuy hide">톡체크아웃 업데이트 주기 : 01시 (일 1회)</span>
 			</li>
 			<li class="daum hide">
 				다음 쇼핑하우는 DB URL 이 자동 등록이 되며, 등록 후 상품 데이터가 제대로 전달이 되었는지 반드시 확인을 하셔야 합니다. 
@@ -394,7 +394,7 @@
 			<li>데이터 전달 대상 상품은 실물 상품, 패키지/복합상품 입니다. (티켓 상품 전달 불가)</li>
 			<li class="navershopping hide">DB URL 전달 시 상품 리뷰 수는 쇼핑몰의 리뷰만 전달됩니다. (네이버페이의 리뷰 수는 네이버 쇼핑에서 자체 집계)</li>
 			<li class="talkbuy hide">설정에서 입력하신 지역별 추가 배송비 금액이 판매 가능한 상품에 공통으로 적용되어 전달됩니다.</li>
-			<li class="talkbuy hide">카카오페이 구매는 크롬과 엣지 브라우저에 최적화되어 있습니다. 인터넷 익스플로러에는 카카오페이 구매 버튼이 노출되지 않습니다.</li>
+			<li class="talkbuy hide">톡체크아웃은 크롬과 엣지 브라우저에 최적화되어 있습니다. 인터넷 익스플로러에는 톡체크아웃 버튼이 노출되지 않습니다.</li>
 		</ul>
 	</div>	
 </div>
@@ -1129,3 +1129,22 @@
 <div id="lay_category_select"></div><!-- 카테고리 선택 레이어 -->
 
 { #layout_footer }
+
+<script>
+	const mutationObserver = new MutationObserver(() => {
+		const iframeInModals = document.querySelectorAll(".ui-dialog iframe");
+		iframeInModals.forEach(iframe => {
+			iframe && setTimeout(() => {
+				iframe.contentDocument.body.classList.add("modal-iframe");
+				const iframeContent = iframe.contentDocument.querySelector(".content");
+				iframe.parentElement.style.padding = 0;
+				iframeContent && iframe.parentElement.style.setProperty("height", iframeContent.scrollHeight + 87 + "px", "important")
+			}, 500)
+		})
+	})
+	mutationObserver.observe(document.body, {
+		childList: true,
+		attributes: true,
+		attributeFilter: ["class"]
+	});
+</script>

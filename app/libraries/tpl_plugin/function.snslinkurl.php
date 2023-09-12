@@ -258,11 +258,9 @@ function snslinkurl($snstype, $subject, $snsviewr='all', $resultType='html')
 							$kakao_type	= 'feed';
 							if	( $snstype == 'goods' ) {
 								// 비회원일시 가격대체문구 표기 설정일 경우 feed 타입으로 전달함. :: rsh 2019-04-02
-								$goods = $CI->goodsmodel->get_goods($_GET['no']);
+								$goods = $CI->goodsmodel->get_goods($CI->input->get('no'));
 								if($goods['string_price_use'] !== '1') {
-									$goodsOption = $CI->goodsmodel->get_goods_view($_GET['no']);
-									$goodsOption = $goodsOption['goods']['sales'];
-									
+									$goodsOption = $CI->goodsmodel->get_goods_default_option_sales($goods);
 									$price		= $goodsOption['price'];
 									$discount	= $goodsOption['after_price']['event'];
 									//공유시 할인 목록은 basic 과 이벤트만 적용

@@ -1,0 +1,77 @@
+<!--{ ? mode == "mobile_goods" }-->
+<script type="text/javascript" src="//pay.naver.com/customer/js/mobile/naverPayButton.js" charset="UTF-8"></script>
+<!--{ : }-->
+<script type="text/javascript" src="//pay.naver.com/customer/js/naverPayButton.js" charset="UTF-8"></script>
+<!--{ / }-->
+<link rel="stylesheet" type="text/css" href="/admin/skin/default/css/common-ui.css?v={=date('Ymd')}" >
+
+<style>body{background: #FFF !important;}</style>
+
+<form id="npayFrm" name="npayFrm" method="post" action="../marketing_process/npay_btn_style" target="actionFrame">
+<input type="hidden" name="mode" value="{=_GET['mode']}">
+<div class="contents_container">
+	<div class="content">
+		<table class=" table_basic v7 thl">
+			<col width="10%">
+			<col width="30%">
+			<col width="30%">
+			<col width="30%">
+			<thead>
+				<tr>
+					<th><strong>타입</strong></th>
+					<th><strong>상품상세 페이지</strong></th>
+					<th><strong>장바구니 페이지</strong></th>
+					<th><strong>비활성화</strong></th>
+				</tr>
+			</thead>
+			<!--{ @ npay_btn }-->
+			<tr>
+				<!--{ @ .value_ }-->
+				<!--{? ..key_ == 0}-->
+
+				<!-- 타입 -->
+				<td class="btn_lay {? ..key_ == 0}first{/} left">
+					<div class="resp_radio">
+						<label>
+							<input type="radio" name="style_code" value="{=..style}-{..color}-{..count}-{=..size}" 
+							{? sel_npay_style[0]==..style && sel_npay_style[1]==..color && sel_npay_style[2]==..count }checked{/}
+							>
+							{=..style}-{..color}
+						</label>
+					</div>
+				</td>
+
+				<!-- 상품 상세페이지 -->
+				<td class="btn_lay {? ..key_ == 0}first{/}">
+					<div id="nhn_btn{=..key_}_1">
+						<img src="../images/common/npay/{=..style}-{..color}-{..count}_on.gif">
+					</div>
+				</td>
+				<!--{ : }-->
+
+				<!-- 장바구니 페이지 -->
+				<td class="btn_lay {? ..key_ == 0}first{/}">
+					<div>
+						<img src="../images/common/npay/{=..style}-{..color}-{..count}_on.gif">
+					</div>
+				</td>
+
+				<!-- 비활성화 -->
+				<td class="btn_lay {? ..key_ == 0}first{/}">
+					<div>
+						<img src="../images/common/npay/{=..style}-{..color}-{..count}_off.gif">
+					</div>
+				</td>
+				<!--{ / }-->
+				<!--{ / }-->
+			</tr>
+			<!--{ / }-->
+		</table>
+	</div>
+
+	<div class="footer">
+		<button type="submit" class="resp_btn active size_XL">저장</button>
+		<button type="button" class="resp_btn v3 size_XL" onClick="parent.lay_npay_popup_close()">취소</button>
+	</div>
+</div>
+</form>

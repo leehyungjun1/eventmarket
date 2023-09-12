@@ -93,10 +93,10 @@ class refund_process extends admin_base {
 		$shipping_price		= $data_order['shipping_cost'];		
 		$data_return		= $this->returnmodel->get_return_refund_code($refund_code);
 		
-		// 카카오페이 구매 환불건은 관리자에서 처리할 수 없음
+		// 톡체크아웃 환불건은 관리자에서 처리할 수 없음
 		$kakao_pay_chk = talkbuy_useck();
 		if ($kakao_pay_chk && $data_order["talkbuy_order_id"] && $data_order["pg"] === "talkbuy") {
-			openDialogAlert("카카오페이 구매의 대한 환불처리는 불가능합니다.",400,140,'parent',$callback);
+			openDialogAlert("톡체크아웃의 대한 환불처리는 불가능합니다.",400,140,'parent',$callback);
 			exit;
 		}
 		

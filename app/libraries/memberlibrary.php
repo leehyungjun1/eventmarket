@@ -239,8 +239,9 @@ class MemberLibrary
 			$qry = "update fm_member set login_cnt = login_cnt+1, lastlogin_date = now(), login_addr = '".$_SERVER['REMOTE_ADDR']."' where member_seq = '{$memberseq}'";
 			$result = $this->CI->db->query($qry);
 
+			$key = get_shop_key();
 			## 가입된 회원정보 세션용 재검색 :: 2015-01-26 lwh
-			$query = "select A.*,B.business_seq,B.bname,C.group_name from fm_member A LEFT JOIN fm_member_business B ON A.member_seq = B.member_seq left join fm_member_group C on C.group_seq=A.group_seq where A.member_seq = '".$memberseq."'";
+			$query = "select A.*,B.business_seq,B.bname,C.group_name, AES_DECRYPT(UNHEX(A.cellphone), '{$key}') as cellphone, AES_DECRYPT(UNHEX(A.email), '{$key}') as email from fm_member A LEFT JOIN fm_member_business B ON A.member_seq = B.member_seq left join fm_member_group C on C.group_seq=A.group_seq where A.member_seq = '".$memberseq."'";
 			$query			= $this->CI->db->query($query);
 			$member_data	= $query->result_array();
 

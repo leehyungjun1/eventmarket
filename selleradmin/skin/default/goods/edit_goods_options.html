@@ -24,8 +24,8 @@
 	#table-grid .dayinputhelpicon, #table-grid .dayautohelpicon { width:70px;}
 </style>
 	
-	<div class="contents_container" style="background-color:#fff;padding:0px;margin:0px;">
-	<div class="content wrap" style="padding:20px;">
+	<div class="contents_container">
+	<div class="content wrap">
 	<form name="tmp_option_form" method="post" target="optionFrame" action="about:blank;">
 	<input type="hidden" name="goods_seq" value="{goods_seq}" />
 	<input type="hidden" name="socialcp_input_type" value="{sc.socialcp_input_type }" />
@@ -72,7 +72,7 @@
 				<td>
 					<!--{ ? scm_cfg['use'] == 'Y' && scmTotalStock > 0 }-->
 					<button type="button" class="resp_btn v2">신규생성</button>
-					<!-{:}-->
+					<!--{:}-->
 					<button type="button" id="optionMake" goods_seq="{goods_seq}" class="resp_btn active">신규생성</button>
 					<!--{/}-->
 				</td>
@@ -93,7 +93,7 @@
 						<option value="0">선택</option>
 					</select>
 					<button type="button" class="resp_btn v2">가져오기</button>
-					<!-{:}-->
+					<!--{:}-->
 					<span id="frequentlytypeoptlay">
 						<select name="frequentlytypeopt" class="frequentlytypeopt" style="width:300px">
 							<option value="0">선택</option>
@@ -124,8 +124,8 @@
 				<div id="table-grid">
 					<table class="table_row_basic fix optionList grid-cell">
 					<colgroup>
-						<col width="45"><!-- 선택 -->
-						<col width="65"><!-- 기준 -->
+						<col width="40"><!-- 선택 -->
+						<col width="40"><!-- 기준 -->
 					{ ? sc.package_yn != 'y' }
 						{ ? sc.socialcp_input_type }
 								{? options[0].option_divide_title}
@@ -164,7 +164,7 @@
 						<col width="105"><!-- 판매가 -->
 						<col width="170"><!-- 마일리지 -->
 						<col width="105"><!-- 옵션노출 -->
-						<col width="100"><!-- 설명 -->
+						<col width="70"><!-- 설명 -->
 					</colgroup>
 			<thead>
 			<tr>
@@ -390,7 +390,7 @@
 						<div class="reg_package_option_code{=..value_}">{.package_option_code[..value_]} {?.package_weight[..value_]}{? .package_option_code[..value_]}|{/} {.package_weight[..value_]}kg{/}</div>
 						<div class="reg_package_unit_ea{=..value_} reg_package_unit">
 							주문당
-							<input type="text" name="package_unit_ea{=..value_}[]" value="{.package_unit_ea[..value_]}" class="right" style="width:20px !important;">
+							<input type="text" name="package_unit_ea{=..value_}[]" value="{.package_unit_ea[..value_]}" class="right" style="max-width:80px;">
 							발송
 							<span class="tooltip_btn" onClick="showTooltip(this, '../tooltip/goods', '#regist_package_ea')" ></span>
 						</div>

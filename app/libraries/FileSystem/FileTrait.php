@@ -5,7 +5,7 @@ trait FileTrait
 {
 	// 업로드 허용확장자
 	public $ACCEPT_FILE_EXTENSION = [
-		'image' => ['jpg', 'jpeg', 'png', 'gif', 'pic', 'tif', 'tiff', 'jfif', 'bmp', ],
+		'image' => ['jpg', 'jpeg', 'png', 'gif', 'pic', 'tif', 'tiff', 'jfif', 'bmp', 'svg'],
 		'document' => ['txt', 'hwp', 'docx', 'docm', 'doc', 'ppt', 'pptx', 'pptm', 'pps', 'ppsx', 'xls', 'xlsx', 'xlsm', 'xlam', 'xla'],
 		'etc' => ['ai', 'psd', 'eps', 'pdf', 'ods', 'ogg', 'mp4', 'avi', 'wmv', 'zip', 'rar', 'tar', '7z', 'tbz', 'tgz', 'lzh', 'gz', 'dwg']
 	];

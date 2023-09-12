@@ -726,7 +726,7 @@ class order2exportmodel extends CI_Model {
 						$npay_status = ($mode == 'order_api') ? "y" : "n";
 					}
 
-					## 카카오페이구매 상품주문번호
+					## 톡체크아웃 상품주문번호
 					$talkbuy_product_order_id	= $data_export['items']['talkbuy_product_order_id'][$i];
 					if($talkbuy_product_order_id) {
 						$talkbuy_status = ($mode == 'order_api') ? "y" : "n";
@@ -743,13 +743,13 @@ class order2exportmodel extends CI_Model {
 							$npay_status = 'y';		//Npay API 출고처리 성공여부
 						}
 					}
-					# 카카오페이구매 처리결과
+					# 톡체크아웃 처리결과
 					if($talkbuy_use && $talkbuy_product_order_id && in_array($data_export['status'],array("55")) && $mode != 'order_api'){
 						if($talkbuy_res['export_items'][$talkbuy_product_order_id]['result'] != "SUCCESS"){
 							$export_item_exec		= false;
 							$export_item_message	= $talkbuy_res['export_items'][$talkbuy_product_order_id]['message'];
 						}else{
-							$talkbuy_status = 'y';		// 카카오페이구매 API 출고처리 성공여부
+							$talkbuy_status = 'y';		// 톡체크아웃 API 출고처리 성공여부
 						}
 					}
 
@@ -943,7 +943,7 @@ class order2exportmodel extends CI_Model {
 					$result[$data_export['status']][$export_item_seq]['export_code'] = 'ERROR';
 					$result[$data_export['status']][$export_item_seq]['message']	 = $data_export['order_seq']." : (Npay:".$npay_product_order_id.")".$npay_res['export_items'][$npay_product_order_id]['message'];
 				}
-				# 카카오페이구매 발송처리 모두 실패시
+				# 톡체크아웃 발송처리 모두 실패시
 				foreach($data_export['items']['talkbuy_product_order_id'] as $k=>$talkbuy_product_order_id){
 
 					if( !$data_export['items']['ea'][$k] ) continue;
@@ -1035,7 +1035,7 @@ class order2exportmodel extends CI_Model {
 	{
 		# Npay2.1 사용여부 확인
 		$npay_use = npay_useck();
-		# 카카오페이 구매 사용여부 확인
+		# 톡체크아웃 사용여부 확인
 		$talkbuy_use = talkbuy_useck();
 
 		if	($this->scm_cfg['use'] == 'Y'){
@@ -1380,7 +1380,7 @@ class order2exportmodel extends CI_Model {
 						}
 					}
 
-					# 카카오페이 구매 출고 검증
+					# 톡체크아웃 출고 검증
 					if($talkbuy_use && $data_option['talkbuy_product_order_id']){
 						/*
 						$arr_shipping_data[$export_key]['npay_flag_release'] = $export_data['npay_flag_release'];
@@ -1743,7 +1743,7 @@ class order2exportmodel extends CI_Model {
 		$data['orign_order_seq']	= $shipping_data['orign_order_seq'];
 		$data['npay_flag_release']	= $shipping_data['npay_flag_release'];
 		$data['npay_order_id']		= $shipping_data['npay_order_id'];	//npay 주문번호
-		$data['talkbuy_order_id']	= $shipping_data['talkbuy_order_id'];	//카카오페이 구매 주문번호
+		$data['talkbuy_order_id']	= $shipping_data['talkbuy_order_id'];	//톡체크아웃 주문번호
 
 		// 배송정보 추가 :: 2016-10-06 lwh
 		$data['shipping_group']		= $export_data['export_shipping_group'] ? $export_data['export_shipping_group'] : $shipping_data['shipping_group'];

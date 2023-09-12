@@ -124,7 +124,7 @@
 			break;
 		case 'talkbuy':
 			var useYn =$('input[name=talkbuy_use]').val();
-			htmlTitle = '카카오페이 구매';
+			htmlTitle = '톡체크아웃';
 			if(useYn == 'y'){
 				popupHeight = '900';
 			}else{
@@ -473,7 +473,7 @@
 		</tr>
 
 		<tr>
-			<th>카카오페이 구매 <!--{?talkbuy.use=='y'}-->사용<!--{:}-->미사용<!--{/}--> <br/><button type="button" class="resp_btn v2" id="btnPaySetting" onclick="setOtherPay('talkbuy');">설정</button></th>
+			<th>톡체크아웃 <!--{?talkbuy.use=='y'}-->사용<!--{:}-->미사용<!--{/}--> <br/><button type="button" class="resp_btn v2" id="btnPaySetting" onclick="setOtherPay('talkbuy');">설정</button></th>
 			<td class="clear">
 				<!--{? talkbuy.use == 'y'}-->
 				<div class="pgInfoContents" code="talkbuy"  isdemo="{isdemo.isdemo}"></div>

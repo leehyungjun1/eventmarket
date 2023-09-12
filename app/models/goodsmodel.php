@@ -11348,7 +11348,8 @@ class Goodsmodel extends CI_Model {
 			$data_today_view = serialize($data_today_view);
 		}
 		// m. 도메인도 같이 사용하도록 수정
-		setcookie('today_view',$data_today_view,time()+86400,'/',".".$this->config_basic['domain']);
+		$domain = $this->input->server('HTTP_HOST');
+		setcookie('today_view',$data_today_view,time()+86400,'/',".".$domain);
 
 		// 반응형 스킨을 위해 추가함
 		$this->load->library('memberlibrary');
@@ -15417,7 +15418,7 @@ class Goodsmodel extends CI_Model {
 	}
 
 	/**
-	 * 네이버페이/카카오톡구매 주문하기 상품 정리
+	 * 네이버페이/톡체크아웃 주문하기 상품 정리
 	 */
 	function partnerOrderProducts($ship_ini = [], $cart = [])
 	{
@@ -15697,6 +15698,66 @@ class Goodsmodel extends CI_Model {
 		}
 
 		return $cart_sort;
+	}
+
+	// 대표옵션에 대한 sales data 추출
+	public function get_goods_default_option_sales($goods) 
+	{
+		$this->load->library("sale");
+		$this->load->model('categorymodel');
+
+		$option = $this->get_goods_default_option($goods['goods_seq']);
+		
+		// 카테고리정보
+		$categorys = $this->get_goods_category($goods['goods_seq']);
+
+		$tmparr2 = [];
+		foreach($categorys as $key => $val){
+			$tmparr = $this->categorymodel->split_category($val['category_code']);
+			foreach($tmparr as $cate) $tmparr2[] = $cate;
+		}
+
+		if ($tmparr2) {
+			$tmparr2 = array_values(array_unique($tmparr2));
+			$goods['r_category'] = $tmparr2;
+		}
+
+		// 브랜드 정보
+		$brands = $this->get_goods_brand($goods['goods_seq']);
+
+		if ($brands) {
+			foreach ($brands as $key => $data) {
+				if ($data['link'] == 1) {
+					$goods['brand_code'] = $this->brandmodel->split_brand($data['category_code']);
+				}
+			}
+		}
+
+		$cfg_reserve = $this->reserves ?? config_load('reserve');
+
+		unset($param, $sales);
+
+		$param = [
+			'cal_type'       => 'each',
+			'option_type'    => 'option',
+			'reserve_cfg'    => $cfg_reserve,
+			'member_seq'     => $this->userInfo['member_seq'],
+			'group_seq'      => $this->userInfo['group_seq'],
+			'consumer_price' => $option[0]['consumer_price'],
+			'price'          => $option[0]['price'],
+			'total_price'    => $option[0]['price'],
+			'ea'             => 1,
+			'goods_ea'       => 1,
+			'category_code'  => $goods['r_category'],
+			'brand_code'     => $goods['brand_code'],
+			'goods_seq'      => $goods['goods_seq'],
+			'goods'          => $goods,
+		];
+		
+		$this->sale->set_init($param);
+		$sales = $this->sale->calculate_sale_price('view');
+		$this->sale->reset_init();
+		return $sales;
 	}
 
 }

@@ -9,10 +9,17 @@ class dbpatch extends front_base {
 	{
 		ob_start();
 ?>
--- FMDEV-2026_1_회원_관련_슬로우쿼리_개선.sql 실행 쿼리
-ALTER TABLE fm_member MODIFY COLUMN auth_code varchar(255) NULL COMMENT '본인인증코드';
+UPDATE fm_config SET VALUE='톡체크아웃(카드)', regist_date=NOW() WHERE groupcd='talkbuy_payment' AND codecd='talkbuy_card';
 
-ALTER TABLE fm_member ADD INDEX idx_auth_code (auth_code);
+UPDATE fm_config SET VALUE='톡체크아웃(포인트)', regist_date=NOW() WHERE groupcd='talkbuy_payment' AND codecd='talkbuy_point';
+
+UPDATE fm_config SET VALUE='톡체크아웃(휴대폰)', regist_date=NOW() WHERE groupcd='talkbuy_payment' AND codecd='talkbuy_cellphone';
+
+UPDATE fm_config SET VALUE='톡체크아웃(가상계좌)', regist_date=NOW() WHERE groupcd='talkbuy_payment' AND codecd='talkbuy_virtual';
+
+
+-- 게시판 이름 수정
+UPDATE fm_boardmanager SET name='톡체크아웃 문의' WHERE id='talkbuy_qna' AND skin='_mbqna';
 <?
 		$sQuery = ob_get_contents();
 		ob_clean();

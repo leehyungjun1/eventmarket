@@ -4159,7 +4159,7 @@ class setting_process extends admin_base {
 				$ship_set['npay_order_possible']		= $_POST['npay_order_possible'][$nation][$setKey];
 				$ship_set['npay_order_impossible_msg']	= $_POST['npay_order_impossible_msg'][$nation][$setKey];
 
-				// 카카오톡구매 주문시 해당 배송정책 사용 가능여부
+				// 톡체크아웃 주문시 해당 배송정책 사용 가능여부
 				$ship_set['talkbuy_order_possible']		 = $_POST['talkbuy_order_possible'][$nation][$setKey];
 				$ship_set['talkbuy_order_impossible_msg']= $_POST['talkbuy_order_impossible_msg'][$nation][$setKey];
 

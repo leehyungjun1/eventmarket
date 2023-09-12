@@ -235,7 +235,7 @@ function getminfo($manager, &$datarow, &$minfo ,&$boardname, $adminname='',$boar
 						$boardname = "<img src='".$CI->Boardmanager->admin_board_icon_src."icon_npay.gif' alt='네이버페이 후기'/>".$br_tag.$datarow['mid'];
 					} else if ( $datarow['talkbuy_review_id'] ) {
 						$br_tag = $board_view ? ' ' : '<br/>';
-						$boardname = "<img src='".$CI->Boardmanager->admin_board_icon_src."icon_talkbuy.gif' alt='카카오페이 구매 후기'/>";
+						$boardname = "<img src='".$CI->Boardmanager->admin_board_icon_src."icon_talkbuy.gif' alt='톡체크아웃 후기'/>";
 					} else {
 						$boardname = $datarow['name'].' (비회원)';
 					}
@@ -253,7 +253,7 @@ function getminfo($manager, &$datarow, &$minfo ,&$boardname, $adminname='',$boar
 					$boardname = "<img src='".$CI->Boardmanager->admin_board_icon_src."icon_npay.gif' alt='네이버페이 후기'/>".$br_tag.$datarow['mid'];
 				} else if ( $datarow['talkbuy_review_id'] ) {
 					$br_tag = $board_view ? ' ' : '<br/>';
-					$boardname = "<img src='".$CI->Boardmanager->admin_board_icon_src."icon_talkbuy.gif' alt='카카오페이 구매 후기'/>";
+					$boardname = "<img src='".$CI->Boardmanager->admin_board_icon_src."icon_talkbuy.gif' alt='톡체크아웃 후기'/>";
 				} else {
 					$boardname = $datarow['name'];
 					if($datarow['order_seq']){
@@ -268,7 +268,7 @@ function getminfo($manager, &$datarow, &$minfo ,&$boardname, $adminname='',$boar
 					$boardname = "<img src='".$CI->Boardmanager->admin_board_icon_src."icon_npay.gif' alt='네이버페이 후기'/>".$br_tag.$datarow['mid'];
 				} else if ( $datarow['talkbuy_review_id'] ) {
 					$br_tag = $board_view ? ' ' : '<br/>';
-					$boardname = "<img src='".$CI->Boardmanager->admin_board_icon_src."icon_talkbuy.gif' alt='카카오페이 구매 후기'/>";
+					$boardname = "<img src='".$CI->Boardmanager->admin_board_icon_src."icon_talkbuy.gif' alt='톡체크아웃 후기'/>";
 				} else {
 					$boardname =$datarow['name'];
 				}

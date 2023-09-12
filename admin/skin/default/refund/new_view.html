@@ -1219,11 +1219,11 @@ var gl_refund_penalty_deductible_price	= '{=tot.refund_penalty_deductible_price}
 	<div style="text-align:Center;padding:20px;">
 		<input type="hidden" name="status" value="complete" />
 		<!--{? data_refund.status == "request" }-->
-		<div style="line-height:30px;">이 환불건은 카카오페이 구매 반품건이므로 직접 처리 불가합니다..</div>
+		<div style="line-height:30px;">이 환불건은 톡체크아웃 반품건이므로 직접 처리 불가합니다..</div>
 		<!--{ : data_refund.status == "complete" }-->
-		<div style="line-height:30px;">카카오페이 구매 환불완료 되었습니다.</div>
+		<div style="line-height:30px;">톡체크아웃 환불완료 되었습니다.</div>
 		<!--{ : }-->
-		<div style="line-height:30px;">카카오페이 구매 파트너센터에서 환불 진행중이므로, 환불상태(환불신청/환불처리중) 변경이 불가합니다.</div>
+		<div style="line-height:30px;">톡체크아웃 관리자센터에서 환불 진행중이므로, 환불상태(환불신청/환불처리중) 변경이 불가합니다.</div>
 		<!--{ / }-->
 	</div>
 	<!--{ : }-->
@@ -1287,8 +1287,8 @@ var gl_refund_penalty_deductible_price	= '{=tot.refund_penalty_deductible_price}
 						환불상태를 처리완료로 업데이트하고 쇼핑몰에서 환불 처리가 됩니다.<br />
 						최종환불금액이 <span class="status_change_msg_price"></span>원이 맞습니까?<br />
 					<span class="red">
-						(수동) 실제 환불처리는 카카오페이 구매 파트너 센터에서 진행하셔야합니다.<br />
-						카카오페이 구매 파트너 센터에서 실제 전자결제 취소를 진행하셨습니까?<br />
+						(수동) 실제 환불처리는 톡체크아웃 관리자센터에서 진행하셔야합니다.<br />
+						톡체크아웃 관리자센터에서 실제 전자결제 취소를 진행하셨습니까?<br />
 					</span>
 					<!--{ : }-->
 						환불상태를 처리완료로 업데이트하고 실제로 환불 처리가 됩니다.<br />

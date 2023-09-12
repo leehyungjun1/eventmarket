@@ -471,7 +471,7 @@ function setFacebooklikeopsave(no){
  * @param {int} shipping_set_seq 
  */
 function getShippingInfo(shipping_set_seq) {
-	//(네이버페이/카카오페이구매) 사용여부 체크
+	//(네이버페이/톡체크아웃) 사용여부 체크
 	$.ajax({
 		"url" : "/common/get_shipping_info",
 		"data" : {"shipping_set_seq" : shipping_set_seq},
@@ -481,13 +481,13 @@ function getShippingInfo(shipping_set_seq) {
 			gl_talkbuyuse 	= res.talkbuy; //카카오페이 사용 여부
 
 			var npay = res.npay_order_possible;			// 네이버페이 
-			var talkbuy = res.talkbuy_order_possible;	// 카카오페이 구매
+			var talkbuy = res.talkbuy_order_possible;	// 톡체크아웃
 			
 			// 웹브라우저 익스플로러 사용이면 톡구매 버튼을 노출하지 않는다.
 			if (typeof window.document.documentMode === "number") {
 				talkbuy = 'N';
 			}
-			// 네이버페이/카카오페이구매 사용안하면 N 으로 변경
+			// 네이버페이/톡체크아웃 사용안하면 N 으로 변경
 			if(gl_npayuse != 1 ) 	npay = 'N';
 			if(gl_talkbuyuse != 1 ) talkbuy = 'N';
 

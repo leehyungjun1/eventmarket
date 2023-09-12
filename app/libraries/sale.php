@@ -1979,11 +1979,11 @@ class sale
 							}
 						}
 
-						$return['sale_price']		= get_cutting_price($return['sale_price']);
+						$return['sale_price']		= $this->cut_sale_price($return['sale_price']);
 						if	($downloads['duplication_use'] == 1){
-							$return['sale_price']	= get_cutting_price($return['sale_price'] * $ea);
+							$return['sale_price']	= $this->cut_sale_price($return['sale_price'] * $ea);
 						}else{
-							$return['sale_price']	= get_cutting_price($return['sale_price']);
+							$return['sale_price']	= $this->cut_sale_price($return['sale_price']);
 						}
 
 						if ( $downloads['type'] != 'ordersheet' ) {

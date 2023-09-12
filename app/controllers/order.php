@@ -1179,7 +1179,7 @@ class order extends front_base {
 
 
 			}else{
-				# 네이버페이/카카오톡구매 주문시
+				# 네이버페이/톡체크아웃 주문시
 				echo json_encode(["result" => "success", "message" => "장바구니 담기 성공"]);
 				exit;
 			}

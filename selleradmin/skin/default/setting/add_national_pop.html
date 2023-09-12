@@ -1,0 +1,868 @@
+{ #layout_header_popup }
+<style>
+html {overflow-y: hidden;}
+body{background:#FFF;}
+#wrap {height: 100%;}
+</style>
+
+<script type="text/javascript" src="/app/javascript/js/admin-shipping.js?dummy={=date('Ymd')}"></script>
+<script type="text/javascript">
+var unit	= '{=punit}'; // 기본 통화 단위
+var nation	= '{=_GET.nation}'; // 추가국가
+var zoneTxt = '{?_GET.nation=="korea"}지역{:}국가{/}'; // 국내/해외
+$(document).ready(function() {
+	// 배송지역 제한 타입 변경
+	$("input[name='delivery_limit']").bind("change",function(){
+		var delivery_limit = $(this).val();
+		if(delivery_limit == 'limit'){
+			var zone_html = '<span class="std_btn_area issueCount" style="left:45px;top:0px;"><input type="hidden" class="issue" name="issue[std][]" value="0" /><span class="hgi-left"><span class="hgi-right"><span class="hgi-bg">!</span></span></span></span> <span class="add_zone hand blue" onclick="add_zone_pop(this);">'+zoneTxt+'1<input type="hidden" name="shipping_area_name[std][]" value="'+zoneTxt+'1"></span><span class="zone_cnt blue">(0)</span>';
+			$(this).closest("td").find(".price_set_area").find(".zone_text").html(zone_html);
+			$(this).closest("td").find(".price_set_area").find(".zone_area_add_btn").show();
+		}else{
+			$(this).closest("td").find(".price_set_area").find(".zone_text").html('{?_GET.nation=="korea"}대한민국{:}전세계{/}');
+			$(this).closest("td").find(".price_set_area").find(".zone_area_add_btn").hide();
+			zone_area_reset($(this).closest("td").find(".price_set_area"));
+			$(this).closest("td").find(".price_set_area").find(".zone_address_area").html('');
+		}
+		
+		del_zone_addr(this, delivery_limit);
+	});
+
+	// 배송방법 custom Name 사용여부 정의
+	$("#custom_set_use").bind("change",function(){
+		if($(this).is(':checked')){
+			$("input[name='shipping_set_name']").attr('disabled',false);
+		}else{
+			$("input[name='shipping_set_name']").attr('disabled',true);
+		}
+	});
+
+	// 배송안내 자동안내 설명 팝업창
+	$("#btn_autoinfo_desc").bind("click",function(){
+		auto_info_pop();
+	});
+
+	// 배송설정 타입별 기본 사용여부 체크
+	$(".used_check").bind("change",function(){
+		set_type_used($(this).attr('name').substring(0,$(this).attr('name').length - 4));
+	});
+
+	// 반품 배송비 왕복 시 요금 체크
+	$("#refund_shiping_cost").on("change",function(){
+		var refund_shiping_cost		= $("#refund_shiping_cost").val();
+		$(".refund_shiping_double").html(get_currency_price(refund_shiping_cost * 2));
+	});
+
+	// 배송방법 정의
+	shipping_set_chk();
+	
+	// 수정시 처리
+	modify_apply();
+	
+	$(".shipping_opt_type").on('focus', function () {
+		previous = this.value;
+	}).on('change', function(e) {
+		var shipping_opt_type	= $(this).val();
+		var shipping_group_seq	= $("input[name='shipping_group_seq").val();
+		var shipping_set_seq	= $("input[name='shipping_set_seq").val();
+		var shipping_set_type	= $(this).closest("table").attr("price_type"); //std,add
+		
+		var section_st = new Array();
+		var section_ed = new Array();
+
+		if(shipping_opt_type == 'free'){ // 무료
+			$("input[name='shipping_cost["+shipping_set_type+"][]").val('0');
+		}else if(shipping_opt_type == 'fixed'){ // 고정
+			$("input[name='shipping_cost["+shipping_set_type+"][]']").each(function(index, val) {
+				if($(this).val() <= 0){
+					$(this).attr('value', '2500');
+				}
+			});
+		}else{ // 금액
+			$("input[name='shipping_cost["+shipping_set_type+"][]']").each(function(index, val) {
+				if($(this).val() <= 0){
+					$(this).attr('value', '2500');
+				}
+			});
+			$("input[name='section_st["+shipping_set_type+"][]']").each(function(index, val) {
+				if(index == 0){
+					$(this).val(0);
+				} else {
+					$(this).val(1);
+				}
+				section_st.push($(this).val());
+			});
+			
+			$("input[name='section_ed["+shipping_set_type+"][]']").each(function(index, val) {
+				if(index == 0){
+					$(this).val(1);
+				} else {
+					var is_rep = shipping_opt_type.split("_");
+					
+					if(is_rep.length > 1){
+						$(this).val(1);
+					} else {
+						$(this).val(0);
+					}
+					
+				}
+				section_ed.push($(this).val());
+			});
+		}
+		
+		var shipping_opt_sec_cost	= new Array();
+		var areaLength				= $("input[name='shipping_cost["+shipping_set_type+"][]']").length;
+		areaLength = areaLength/2;
+
+		$("input[name='shipping_cost["+shipping_set_type+"][]']").each(function(index, val) {
+			shipping_opt_sec_cost.push($(this).val());
+		});
+		
+		var delivery_nation		= $("input[name='delivery_nation']").val();
+		var delivery_limit		= $("input[name='delivery_limit']").val();
+		
+		$.ajax({
+			type : "get",
+			url : '../setting/shipping_otp_modify',
+			data : {
+				'shipping_opt_type'		: shipping_opt_type,
+				'shipping_group_seq'	: shipping_group_seq,
+				'shipping_set_seq'		: shipping_set_seq,
+				'shipping_set_type'		: shipping_set_type,
+				'shipping_opt_sec_cost'	: shipping_opt_sec_cost,
+				'areaLength'			: areaLength,
+				'section_st'			: section_st,
+				'section_ed'			: section_ed,
+				'shipping_calcul_type'	: '{=_GET.calcul_type}',
+				'delivery_nation'		: delivery_nation,
+				'delivery_limit'		: delivery_limit
+			},
+			success : function(res) {
+				var res = jQuery.parseJSON(res);
+				$("input[name='shipping_opt_seq["+shipping_set_type+"][]']").each(function(index, val) {
+					if(res.options[index] > 0){
+						$(this).val(res['options'][index]);
+						
+						var areaLength = res['costs'][index].length;
+						var costIdx = parseInt(index) * parseInt(areaLength);
+						
+						$(res['costs'][index]).each(function(cIdx, cVal){
+							$("input[name='shipping_cost_seq["+shipping_set_type+"][]']").eq(costIdx).val(cVal);
+							costIdx++;
+						});
+					}
+				});
+			}
+		})
+	});
+});
+
+// 수정시 처리내역 함수 정의
+function modify_apply(){
+	// 배송방법 처리
+	$("select[name='shipping_set_code']").val('{=params.shipping_set_code}').trigger('change');
+	// custom name 처리
+	{ ? params.custom_set_use == 'Y' }
+	$("#custom_set_use").attr('checked',true).trigger('change');
+	var shipping_set_name = `{= params.shipping_set_name}`;
+	$("input[name='shipping_set_name']").val(shipping_set_name);
+	{ / }
+	{ ? params.std_use == 'Y' }
+	// 기본 사용여부 처리 및 데이터 채우기
+	$("input[name='std_use']").attr('checked',true).trigger('change');
+	$("input[name='delivery_std_type']:radio[value={=params.delivery_std_type}]").attr("checked","checked");
+	shipping_opt_type($("select[name='shipping_opt_type[std]']"), {=json_encode(optTypeArr['std'])});
+	{ / }
+	{ ? params.add_use == 'Y' }
+	// 추가 사용여부 처리 및 데이터 채우기
+	$("input[name='add_use']").attr('checked',true).trigger('change');
+	$("input[name='delivery_add_type']:radio[value={=params.delivery_add_type}]").attr("checked","checked");
+	shipping_opt_type($("select[name='shipping_opt_type[add]']"), {=json_encode(optTypeArr['add'])}, 'add');
+	{ / }
+	{ ? params.hop_use == 'Y' }
+	// 희망 사용여부 처리 및 데이터 채우기
+	$("input[name='hop_use']").attr('checked',true).trigger('change');
+	$("input[name='delivery_hop_type']:radio[value={=params.delivery_hop_type}]").attr("checked","checked");
+	shipping_opt_type($("select[name='shipping_opt_type[hop]']"), {=json_encode(optTypeArr['hop'])});
+	{ / }
+	{ ? params.store_use == 'Y' }
+	// 매장 사용여부 처리 및 데이터 채우기
+	$("input[name='store_use']").attr('checked',true).trigger('change');
+	$("input[name='delivery_store_type']:radio[value={=params.delivery_store_type}]").attr("checked","checked");
+	{ / }
+}
+
+function use_check(obj, type){
+
+	var shipping_group_seq	= $("input[name='shipping_group_seq").val();
+	var shipping_set_seq	= $("input[name='shipping_set_seq").val();
+	
+	if($(obj).is(":checked") == true){
+		var useVal = 'Y';
+	} else {
+		var useVal = 'N';
+	}
+	
+	$.ajax({
+		type : "get",
+		url : '../setting/shipping_add_modify',
+		data : {
+			'shipping_group_seq' : shipping_group_seq,
+			'shipping_set_seq' : shipping_set_seq,
+			'useVal' : useVal,
+			'shipping_set_type' : type
+		},
+		success : function(res) {
+			if(useVal == 'N'){
+				/*
+				$("#price_"+type).find(".add_zone").removeAttr("data-seq");
+				$("#price_"+type).find(".add_zone").removeAttr("data-total");
+				$("#price_"+type).find(".zone_cnt").text("(0)");
+				$("#price_"+type).find("input[name='shipping_cost["+type+"][]']").attr("value", 0);
+				*/
+			} else {
+				$("#price_"+type).find(".add_zone").append('<input type="hidden" name="shipping_area_name['+type+'][]" value="지역1">');
+			}
+		}
+	})
+}
+
+// 최종 적용
+function submit_shipping_item(){
+	{ ? params.mode == 'modify' }
+	// 수정일때 처리
+	{ / }
+	$("form[name='shippingfrm']").submit();
+}
+</script>
+<div class="contents_container">
+<form name="shippingfrm" id="shippingfrm" method="post" action="../setting_process/add_shipping_item" target="actionFrame" class="hx100">
+<!--{ ? params.mode == 'modify' }-->
+<input type="hidden" name="shipping_set_seq" value="{=params.shipping_set_seq}" />
+<input type="hidden" name="idx" value="{=params.idx}" />
+<input type="hidden" name="shipping_group_seq" value="{=params.shipping_group_seq}" />
+<input type="hidden" name="shipping_group_name" value="{=params.shipping_group_name}" />
+<!--{ : }-->
+<input type="hidden" name="shipping_group_seq" value="{=_GET.shipping_group_dummy_seq}" />
+<!--{ / }-->
+<input type="hidden" name="delivery_nation" value="{=_GET.nation}" />
+<!--{ ? _GET.shipping_group_seq }-->
+<input type="hidden" name="shipping_group_seq" value="{=_GET.shipping_group_seq}" />
+<!--{ : }-->
+<input type="hidden" name="shipping_group_seq" value="{=params.shipping_group_seq}" />
+<!--{ / }-->
+<input type="hidden" name="shipping_set_seq" value="{=params.shipping_set_seq}" />
+<input type="hidden" name="shipping_group_real_seq" value="{=params.shipping_group_real_seq}" />
+
+<!-- 배송 설정 :: START -->
+<div class="content">
+	<div class="price_area">
+		<div class="pdb10">
+			<select name="delivery_type">
+				<option value="basic">1회구매</option>
+				<!--option value="regulr">정기배송</option-->
+			</select>
+		</div>
+		<table class="table_basic v7 v10 pd5">
+		<colgroup>
+			<col width="150px" />
+			<col width="100px" />
+			<col width="100px" />
+			<col />
+		</colgroup>
+		<tr>
+			<th>배송방법</th>
+			<th colspan="3">
+				<span>[{=calcul_type_tit}]</span> 배송비 = 기본 + 추가 + 희망배송일
+			</th>
+		</tr>
+
+		<!-- 기본배송비 :: START -->
+		<tr class="std_tr">
+			<td rowspan="6">
+				<select name="shipping_set_code" onchange="shipping_set_chk();">
+					<!--{ @ ship_set_code }-->
+					<option value="{.key_}">{.value_}</option>
+					<!--{ / }-->
+				</select>
+				<div class="mt5">
+					<label class="resp_checkbox"><input type="checkbox" name="custom_set_use" id="custom_set_use" value="Y" /></label>
+					<input type="text" name="shipping_set_name" value="" style="width:100px;" disabled />
+				</div>
+				<div class="resp_radio col">
+					<label><input type="radio" name="prepay_info" value="delivery" {?params.prepay_info=='delivery' || !params.prepay_info}checked{/} /> 선불</label><br/>	
+					<label><input type="radio" name="prepay_info" value="postpaid" {?params.prepay_info=='postpaid'}checked{/} /> 착불</label><br/>				
+					<label><input type="radio" name="prepay_info" value="all" {?params.prepay_info=='all'}checked{/} /> 선불/착불</label>
+				</div>
+			</td>
+			<td rowspan="4">
+				배송비
+			</td>
+			<td class="center nonpd check_td">
+				기본 <label class="resp_checkbox"><input type="checkbox" class="used_check std_area_check hide" name="std_use" value="Y" {?!params.std_use}checked{/} /></label>
+			</td>
+			<td>
+				<div class="combobox_area resp_radio">
+					<label><input type="radio" class="std_area" name="delivery_limit" value="unlimit" {?params.delivery_limit=='unlimit' || !params.delivery_limit}checked{/} /> <!--{ ? _GET.nation == 'korea' }-->대한민국 전국 배송<!--{ : }-->해외국가<!--{ / }--></label>					
+					<label><input type="radio" class="std_area" name="delivery_limit" value="limit" {?params.delivery_limit=='limit'}checked{/} /> <!--{ ? _GET.nation == 'korea' }-->대한민국 중 지정 지역 배송<!--{ : }-->해외국가 중 선택 국가 배송<!--{ / }--></label>
+				</div>
+				<div class="basic_shipping_area">
+					<!-- 금액 설정부 :: START -->
+					<table class="table_basic wauto price_set_area" id="price_std" price_type="std">
+					<thead>
+					<tr>
+						<th colspan="2">
+							<select class="shipping_opt_type std_area" name="shipping_opt_type[std]" onchange="shipping_opt_type(this, []);" style="width:130px;">
+								<option value="free" {?params['shipping_opt_type']['std']=='free'}selected{/}>무료</option>
+								<!--{ ? _GET.calcul_type != 'free' }-->
+								<option value="fixed" {?params['shipping_opt_type']['std']=='fixed'}selected{/}>고정</option>
+								<option value="amount" {?params['shipping_opt_type']['std']=='amount'}selected{/}>금액(구간입력)</option>
+								<option value="amount_rep" {?params['shipping_opt_type']['std']=='amount_rep'}selected{/}>금액(구간반복)</option>
+								<option value="cnt" {?params['shipping_opt_type']['std']=='cnt'}selected{/}>수량(구간입력)</option>
+								<option value="cnt_rep" {?params['shipping_opt_type']['std']=='cnt_rep'}selected{/}>수량(구간반복)</option>
+								<option value="weight" {?params['shipping_opt_type']['std']=='weight'}selected{/}>무게(구간입력)</option>
+								<option value="weight_rep" {?params['shipping_opt_type']['std']=='weight_rep'}selected{/}>무게(구간반복)</option>
+								<!--{ / }-->
+							</select>
+							<span class="tooltip_btn" onClick="showTooltip(this, '/selleradmin/tooltip/shipping_group', '#tip10', 'sizeR')"></span>
+						</th>
+						<th>
+							<span class="zone_text zone_idx_0" idx="0" >
+								<!--{ ? params['delivery_limit'] == 'unlimit' }-->
+								{?_GET.nation=='korea'}대한민국{:}전세계{/}
+								<!--{ : params['delivery_limit'] == 'limit' }-->
+								{?_GET.nation=='korea'}지역{:}국가{/}
+								<!--{ : }-->
+								{?_GET.nation=='korea'}대한민국{:}전세계{/}
+								<!--{ / }-->
+							</span>
+							<span class="zone_area_add_btn hide">
+								<span class="ctrl-add-btn add-col std_btn_area "><button class="resp_btn active size_S ctrl-btn" type="button" onclick="add_price_section(this,'zone');">추가</button></span>
+							</span>
+							<div class="zone_address_area"></div>
+						</th>
+					</tr>
+					</thead>
+					<tbody>
+					<tr>
+						<th class="its-th center" width="50px">
+							<div class="section_area_add_btn hide">
+								<span class="ctrl-add-btn add-row std_btn_area"><button class="resp_btn active size_S ctrl-btn" type="button" onclick="add_price_section(this,'section');">추가</button></span>
+							</div>
+						</th>
+						<td class="its-td section_area_td">
+							<div class="section_area_input hide">
+								<input type="hidden" name="shipping_opt_seq[std][]" value=""> 
+								<input type="text" name="section_st[std][]" value="0" class="section_st_input std_area wx90" readonly /> <span class="section_st_unit std_area"></span>
+								~
+								<input type="text" name="section_ed[std][]" value="0" class="section_ed_input line std_area onlyfloat wx90" onclick="if($(this).val()==0) $(this).val('');" onblur="section_auto_chk(this);" /> <span class="section_ed_unit"></span>
+							</div>
+						</td>
+						<td class="its-td" width="105px">
+							<input type="hidden" name="shipping_cost_seq[std][]" value="0" /> 
+							<input type="text" name="shipping_cost[std][]" value="0" class="line right shipping-cost-input std_area onlyfloat wx50" onclick="if($(this).val()==0) $(this).val('');" disabled /> {=punit}
+						</td>
+					</tr>
+					</tbody>
+					<!-- 마지막행 :: START -->
+					<tfoot>
+					<tr class="last-tr-base hide">
+						<th class="its-th center" width="50px">
+						</th>
+						<td class="its-td">
+							<div class="section_area_input hide">
+								<input type="hidden" name="shipping_opt_seq[std][]" value=""> 
+								<input type="text" name="section_st[std][]" value="0" class="section_st_input std_area wx90" readonly/> <span class="section_st_unit"></span>
+								<span class="suffix hide">
+									<input type="text" name="section_ed[std][]" value="0" class="section_ed_input line std_area onlyfloat wx90" onclick="if($(this).val()==0) $(this).val('');" onblur="section_auto_chk(this);" /> <span class="section_ed_unit"></span>
+								</span>
+							</div>
+						</td>
+						<td class="its-td" width="105px">
+							<input type="hidden" name="shipping_cost_seq[std][]" value="0" /> 
+							<input type="text" name="shipping_cost[std][]" value="0" class="line right shipping-cost-input std_area onlyfloat wx50" onclick="if($(this).val()==0) $(this).val('');" /> {=punit}
+						</td>
+					</tr>
+					</tfoot>
+					<!-- 마지막행 :: END -->
+					</table>
+					<!-- 금액 설정부 :: END -->
+				</div>
+			</td>
+		</tr>
+		<!-- 기본배송비 :: END -->
+
+		<!-- 추가배송비 설정부 :: START -->
+		<tr class="add_tr">
+			<td class="its-td nonpd center check_td">
+				<label class="resp_checkbox"><input type="checkbox" class="used_check add_area_check" name="add_use" value="Y" onclick="use_check(this, 'add')"/> 추가</label>
+			</td>
+			<td class="its-td left">
+				<!-- 금액 설정부 :: START -->
+				<table class="table_basic wauto price_set_area" id="price_add" price_type="add">
+				<thead>
+				<tr>
+					<th colspan="2">
+						<select class="shipping_opt_type add_area" name="shipping_opt_type[add]" onchange="shipping_opt_type(this, []);">
+							<option value="fixed" {?params['shipping_opt_type']['add']=='fixed'}selected{/}>고정</option>
+							<option value="amount" {?params['shipping_opt_type']['add']=='amount'}selected{/}>금액(구간입력)</option>
+							<option value="amount_rep" {?params['shipping_opt_type']['add']=='amount_rep'}selected{/}>금액(구간반복)</option>
+							<option value="cnt" {?params['shipping_opt_type']['add']=='cnt'}selected{/}>수량(구간입력)</option>
+							<option value="cnt_rep" {?params['shipping_opt_type']['add']=='cnt_rep'}selected{/}>수량(구간반복)</option>
+							<option value="weight" {?params['shipping_opt_type']['add']=='weight'}selected{/}>무게(구간입력)</option>
+							<option value="weight_rep" {?params['shipping_opt_type']['add']=='weight_rep'}selected{/}>무게(구간반복)</option>
+						</select>
+						<span class="tooltip_btn" onClick="showTooltip(this, '/selleradmin/tooltip/shipping_group', '#tip10', 'sizeR')"></span>
+					</th>
+					<th >
+						<span class="zone_text zone_idx_0" idx="0" >
+							<span class="add_btn_area issueCount" style="left:45px;top:0px;"><input type="hidden" class="issue" name="issue[add][]" value="0" /><span class="hgi-left"><span class="hgi-right"><span class="hgi-bg">!</span></span></span></span>
+							<span class="add_zone hand blue" onclick="add_zone_pop(this);">{?_GET.nation=='korea'}지역1{:}국가1{/}</span><span class="zone_cnt blue">(0)</span>
+						</span>
+						<span class="zone_area_add_btn">
+							<span class="ctrl-add-btn add-col add_btn_area"><button class="resp_btn active size_S ctrl-btn" type="button" onclick="add_price_section(this,'zone');">추가</button></span>
+						</span>
+						<div class="zone_address_area"></div>
+					</th>
+				</tr>
+				</thead>
+				<tbody>
+				<tr>
+					<th width="50px">
+						<div class="section_area_add_btn hide">
+							<span class="ctrl-add-btn add-row add_btn_area"><button class="resp_btn active size_S ctrl-btn" type="button" onclick="add_price_section(this,'section');">추가</button></span>
+						</div>
+					</th>
+					<td class="section_area_td" >
+						<div class="section_area_input hide">
+							<input type="hidden" name="shipping_opt_seq[add][]" value=""> 
+							<input type="text" name="section_st[add][]" value="0" class="section_st_input add_area wx90" readonly /> <span class="section_st_unit"></span>
+							~
+							<input type="text" name="section_ed[add][]" value="0" class="section_ed_input line add_area onlyfloat wx90" onclick="if($(this).val()==0) $(this).val('');" onblur="section_auto_chk(this);" /> <span class="section_ed_unit"></span>
+						</div>
+					</td>
+					<td width="105px">
+						<input type="hidden" name="shipping_cost_seq[add][]" value="0" /> 
+						<input type="text" name="shipping_cost[add][]" value="0" class="line right shipping-cost-input add_area onlyfloat wx50" onclick="if($(this).val()==0) $(this).val('');" disabled /> {=punit}
+					</td>
+				</tr>
+				</tbody>
+				<!-- 마지막행 :: START -->
+				<tfoot>
+				<tr class="last-tr-base hide">
+					<th width="50px">
+					</th>
+					<td style="min-width:110px;">
+						<div class="section_area_input hide">
+							<input type="hidden" name="shipping_opt_seq[add][]" value=""> 
+							<input type="text" name="section_st[add][]" value="0" class="section_st_input add_area wx90" readonly/> <span class="section_st_unit"></span>
+							<span class="suffix hide">
+								<input type="text" name="section_ed[add][]" value="0" class="section_ed_input line add_area onlyfloat wx90" onclick="if($(this).val()==0) $(this).val('');" onblur="section_auto_chk(this);" /> <span class="section_ed_unit"></span>
+							</span>
+						</div>
+					</td>
+					<td width="105px">
+						<input type="hidden" name="shipping_cost_seq[add][]" value="0" /> 
+						<input type="text" name="shipping_cost[add][]" value="0" class="line right shipping-cost-input add_area onlyfloat wx50" onclick="if($(this).val()==0) $(this).val('');" /> {=punit}
+					</td>
+				</tr>
+				</tfoot>
+				<!-- 마지막행 :: END -->
+				</table>
+				<!-- 금액 설정부 :: END -->
+			</td>
+		</tr>
+		<!-- 추가배송비 설정부 :: END -->
+
+		<!-- 희망배송일 설정부 :: START -->
+		<tr class="hop_tr">
+			<td class="its-td nonpd center check_td">
+				<label class="resp_checkbox"><input type="checkbox" class="used_check hop_area_check" name="hop_use" onclick="use_check(this, 'hop');" value="Y" />
+				<div class="pdt5">희망<br/>배송일</div></label>
+			</td>
+			<td class="its-td left">
+				<!-- 희망배송일 상세설정 :: START -->
+				<div class="hopeday_setting_area">
+					<table class="table_basic thl">
+					<colgroup>
+						<col width="18%" />
+						<col width="82%" />
+					</colgroup>
+					<tr>
+						<th class="its-th pdl10">희망배송일 선택</th>
+						<td class="its-td">
+							<div class="resp_radio">
+								<label><input type="radio" class="hop_area" name="hopeday_required" value="N" {?params.hopeday_required=='N'||!params.hopeday_required}checked{/} /> 선택사항</label>							
+								<label><input type="radio" class="hop_area" name="hopeday_required" value="Y" {?params.hopeday_required=='Y'}checked{/}/> 필수사항</label>
+							</div>
+						</th>
+					</tr>
+					<tr>
+						<th class="its-th pdl10">선택 가능 시작일</th>
+						<td class="its-td">
+							<div>
+								<label class="resp_radio"><input type="radio" class="hop_area" name="hopeday_limit_set" value="time" {?params.hopeday_limit_set=='time'||!params.hopeday_limit_set}checked{/} /> 주문 당일부터 선택 가능</label><br/>
+								<span class="pdl20">
+									단, 주문 당일은
+									<select class="hop_area" name="hopeday_limit_val_time">
+										<option value="1330" {?params.hopeday_limit_set=='time'&&params.hopeday_limit_val=='1330'}selected{/}>13:30 이전</option>
+										<option value="1200" {?params.hopeday_limit_set=='time'&&params.hopeday_limit_val=='1200'}selected{/}>12:00 이전</option>
+									</select>
+									주문 시 당일배송 선택 가능
+								</span>
+							</div>
+							<div class="pdt10">
+								<label class="resp_radio"><input type="radio" class="hop_area" name="hopeday_limit_set" value="day" {?params.hopeday_limit_set=='day'}checked{/} /> 주문당일일</label>
+								<span>
+									+ <input type="text" class="hop_area" name="hopeday_limit_val_day" value="{?params.hopeday_limit_set=='day'&&params.hopeday_limit_val}{=params.hopeday_limit_val}{/}" /> 일째 되는 날 부터 선택 가능
+								</span>
+							</div>
+						</th>
+					</tr>
+					<tr>
+						<th class="its-th pdl10">특정요일 선택 불가</th>
+						<td>
+							<div class="resp_checkbox">
+								<label><input type="checkbox" class="hop_area" name="hopeday_limit_week[]" value="1" {?params['hopeday_limit_week_arr'][1]=='1'}checked{/} /> Monday</label>							
+								<label><input type="checkbox" class="hop_area" name="hopeday_limit_week[]" value="2" {?params['hopeday_limit_week_arr'][2]=='1'}checked{/} /> Tuesday</label>							
+								<label><input type="checkbox" class="hop_area" name="hopeday_limit_week[]" value="3" {?params['hopeday_limit_week_arr'][3]=='1'}checked{/} /> Wednesday</label>							
+								<label><input type="checkbox" class="hop_area" name="hopeday_limit_week[]" value="4" {?params['hopeday_limit_week_arr'][4]=='1'}checked{/} /> Thursday</label>							
+								<label><input type="checkbox" class="hop_area" name="hopeday_limit_week[]" value="5" {?params['hopeday_limit_week_arr'][5]=='1'}checked{/} /> Friday</label>							
+								<label><input type="checkbox" class="hop_area" name="hopeday_limit_week[]" value="6" {?params['hopeday_limit_week_arr'][6]=='1'}checked{/} /> Saturday</label>							
+								<label><input type="checkbox" class="hop_area" name="hopeday_limit_week[]" value="0" {?params['hopeday_limit_week_arr'][0]=='1'}checked{/} /> Sunday</label>
+							</div>							
+						</th>
+					</tr>
+					<tr>
+						<th class="its-th pdl10">선택 불가일</th>
+						<td class="its-td nonpd clear">
+							<table class="table_basic v3 hope_day_tb info-tb-inner" >
+							<col width="18%" /><col width="82%" />
+							<thead>
+							<tr>
+								<td >매년</td>
+								<td style="border-bottom:1px solid #DADADA;">
+									<input type="text" class="hop_area limit_day_input" name="hopeday_limit_repeat_day" value="{=params.hopeday_limit_repeat_day}" style="width:90%;" />
+									<input type="text" name="repeat_day_tmp" value="" onchange="set_hopeday(this);" class="datepicker hide" />
+								</td>
+							</tr>
+							</thead>
+							<tbody>
+							<!--{ ? params.hopeday_limit_day_arr }-->
+								<!--{ @ params.hopeday_limit_day_arr }-->
+							<tr>
+								<td>
+									<input type="text" name="hope_year[]" class="hop_area hope_year" value="{=.key_}" size="4" maxlength="4">년
+									<!--{ ? .index_ == (count(params.hopeday_limit_day_arr)-1) }-->
+									<span class="hop_btn_area"><input type="button" onclick="hope_add(this);" class="btn_plus" /></span>
+									<!--{ : }-->
+									<span class="hop_btn_area"><input type="button" onclick="hope_del(this);" class="btn_minus"/></span>
+									<!--{ / }-->
+								</td>
+								<td>
+									<input type="text" class="hop_area limit_day_input" name="hopeday_limit_day[]" value="{=.value_}" style="width:90%;" />
+									<input type="text" name="day_tmp[]" value="" onchange="set_hopeday(this);" class="datepicker hide" />
+								</td>
+							</tr>
+								<!--{ / }-->
+							<!--{ : }-->
+							<tr>
+								<td>
+									<input type="text" name="hope_year[]" class="hop_area hope_year" value="{=date('Y')}" size="4" maxlength="4">년
+									<span class="hop_btn_area"><input type="button" onclick="hope_add(this);" class="btn_plus" /></span>
+								</td>
+								<td>
+									<input type="text" class="hop_area limit_day_input" name="hopeday_limit_day[]" value="" style="width:90%;" />
+									<input type="text" name="day_tmp[]" value="" onchange="set_hopeday(this);" class="datepicker hide" />
+								</td>
+							</tr>
+							<!--{ / }-->
+							</tbody>
+							</table>
+						</th>
+					</tr>
+					</table>
+				</div>
+				<!-- 희망배송일 상세설정 :: END -->
+
+				<!-- 금액 설정부 :: START -->
+				<div class="hop_shipping_area pdt20">
+					<table class="table_basic wauto price_set_area" id="price_hop" price_type="hop">
+					<thead>
+					<tr>
+						<th class="its-th center" colspan="2">
+							<select class="shipping_opt_type hop_area" name="shipping_opt_type[hop]" onchange="shipping_opt_type(this, []);">
+								<option value="free" { ? params['shipping_opt_type']['hop'] == 'free'}selected{ / }>무료</option>
+								<option value="fixed" { ? params['shipping_opt_type']['hop'] == 'fixed'}selected{ / }>고정</option>
+								<option value="amount" { ? params['shipping_opt_type']['hop'] == 'amount'}selected{ / }>금액(구간입력)</option>
+								<option value="amount_rep" { ? params['shipping_opt_type']['hop'] == 'amount_rep'}selected{ / }>금액(구간반복)</option>
+								<option value="cnt" { ? params['shipping_opt_type']['hop'] == 'cnt'}selected{ / }>수량(구간입력)</option>
+								<option value="cnt_rep" { ? params['shipping_opt_type']['hop'] == 'cnt_rep'}selected{ / }>수량(구간반복)</option>
+								<option value="weight" { ? params['shipping_opt_type']['hop'] == 'weight'}selected{ / }>무게(구간입력)</option>
+								<option value="weight_rep" { ? params['shipping_opt_type']['hop'] == 'weight_rep'}selected{ / }>무게(구간반복)</option>
+							</select>
+							<span class="tooltip_btn" onClick="showTooltip(this, '/admin/tooltip/shipping_group', '#tip10', 'sizeR')"></span>
+						</th>
+						<th class="its-th center">
+							<span class="zone_text zone_idx_0" idx="0" >
+								<span class="hop_btn_area issueCount" style="left:45px;top:0px;"><input type="hidden" class="issue" name="issue[hop][]" value="0" /><span class="hgi-left"><span class="hgi-right"><span class="hgi-bg">!</span></span></span></span>
+								<span class="add_zone hand blue" onclick="add_zone_pop(this);">{?_GET.nation=='korea'}지역1{:}국가1{/}</span><span class="zone_cnt blue">(0)</span><span class="zone_today"> <br/>(<label class="resp_checkbox"><input type="checkbox" class="hop_area hop_today" name="shipping_today_yn[]" onclick="hop_today_use(this);" value="Y" /> 당일</label>)</span> 
+								<span><input type="hidden" class="today_yn" name="today_yn[]" value="" /></span>
+							</span>
+							<span class="zone_area_add_btn">
+								<span class="ctrl-add-btn add-col hop_btn_area"><button class="resp_btn active size_S ctrl-btn" type="button" onclick="add_price_section(this,'zone');">추가</button></span>
+							</span>
+							<div class="zone_address_area"></div>
+						</th>
+					</tr>
+					</thead>
+					<tbody>
+					<tr>
+						<th class="its-th center" width="50px">
+							<div class="section_area_add_btn hide">
+								<span class="ctrl-add-btn add-row hop_btn_area"><button class="resp_btn active size_S ctrl-btn" type="button" onclick="add_price_section(this,'section');">추가</button></span>
+							</div>
+						</th>
+						<td class="its-td section_area_td" style="min-width:110px;">
+							<input type="hidden" name="shipping_opt_seq[hop][]" value=""> 
+							<div class="section_area_input hide">
+								<input type="text" name="section_st[hop][]" value="0" class="section_st_input hop_area wx90" readonly /> <span class="section_st_unit"></span>
+								~
+								<input type="text" name="section_ed[hop][]" value="0" class="section_ed_input line hop_area onlyfloat wx90" onclick="if($(this).val()==0) $(this).val('');" onblur="section_auto_chk(this);" /> <span class="section_ed_unit"></span>
+							</div>
+						</td>
+						<td class="its-td right pdr10" width="135px">
+							<input type="hidden" name="shipping_cost_seq[hop][]" value="0" /> 
+							<input type="text" name="shipping_cost[hop][]" value="0" class="line right shipping-cost-input hop_area onlyfloat wx50" onclick="if($(this).val()==0) $(this).val('');" disabled /> {=punit}
+							<br/>
+							당일
+							<input type="text" name="shipping_cost_today[hop][]" value="0" class="line right shipping-cost-today hop_area onlyfloat today_idx_0 wx50"  onclick="if($(this).val()==0) $(this).val('');" disabled /> {=punit}
+						</td>
+					</tr>
+					</tbody>
+					<!-- 마지막행 :: START -->
+					<tfoot>
+					<tr class="last-tr-base hide">
+						<th class="its-th center" width="50px">
+						</th>
+						<td class="its-td" style="min-width:110px;">
+							<div class="section_area_input hide">
+								<input type="hidden" name="shipping_opt_seq[hop][]" value=""> 
+								<input type="text" name="section_st[hop][]" value="0" class="section_st_input hop_area wx90" readonly/> <span class="section_st_unit"></span>
+								<span class="suffix hide">
+									<input type="text" name="section_ed[hop][]" value="0" class="section_ed_input line hop_area onlyfloat wx90" onclick="if($(this).val()==0) $(this).val('');" onblur="section_auto_chk(this);" /> <span class="section_ed_unit"></span>
+								</span>
+							</div>
+						</td>
+						<td class="its-td right pdr10" width="135px">
+							<input type="hidden" name="shipping_cost_seq[hop][]" value="0" /> 
+							<input type="text" name="shipping_cost[hop][]" value="0" class="line right shipping-cost-input hop_area onlyfloat today_idx_0 wx50" onclick="if($(this).val()==0) $(this).val('');" /> {=punit}
+							<br/>
+							당일
+							<input type="text" name="shipping_cost_today[hop][]" value="0" class="line right shipping-cost-today hop_area onlyfloat today_idx_0 today_idx_0 wx50" onclick="if($(this).val()==0) $(this).val('');" disabled /> {=punit}
+						</td>
+					</tr>
+					</tfoot>
+					<!-- 마지막행 :: END -->
+					</table>
+				</div>
+				<!-- 금액 설정부 :: END -->
+			</td>
+		</tr>
+		<!-- 희망배송일 설정부 :: END -->
+
+		<!-- 수령매장 설정부 :: START -->
+		<tr class="store_tr">
+			<td class="its-td nonpd center check_td">
+				<label class="resp_checkbox"><input type="checkbox" class="used_check store_area_check" name="store_use" onclick="return false;" value="Y" /><br/>
+				<div class="pdt5">수령<br/>매장</div></label>
+			</td>
+			<td class="its-td left">
+				<!-- 수령매장 :: START -->
+				<div class="direct_set_area">
+					<span class="btn small white store_btn_area"><button type="button" onclick="shipping_address_pop('address');">설정</button></span>
+				</div>
+				<div class="direct_store_area pdt5">
+					<!-- 매장 설정부 :: START -->
+					<table class="table_basic store_tb" >
+					<colgroup>
+						<col width="80px" />
+						<col width="50px" />
+						<col width="100px" />
+						<col />
+						<col width="150px" />
+						<col width="170px" />
+						<col width="80px" />
+					</colgroup>
+					<thead>
+					<tr>
+						<th>분류</th>
+						<th>해외</th>
+						<th>매장명</th>
+						<th>주소</th>
+						<th>전화번호</th>
+						<th>재고 창고 연동</th>
+						<th>관리</th>
+					</tr>
+					</thead>
+					<tbody>
+					<!--{ ? params.store_list_arr }-->
+						<!--{ @ params.store_list_arr }-->
+					<tr>
+						<td>
+							<input name="shipping_address_seq[]" class="shipping_address_input" type="hidden" value="{=.shipping_address_seq}" />
+							<input name="shipping_address_category[]" type="hidden" value="{=.shipping_address_category}" />
+							{=.shipping_address_category}
+						</td>
+						<td>
+							<input name="shipping_address_nation[]" type="hidden" value="{=.shipping_address_nation}" />
+							{=.shipping_address_nation}
+						</td>
+						<td>
+							<input name="shipping_store_name[]" type="hidden" value="{=.shipping_store_name}" />
+							{=.shipping_store_name}
+						</td>
+						<td>
+							<input name="shipping_address_full[]" type="hidden" value="{=.shipping_address_full}" />
+							{=.shipping_address_full}
+						</td>
+						<td>
+							<input name="store_phone[]" type="hidden" value="{=.store_phone}" />
+							{=.store_phone}
+						</td>
+						<td>
+							<!--{ ? .store_supply_set == 'Y' }-->
+								재고수량 :
+								<!--{ ? .store_supply_set_view == 'Y' }-->
+								노출
+								<!--{ : }-->
+								미노출
+								<!--{ / }-->
+								<br/>
+								재고선택 :
+								<!--{ ? .store_supply_set_order == 'Y' }-->
+								재고 > 0
+								<!--{ : }-->
+								재고 = 0
+								<!--{ / }-->
+							<!--{ : }-->
+							재고 창고와 미연동
+							<!--{ / }-->
+							<input name="store_supply_set[]" type="hidden" value="{=.store_supply_set}" />
+							<input name="store_supply_set_view[]" type="hidden" value="{=.store_supply_set_view}" />
+							<input name="store_supply_set_order[]" type="hidden" value="{=.store_supply_set_order}" />
+						</td>
+						<td class="its-td">
+							<input name="store_scm_type[]" type="hidden" value="{=.store_scm_type}" />
+							<span class="btn small red store_btn_area"><input onclick="del_address(this);" type="button" value="삭제"></span>
+						</td>
+					</tr>
+						<!--{ / }-->
+					<!--{ : }-->
+					<tr base_tr="Y">
+						<td colspan="7" class="its-td center">설정된 매장이 없습니다.</td>
+					</tr>
+					<!--{ / }-->
+					</tbody>
+					</table>
+					<!-- 매장 설정부 :: END -->
+				</div>
+				<!-- 수령매장 :: END -->
+			</td>
+		</tr>
+		<!-- 수령매장 설정부 :: END -->
+
+		<!-- 반품배송비 설정부 :: START -->
+		<tr class="refund_tr">
+			<td class="its-td" rowspan="2">반품</br/>배송비</td>
+			<td class="its-td nonpd center check_td">반품</td>
+			<td class="its-td left">
+				편도 : <input type="text" name="refund_shiping_cost" id="refund_shiping_cost" class="line right shipping-cost-input onlyfloat wx50" value="{params.refund_shiping_cost}" /> {=punit} 
+				( <label class="resp_checkbox"><input type="checkbox" name="shiping_free_yn" value="Y" {?params.shiping_free_yn=='Y'}checked{/}/> 배송비가 무료인 경우, 반품배송비 왕복 <span class="refund_shiping_double">{=(params.refund_shiping_cost*2)}</span> {=punit} 받음</label> )
+			</td>
+		</tr>
+		<tr class="refund_tr">
+			<td class="its-td nonpd center check_td">(맞)교환</td>
+			<td class="its-td left">
+				왕복 : <input type="text" name="swap_shiping_cost" class="line right shipping-cost-input onlyfloat wx50" value="{params.swap_shiping_cost}" /> {=punit}
+			</td>
+		</tr>
+		<!-- 반품배송비 설정부 :: END -->
+
+		</table>
+	</div>
+	<!-- 배송 설정 :: END -->
+
+	<!-- 배송안내 :: START -->
+	<div class="ship_desc pd10">
+		<div class="pdb10">
+			배송안내 <input type="button" id="btn_autoinfo_desc" class="resp_btn" value="자동안내 설명" />
+		</div>
+
+		<table class="table_basic thl">		
+		<tr>
+			<th class="its-th pdl10">기본 배송비</th>
+			<td class="its-td">
+				<div class="resp_radio">
+					<label><input type="radio" name="delivery_std_type" class="std_area" value="Y" checked /> 자동안내</label>				
+					<label><input type="radio" name="delivery_std_type" class="std_area" value="N" /> 직접입력</label>
+				</div>
+				<input type="text" name="delivery_std_input" class="std_area" value="{=params.delivery_std_input}" style="width:500px;" />				
+			</td>
+		</tr>
+		<tr>
+			<th class="its-th pdl10">추가 배송비</th>
+			<td class="its-td">
+				<div class="resp_radio">
+					<label><input type="radio" name="delivery_add_type" class="add_area" value="Y" checked /> 자동안내</label>				
+					<label><input type="radio" name="delivery_add_type" class="add_area" value="N" /> 직접입력</label>
+				</div>
+				<input type="text" name="delivery_add_input" class="add_area" value="{=params.delivery_add_input}" style="width:500px;" />
+			</td>
+		</tr>
+		<tr>
+			<th class="its-th pdl10">희망배송일</th>
+			<td class="its-td">
+				<div class="resp_radio">
+					<label><input type="radio" name="delivery_hop_type" class="hop_area" value="Y" checked /> 자동안내</label>				
+					<label><input type="radio" name="delivery_hop_type" class="hop_area" value="N" /> 직접입력</label>
+				</div>
+				<input type="text" name="delivery_hop_input" class="hop_area" value="{=params.delivery_hop_input}" style="width:500px;" />
+			</td>
+		</tr>
+		<tr>
+			<th class="its-th pdl10">수령매장</th>
+			<td class="its-td">
+				<div class="resp_radio">
+					<label><input type="radio" name="delivery_store_type" class="store_area" value="Y" checked /> 자동안내</label>				
+					<label><input type="radio" name="delivery_store_type" class="store_area" value="N" /> 직접입력</label>
+				</div>
+				<input type="text" name="delivery_store_input" class="store_area" value="{=params.delivery_store_input}" style="width:500px;" />
+			</td>
+		</tr>
+		</table>
+	</div>
+</div>
+<!-- 배송안내 :: END -->
+
+<!-- ##### 최종 적용 버튼 :: START ##### -->
+<div class="footer">
+	<button type="button" class="resp_btn active size_XL" onclick="submit_shipping_item();">저장</button>
+	<button type="button" class="resp_btn v3 size_XL" onclick="window.close();">취소</button>
+</div>
+<!-- ##### 최종 적용 버튼 :: END ##### -->
+
+</div>
+
+<!-- 자동안내 설명 :: START -->
+<div id="autoinfoPopup" class="hide">
+{ #delivery_desc }
+</div>
+<!-- 자동안내 설명 :: END -->
+
+<!-- 장소리스트 팝업 :: START -->
+<div id="shipping_address_pop_area" class="hide">
+</div>
+<!-- 장소리스트 팝업 :: END -->
+
+{ #layout_footer_popup }

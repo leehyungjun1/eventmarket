@@ -367,7 +367,7 @@
 						<!--{ ? serviceLimit('H_AD') }--><div>{.provider_name}</div><!--{ / }-->
 						<div class="blue">
 							<!--{ ? orders.pg == 'talkbuy' }-->
-							<span class="hand shipping_set_name_{.export_code}" onclick='openDialog("카카오페이 구매", "talkbuy_delivary_dialog", {"width":"450","height":"150"});'>{.shipping_set_name}</span>
+							<span class="hand shipping_set_name_{.export_code}" onclick='openDialog("톡체크아웃", "talkbuy_delivary_dialog", {"width":"450","height":"150"});'>{.shipping_set_name}</span>
 							<!--{ : }-->
 							<span class="hand shipping_set_name_{.export_code}" onclick="ship_chg_popup('{.export_code}','export','after');">{.shipping_set_name}</span>
 							<!--{ / }-->
@@ -2284,7 +2284,7 @@
 
 <div id="talkbuy_delivary_dialog" class="hide">
 	<div class="center">
-		<p>카카오페이 구매 주문은 주문 시 선택된 배송방법을 변경할 수 없습니다.</p>
+		<p>톡체크아웃 주문은 주문 시 선택된 배송방법을 변경할 수 없습니다.</p>
 	</div>
 	<div class="pd10 center">
 		<span class="btn medium" ><button type="button" onclick="closeDialog('talkbuy_delivary_dialog');">확인</button></span>

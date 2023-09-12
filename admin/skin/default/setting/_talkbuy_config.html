@@ -1,0 +1,390 @@
+<table class="table_basic thl">		
+	<tr>
+		<th>사용</th>
+		<td>
+			<div class="resp_radio">
+				<label><input type="radio" name="talkbuy_use" value="y" { ? talkbuy.use == 'y' }checked="checked"{/}/> 사용</label>
+				<label><input type="radio" name="talkbuy_use" value="n" { ? talkbuy.use == 'n' ||  talkbuy.use == '' }checked="checked"{/}/> 사용 안 함</label>
+			</div>
+			<input type="hidden" name="talkbuyServiceStatus" value="{=talkbuy_status.serviceStatus}" />
+			<span id="talkbuy_status" class="blue bold pdl10">[{=talkbuy_status.serviceStatusKorDetail}]</span>
+		</td>
+	</tr>
+	<tr>
+		<th>상점 인증 키</th>
+		<!--{? talkbuy.shopKey }-->
+		<td>
+			<input type="text" name="talkbuy_shopKey_show" size="50" class="line disabled" disabled value="{talkbuy.shopKey}" />
+			<input type="hidden" name="talkbuy_shopKey" size="50" class="line" value="{talkbuy.shopKey}" />
+		</td>
+		<!--{ : }-->
+		<td><input type="text" name="talkbuy_shopKey" size="50" class="line" value="{talkbuy.shopKey}" /></td>
+		<!--{ / }-->
+	</tr>
+	<tr class="talkbuy_use_show hide">
+		<th>버튼 인증 키</th>
+		<td><input type="text" name="talkbuy_button_key" size="50" class="line disabled" disabled value="{talkbuy.button_key}"/></td>
+	</tr>
+	<tr class="talkbuy_use_show hide">
+		<th>버튼타입 (PC)</th>
+		<td>
+			<div style="margin: 15px 0;">
+				<button type="button" class="resp_btn v2 mr5" onclick="talkbuy_btn_style('pc_goods')">버튼 선택</button>	
+				<span id="talkbuy_pc_goods_text">{=sel_talkbuy_btn_text['pc_goods']}</span>
+			</div>
+			<table class="table_basic v7 wauto">
+				<tr>
+					<th>상품상세 페이지</th>
+					<th>장바구니 페이지</th>
+				</tr>
+				<tr>
+					<td class="pd10">
+						<iframe name="talkbuy_pc_goods" id="talkbuy_pc_goods" src="../marketing/talkbuy_btn_style_iframe?mode=pc_goods" frameborder=0 border=0 align="center" width="350" height="{=sel_talkbuy_btn_text['pc_goods_h']}"></iframe>						
+					</td>
+					<td class="pd10">	
+						<iframe name="talkbuy_pc_goods_cart" id="talkbuy_pc_goods_cart" src="../marketing/talkbuy_btn_style_iframe?mode=pc_goods&type=cart" frameborder=0 border=0 align="center" width="350" height="{=sel_talkbuy_btn_text['pc_goods_h']}"></iframe>						
+					</td>
+				</tr>
+			</table>
+		</td>
+	</tr>
+	<tr>
+		<th>버튼 타입 (MOBILE)</th>
+		<td>
+			
+			<button type="button" class="resp_btn v2 mr5" onclick="talkbuy_btn_style('mobile_goods')">버튼 선택</button>	
+			<span id="talkbuy_mobile_goods_text">{=sel_talkbuy_btn_text['mobile_goods']}</span>
+			
+			<table class="table_basic v7 wauto mt5">
+				<tr>
+					<th>상품상세 페이지</th>
+					<th>장바구니 페이지</th>
+				</tr>
+				<tr>
+					<td class="pd10">
+						<iframe name="talkbuy_mobile_goods" id="talkbuy_mobile_goods" src="../marketing/talkbuy_btn_style_iframe?mode=mobile_goods" frameborder=0 border=0 width="350" height="{=sel_talkbuy_btn_text['mobile_goods_h']}"></iframe>
+					</td>
+					<td class="pd10">	
+						<iframe name="talkbuy_mobile_goods_cart" id="talkbuy_mobile_goods_cart" src="../marketing/talkbuy_btn_style_iframe?mode=mobile_goods&type=cart" frameborder=0 border=0 width="350" height="{=sel_talkbuy_btn_text['mobile_goods_h']}"></iframe>
+				</tr>
+			</table>
+		</td>
+	</tr>
+	<tr>
+		<th>
+			상품 연동 제외
+		</th>
+		<td class="clear">
+			<table class="table_basic thl v3">
+				<tbody>
+					<tr>
+						<th>상품</th>								
+						<td>
+							<input type="button" value="상품 선택" class="btn_select_goods resp_btn active" data-goodstype='talkbuy_expect_goods' />
+							<span class="span_select_goods_del {? count(talkbuy.except_goods) == 0 }hide{/}"><input type="button" value="선택 삭제" class="select_goods_del resp_btn v3" selectType="goods" /></span>
+							<div class="mt10 wx600 {? count(talkbuy.except_goods) == 0 }hide{/}">
+								<div class="goods_list_header">
+									<table class="table_basic tdc">
+										<colgroup>
+											<col width="10%" />
+											<!--{ ? serviceLimit('H_AD') }-->
+											<col width="25%" />
+											<col width="45%" />
+											<!--{ : }-->
+											<col width="70%" />
+											<!--{ / }-->
+
+											<col width="20%" />
+										</colgroup>
+										<tbody>
+											<tr>
+											<th><label class="resp_checkbox"><input type="checkbox" name="chkAll" onClick="gGoodsSelect.checkAll(this)" value="goods"></label></th>
+											<!--{ ? serviceLimit('H_AD') }-->
+											<th>입점사명</th>
+											<!--{ / }-->
+											<th>상품명</th>
+											<th>판매가</th>
+											</tr>
+										</tbody>
+									</table>
+								</div>
+								<div class="goods_list">
+									<table class="table_basic tdc">
+										<colgroup>
+											<col width="10%" />
+											<!--{ ? serviceLimit('H_AD') }-->
+											<col width="25%" />
+											<col width="45%" />
+											<!--{ : }-->
+											<col width="70%" />
+											<!--{ / }-->
+											<col width="20%" />
+										</colgroup>
+										<tbody>
+											<tr rownum=0 {? count(talkbuy.except_goods) == 0 }class="show"{:}class="hide"{/}>
+												<td class="center" colspan="4">상품을 선택하세요</td>
+											</tr><!-- issueGoods, issueGoodsSeq  ==> select_goods_list -->
+											<!--{ @ talkbuy.except_goods }-->
+											<tr rownum="{=.goods_seq}">
+												<td><label class="resp_checkbox"><input type="checkbox" name='talkbuy_expect_goodsTmp[]' class="chk" value='{.goods_seq}' /></label>
+													<input type="hidden" name='talkbuy_expect_goods[]' class="chk" value='{.goods_seq}' />
+													<input type="hidden" name="talkbuy_expect_goodsSeq[{.goods_seq}]" value="{.issuegoods_seq}" /></td>
+												<!--{ ? serviceLimit('H_AD') }-->
+													<td>{=.provider_name}</td>
+												<!--{ / }-->
+												<td class='left'>
+													<div class="image"><img src="{=viewImg(.goods_seq,'thumbView')}" width="50"></div>
+													<div class="goodsname">
+														{? .goods_code}<div>[상품코드:{=.goods_code}]</div>{/}
+														<div>{.goods_kind_icon} <a href="/admin/goods/regist?no={.goods_seq}" target="_blank">[{=.goods_seq}]{=getstrcut(strip_tags(.goods_name),30)}</a></div>
+													</div>
+												</td>
+												<td class='right'>{=get_currency_price(.price,2)}</td>
+											</tr>
+										<!--{ / }-->
+										</tbody>
+									</table>
+								</div>
+							</div>	
+						</td>
+					</tr>
+					
+					<tr>
+						<th>카테고리</th>	
+						<td class="categoryList">
+							<input type="button" value="카테고리 선택" class="btn_category_select resp_btn active" data-fieldName='talkbuy_issueCategoryCode' data-listLay='talkbuy_category_list' />								
+							<div class="mt10 wx600 talkbuy_category_list  {? count(talkbuy.except_category_code) == 0 }hide{/}">
+								<table class="table_basic fix">
+									<colgroup>
+										<col width="85%" />
+										<col width="15%" />
+									</colgroup>
+									<thead>
+										<tr class="nodrag nodrop">
+											<th>카테고리명</th>
+											<th>삭제</th>	
+										</tr>
+									</thead>
+									<tbody>
+										<tr rownum=0 {? count(talkbuy.except_category_code) == 0 }class="show"{:}class="hide"{/}>
+											<td class="center" colspan="2">카테고리를 선택하세요</td>
+										</tr>													
+									<!--{ @ talkbuy.except_category_code }-->
+										<tr rownum="{=.category_code}">
+											<td class="center">{.category_name}</td>
+											<td class="center">
+												<input type="hidden" name='talkbuy_issueCategoryCode[]' value='{.category_code}' />
+												<input type="hidden" name="talkbuy_issueCategoryCodeSeq[{.category_code}]" value="{.issuecategory_seq}" />
+												<button type="button" class="btn_minus"  selectType="category" category_seq="{=.category_code}"></button>
+											</td>
+										</tr>
+									<!--{ / }-->
+									</tbody>
+								</table>
+							</div>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</td>
+	</tr>
+
+	<tr>
+		<th>배송비</th>
+		<td>
+			<button type="button" class="shippingTalkbuyGroupInfoBtn resp_btn v2">보기</button>					
+		</td>
+	</tr>
+	<tr>
+		<th>지역별 추가 배송비 <span class="tooltip_btn" onClick="showTooltip(this, '/admin/tooltip/marketing', '#tip16', '620')"></span></th>
+		<td class="clear">
+			<table class="table_basic v3">
+				<colgroup><col width="200px"/><col /></colgroup>
+				<tr>
+					<th class="left">2구간 (제주 추가배송비)</th>
+					<td><input type="text" name="talkbuy_surchargeByArea2Price" size="12" class="onlynumber right" value="{talkbuy.surchargeByArea2Price}" /> 원</td>
+				</tr>
+				<tr>
+					<th class="left">3구간 (도서산간 추가배송비)</th>
+					<td><input type="text" name="talkbuy_surchargeByArea3Price" size="12" class="onlynumber right" value="{talkbuy.surchargeByArea3Price}" /> 원</td>
+				</tr>
+			</table>
+		</td>
+	</tr>
+	<tr>
+		<th>도서 공연비<br/>소득 공제 대상 상품</th>
+		<td class="clear">
+			<ul class="ul_list_02">
+				<li>
+					<div class="resp_radio">
+						<label><input type="radio" name="talkbuy_culture" value="n" {?talkbuy.culture==''||talkbuy.culture=='n'}checked="checked"{/} /> 없음</label>
+						<label><input type="radio" name="talkbuy_culture" value="all" {?talkbuy.culture == 'all'}checked="checked"{/}/> 전체 상품</label>
+						<label><input type="radio" name="talkbuy_culture" value="choice" {?talkbuy.culture == 'choice'}checked="checked"{/}/> 선택 상품</label>
+					</div>
+				</li>
+				<li class="talkbuy_culture_choice hide clear">
+					<table class="table_basic thl v3">									
+						<tbody>
+							<tr>
+								<th>상품</th>								
+								<td>
+									<input type="button" value="상품 선택" class="btn_select_goods resp_btn active" data-goodstype='talkbuy_culture_goods' />
+									<span class="span_select_goods_del {? count(talkbuy.culture_goods) == 0 }hide{/}"><input type="button" value="선택 삭제" class="select_goods_del resp_btn v3" /></span>
+									<div class="mt10 wx600 {? count(talkbuy.culture_goods) == 0 }hide{/}">
+
+										<div class="goods_list_header">
+											<table class="table_basic tdc">
+												<colgroup>
+													<col width="10%" />
+													<!--{ ? serviceLimit('H_AD') }-->
+													<col width="25%" />
+													<col width="45%" />
+													<!--{ : }-->
+													<col width="70%" />
+													<!--{ / }-->
+
+													<col width="20%" />
+												</colgroup>
+												<tbody>
+													<tr>
+													<th><label class="resp_checkbox"><input type="checkbox" name="chkAll" onClick="gGoodsSelect.checkAll(this)" value="goods"></label></th>
+													<!--{ ? serviceLimit('H_AD') }-->
+														<th>입점사명</th>
+													<!--{ / }-->
+														<th>상품명</th>
+														<th>판매가</th>
+													</tr>
+												</tbody>
+											</table>
+										</div>
+										<div class="goods_list">
+											<table class="table_basic tdc">
+												<colgroup>
+													<col width="10%" />
+													<!--{ ? serviceLimit('H_AD') }-->
+													<col width="25%" />
+													<col width="45%" />
+													<!--{ : }-->
+													<col width="70%" />
+													<!--{ / }-->
+													<col width="20%" />
+												</colgroup>
+												<tbody>
+													<tr rownum=0 {? count(talkbuy.culture_goods) == 0 }class="show"{:}class="hide"{/}>
+														<td class="center" colspan="4">상품을 선택하세요</td>
+													</tr><!-- issueGoods, issueGoodsSeq  ==> select_goods_list -->
+													<!--{ @ talkbuy.culture_goods }-->
+													<tr rownum="{=.goods_seq}">
+														<td><label class="resp_checkbox"><input type="checkbox" name='talkbuy_culture_goodsTmp[]' class="chk" value='{.goods_seq}' /></label>
+															<input type="hidden" name='talkbuy_culture_goods[]' class="chk" value='{.goods_seq}' />
+															<input type="hidden" name="talkbuy_culture_goodsSeq[{.goods_seq}]" value="{.issuegoods_seq}" /></td>
+														<!--{ ? serviceLimit('H_AD') }-->
+															<td>{=.provider_name}</td>
+														<!--{ / }-->
+														<td class='left'>
+															<div class="image"><img src="{=viewImg(.goods_seq,'thumbView')}" width="50"></div>
+															<div class="goodsname">
+																{? .goods_code}<div>[상품코드:{=.goods_code}]</div>{/}
+																<div>{.goods_kind_icon} <a href="/admin/goods/regist?no={.goods_seq}" target="_blank">[{=.goods_seq}]{=getstrcut(strip_tags(.goods_name),30)}</a></div>
+															</div>
+														</td>
+														<td class='right'>{=get_currency_price(.price,2)}</td>
+													</tr>
+												<!--{ / }-->
+												</tbody>
+											</table>
+										</div>
+									</div>
+								</td>
+							</tr>										
+						</tbody>
+					</table>									
+				</li>
+			</ul>			
+		</td>
+	</tr>
+
+	<tr>
+		<th>신청 및 관리</th>
+		<td>	
+			<a href="https://seller.pay.kakao.com/" class="resp_btn active size_XL" target="_blank">신청</a>
+			<a href="https://seller.pay.kakao.com/" class="resp_btn v2 size_XL" target="_blank">관리</a>		
+		</td>
+	</tr>
+</table>	
+
+<!--톡체크아웃 가능 배송그룹 :: 시작-->
+<div id="shippingTalkbuyGroupInfo" class="hide">
+	<div class="content">		
+		<table class="table_basic v7 tdc">
+			<colgroup>
+				<!--{ ? serviceLimit('H_AD') }-->
+				<col width="21%" />
+				<!--{ / }-->
+				<col width="21%" />
+				<col width="21%" />
+				<col width="23%" />
+				<col width="14%" />
+			</colgroup>
+			<tr>
+				<!--{ ? serviceLimit('H_AD') }-->
+				<th>판매자</th>
+				<!--{ / }-->
+				<th>가능 배송그룹</th>
+				<th>가능 배송방법</th>
+				<th>연결된상품</th>
+				<th>관리</th>
+			</tr>			
+
+			<!--{ ? talkbuy_shipping }-->
+			<!--{ @ talkbuy_shipping }-->
+			<!--{ @ .value_ }-->
+			<!--{ ? count(..shipping_set) > 0 }-->
+			<tr>
+				<!--{ ? serviceLimit('H_AD') }-->
+				<!--{ ? ..index_ == 0 }-->
+				<td rowspan="{=count(.value_)}">{..provider_info}</td>
+				<!--{ / }-->
+				<!--{ / }-->
+				<td>{..shipping_group_name}({..shipping_group_seq})</td>
+				<td>{=implode("<br/>",..shipping_set)}</td>
+				<td>
+					<input name="modify_btn" onclick="window.open('/admin/goods/package_catalog?ship_grp_seq={..shipping_group_seq}');" type="button" value="패키지 : {=..rel_goods_cnt['package']}개" class="resp_btn"></span>
+					<input name="modify_btn" onclick="window.open('/admin/goods/catalog?ship_grp_seq={..shipping_group_seq}');" type="button" value="상품 : {=..rel_goods_cnt['goods']}개" class="resp_btn"></span>
+				</td>
+				<td>
+					<!--{ ? ..shipping_provider_seq > 1 }-->
+					<input name="modify_btn" onclick="window.open('/admin/setting/shipping_group_regist?provider_seq={..shipping_provider_seq}&provider_name={..provider_info}&shipping_group_seq={..shipping_group_seq}');" type="button" value="수정" class="resp_btn v2">
+					<!--{ : }-->
+					<input name="modify_btn" onclick="window.open('/admin/setting/shipping_group_regist?shipping_group_seq={..shipping_group_seq}');" type="button" value="수정" class="resp_btn v2">
+					<!--{ / }-->
+				</td>
+			</tr>
+			<!--{ / }-->
+			<!--{ / }-->
+			<!--{ / }-->
+			<!--{ : }-->
+			<tr>
+				<td id="no_talkbuy_shipping" colspan="{ ? serviceLimit('H_AD') }5{:}4{/}">
+					톡체크아웃 결제가 가능한 배송그룹이 없습니다.
+				</td>
+			</tr>
+			<!--{ / }-->
+		</table>		
+		
+		<div class="box_style_05 mt15">
+			<div class="title">안내</div>
+			<ul class="bullet_hyphen">					
+				<li>톡체크아웃 배송비 규정에 의해 위의 배송그룹으로 연결된 상품만 톡체크아웃 결제가 가능합니다.</li>							
+				<li>주소 오류, 톡체크아웃 통신 오류 등으로 배송비가 추가 과금 또는 누락될 수 있습니다. 이점 유의하시기 바랍니다.</li>
+				<li>톡체크아웃 배송비 규정 <a href="https://www.firstmall.kr/customer/faq/1631" class="resp_btn_txt" target="_blank">자세히 보기</a></li>
+				<li>새로운 배송그룹 추가를 원하는 경우 <a href="/admin/setting/shipping_group" class="resp_btn_txt" target="_blank">배송비</a>에서 추가해주세요.</li>
+			</ul>
+		</div>
+	</div>
+
+	<div class="footer">							
+		<button type="button" class="btnLayClose resp_btn v3 size_XL">닫기</button>
+	</div>
+</div>
+<!--톡체크아웃 가능 배송그룹 :: 끝-->

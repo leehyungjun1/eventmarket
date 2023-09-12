@@ -7228,7 +7228,7 @@ class ordermodel extends CI_Model
 					down.coupon_name,
 					down.coupon_seq,
 					mem.userid,
-					IF(mem.user_name IS NOT NULL, mem.user_name, (SELECT bname FROM fm_member_business WHERE member_seq = down.member_seq)) AS user_names,
+					IF(mem.user_name IS NOT NULL, mem.user_name, (SELECT bname FROM fm_member_business WHERE member_seq = down.member_seq)) AS user_name,
 					ord.order_seq,
 					ord.item_option_seq,
 					f_ord.order_seq as f_order_seq

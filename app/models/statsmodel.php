@@ -600,15 +600,15 @@ class statsmodel extends CI_Model {
 		##
 		$bindData = [];
 		if (!empty($sdate) && !empty($edate)) {
-			$addWhere .= " and g.regist_date >= ? " . " and g.regist_date <= ? ";
+			$addWhere2 .= " and r_date >= ? " . " and r_date <= ? ";
 			$bindData[] = $sdate." 00:00:00";
 			$bindData[] = $edate." 23:59:59";
 
 		} elseif (empty($sdate) && !empty($edate)){
-			$addWhere .= " and g.regist_date <= ? ";
+			$addWhere2 .= " and r_date <= ? ";
 			$bindData[] = $edate." 23:59:59";
 		} elseif (!empty($sdate) && empty($edate)){
-			$addWhere .= " and g.regist_date >= ? ";
+			$addWhere2 .= " and r_date >= ? ";
 			$bindData[] = $sdate." 00:00:00";
 		}
 

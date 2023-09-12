@@ -2068,7 +2068,7 @@ class Board extends admin_base {
 	{
 		getmanagerauth('board_manger');//* 관리자 권한 체크
 
-		// 네이버페이 카카오페이 구매 게시판 수정불가 @2016-07-26 ysm
+		// 네이버페이 톡체크아웃 게시판 수정불가 @2016-07-26 ysm
 		if(in_array($this->input->get('id'),array('naverpay_qna','talkbuy_qna'))){
 			pageBack('수정할수 없는 게시판입니다.');exit;
 		}

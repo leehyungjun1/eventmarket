@@ -52,7 +52,7 @@ class order_process extends admin_base {
 
 		# 간편결제 API 주문건 배송정보 변경 불가 처리
 		$npay_use		= npay_useck();			//Npay v2.1 사용여부
-		$talkbuy_use	= talkbuy_useck();		//카카오페이 구매사용여부
+		$talkbuy_use	= talkbuy_useck();		//톡체크아웃사용여부
 		if(($npay_use && $orders['npay_order_id']) || ($talkbuy_use && $orders['talkbuy_order_id'])) {
 			$marketname = order_market_name($orders);
 			openDialogAlert("<span class=\'fx12\'>".$marketname." 주문건은 직접 배송지 변경이 불가합니다.<br />".$marketname." 어드민에서 처리할 수 있습니다.</span>",400,180,'parent',"");
@@ -174,7 +174,7 @@ class order_process extends admin_base {
 
 		# 간편결제 API 주문건 배송정보 변경 불가 처리
 		$npay_use		= npay_useck();			//Npay v2.1 사용여부
-		$talkbuy_use	= talkbuy_useck();		//카카오페이 구매사용여부
+		$talkbuy_use	= talkbuy_useck();		//톡체크아웃사용여부
 		if(($npay_use && $orders['npay_order_id']) || ($talkbuy_use && $orders['talkbuy_order_id'])) {
 			$marketname = order_market_name($orders);
 			openDialogAlert($marketname." 주문건은 결제정보 변경이 불가합니다",400,160,'parent',"");
@@ -263,7 +263,7 @@ class order_process extends admin_base {
 
 		# 간편결제 API 주문건 주문 무효 불가 처리
 		$npay_use		= npay_useck();			//Npay v2.1 사용여부
-		$talkbuy_use	= talkbuy_useck();		//카카오페이 구매사용여부
+		$talkbuy_use	= talkbuy_useck();		//톡체크아웃사용여부
 		if(($npay_use && $orders['npay_order_id']) || ($talkbuy_use && $orders['talkbuy_order_id'])) {
 			$marketname = order_market_name($orders);
 			openDialogAlert($marketname." 주문 건은 직접 주문무효처리 할 수 없습니다.",400,140,'parent',"");
@@ -385,7 +385,7 @@ class order_process extends admin_base {
 
 		# 간편결제 API  주문건 주문 무효 불가 처리
 		$npay_use		= npay_useck();			//Npay v2.1 사용여부
-		$talkbuy_use	= talkbuy_useck();		//카카오페이 구매사용여부
+		$talkbuy_use	= talkbuy_useck();		//톡체크아웃사용여부
 		if(($npay_use && $orders['npay_order_id']) || ($talkbuy_use && $orders['talkbuy_order_id'])) {
 			$marketname = order_market_name($orders);
 			openDialogAlert($marketname." 주문 건은 직접 결제확인 할 수 없습니다.",400,140,'parent',"");
@@ -589,7 +589,7 @@ class order_process extends admin_base {
 
 		# 간편결제 API 주문건 주문 무효 불가 처리
 		$npay_use		= npay_useck();			//Npay v2.1 사용여부
-		$talkbuy_use	= talkbuy_useck();		//카카오페이 구매사용여부
+		$talkbuy_use	= talkbuy_useck();		//톡체크아웃사용여부
 		if(($npay_use && $orders['npay_order_id']) || ($talkbuy_use && $orders['talkbuy_order_id'])) {
 			$marketname = order_market_name($orders);
 			openDialogAlert($marketname." 주문 건은 에누리 변경을 하실 수 없습니다.",400,140,'parent',"");
@@ -668,7 +668,7 @@ class order_process extends admin_base {
 
 		# npay 주문건 주문 무효 불가 처리
 		$npay_use	= npay_useck();	//Npay v2.1 사용여부
-		$talkbuy_use	= talkbuy_useck();	//카카오페이 구매 사용여부
+		$talkbuy_use	= talkbuy_useck();	//톡체크아웃 사용여부
 
 		$auth		= $this->authmodel->manager_limit_act('order_deposit');
 		if(!$auth){
@@ -696,7 +696,7 @@ class order_process extends admin_base {
 				continue;
 			}
 
-			# 카카오페이구매 주문건은 결제확인 처리 불가.
+			# 톡체크아웃 주문건은 결제확인 처리 불가.
 			if($talkbuy_use && $orders['talkbuy_order_id']){
 				$talkbuy_order[] = $orders['talkbuy_order_id'];
 				continue;
@@ -862,7 +862,7 @@ class order_process extends admin_base {
 			exit;
 		}
 
-		# 카카오톡구매 주문 결제확인 처리불가 안내
+		# 톡체크아웃 주문 결제확인 처리불가 안내
 		if($talkbuy_use && count($talkbuy_order) > 0 ){
 			echo "talkbuy";
 			exit;
@@ -3517,7 +3517,7 @@ class order_process extends admin_base {
 			return 'npay';
 		}
 
-		// 카카오톡구매 주문건 주문되돌리기 불가
+		// 톡체크아웃 주문건 주문되돌리기 불가
 		if ($talkbuy_use && $data_order['pg'] == 'talkbuy') {
 			return 'talkbuy';
 		}
@@ -3606,7 +3606,7 @@ class order_process extends admin_base {
 				openDialogAlert("Npay 주문건은 되돌리기 할 수 없습니다.",400,140,'parent','');
 				exit;
 			} elseif ($result === "talkbuy") {
-				openDialogAlert("카카오페이 구매 주문건은 되돌리기 할 수 없습니다.",400,140,'parent','');
+				openDialogAlert("톡체크아웃 주문건은 되돌리기 할 수 없습니다.",400,140,'parent','');
 				exit;
 			}elseif($result === "openmarket"){
 				openDialogAlert("오픈마켓 주문건은 주문상태 되돌리기가 불가합니다.",400,140,'parent','');
@@ -4255,7 +4255,7 @@ class order_process extends admin_base {
 		$this->load->library('exportlibrary');
 
 		$npay_use = npay_useck();	//Npay v2.1 사용여부
-		$talkbuy_use = talkbuy_useck();	//카카오톡구매 사용여부
+		$talkbuy_use = talkbuy_useck();	//톡체크아웃 사용여부
 
 		if	(!$this->scm_cfg)	$this->scm_cfg	= config_load('scm');
 		if	($this->scm_cfg['use'] == 'Y'){
@@ -4294,7 +4294,7 @@ class order_process extends admin_base {
 		$arr_delivery_company		= $export_param['delivery_company'];
 		$arr_delivery_number		= $export_param['delivery_number'];
 		$arr_npay_flag_release		= $export_param['npay_flag_release'];		//npay 보류 사유
-		$arr_talkbuy_flag_release	= $export_param['talkbuy_flag_release'];		//카카오페이 구매 보류 사유
+		$arr_talkbuy_flag_release	= $export_param['talkbuy_flag_release'];		//톡체크아웃 보류 사유
 		$arr_direct_export_complete = $export_param['direct_export_complete'];		// 자동 출고완료 여부, 1:자동출고완료 or false
 
 		// 배송 출고 데이터 추가 작업 :: 2016-10-06 lwh

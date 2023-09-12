@@ -1,0 +1,905 @@
+<!--  상품등록 : 추가 구성 옵션 -->
+<script  type="text/javascript">
+var reload				= '{=reload}';
+</script>
+<script type="text/javascript" src="/app/javascript/js/admin/admin-set_suboptions_modify.js?mm={=date('Ymd')}"></script>
+<style type="text/css">
+	.input-box-default-text-code {border:1px solid #ccc; background-color:#f6f6f6; color:#999 !important;}
+	.input-box-default-text-code option {background-color:#f6f6f6; color:#999; }
+	.top_title	{width:100%;background:url('../images/design/win_tbl_thbg.gif') repeat-x;font-weight:bold;font-size:15px;padding:6px 0;padding-left:20px;color:#747474;}
+	.top_title_memo {line-height:25px;border-bottom:1px solid #000;margin-bottom:10px;}
+	.top_btn_area	{margin:5px 0;}
+	.pricetd		{background-color:#ffffcc;}
+	.pricetd input	{color:red;}
+	div.package_error {
+		color:#f00f00;
+		letter-spacing : -1px;
+		font-size : 11px;
+	}
+	body { overflow-x:hidden;  }
+	body::-webkit-scrollbar { display:none;}
+	.contents_container .content { overflow:hidden !important; }
+	#table-grid input[type='text'] { width:50%; }
+	#table-grid .suboptTitle_td > input[type='text'],
+	#table-grid .suboptValue_td > input[type='text'],
+	#table-grid .suboptCode_td > input[type='text'] { width: 70%; }
+</style>
+
+<div class="item-title">추가 구성 옵션 생성/수정</div>
+
+<div id="suboptionLayer">
+	
+	<form name="listFrm" method="post" action="../goods_process/save_suboption_tmp" target="suboptionFrame">
+	<input type="hidden" name="goods_seq" value="{goods_seq}" />
+	<input type="hidden" name="tmp_seq" value="{tmp_seq}" />
+	<input type="hidden" name="provider_seq" value="{sc.provider_seq}" />
+	<input type="hidden" name="goodsTax" class="goodsTax" value="" />
+
+	<!--{ ? scm_cfg['use'] == 'Y' }-->
+	<input type="hidden" name="use_warehouse" value="|{=implode('|', array_keys(scm_cfg['use_warehouse']))}|" />
+	<!--{ / }-->
+	<table class="table_basic thl v7">
+	<tr>
+		<th class="left">신규/기존 옵션</th>
+		<td>
+			<div class="resp_radio">
+				<label><input type="radio" name="optionCreateType" value="new" {? sc.optionCreateType != "old"}checked{/}>신규 생성</label>
+				<label><input type="radio" name="optionCreateType" value="old" {? sc.optionCreateType == "old"}checled{/}>기존 옵션</label>
+			</div>
+		</td>
+	</tr>
+	<tr class="newOption">
+		<th class="left">옵션 생성</th>
+		<td>
+			<!--{ ? scm_cfg['use'] == 'Y' && scmTotalStock > 0 }-->
+			<button type="button" class="resp_btn v2">신규생성</button>
+			<!--{:}-->
+			<button type="button" id="addCellOption" goods_seq="{goods_seq}" class="resp_btn active">신규생성</button>
+			<!--{/}-->
+		</td>
+	</tr>
+	<tr class="oldOption hide">
+		<th class="left">옵션 가져오기</th>
+		<td>
+			<!--{ ? scm_cfg['use'] == 'Y' && scmTotalStock > 0 }-->
+			<select class="gray">
+				<option value="0">자주 쓰는 상품의 필수옵션 </option>
+			</select>
+			<button type="button" class="resp_btn v2">가져오기</button>
+			<!--{:}-->
+			<span id="frequentlytypesuboptlay" >
+				<select name="frequentlytypesubopt" class="frequentlytypesubopt" >
+					<option value="0">자주 쓰는 상품의 추가구성옵션 </option>
+					{? frequentlysublistAll }
+						{@ frequentlysublistAll }
+							<option value="{.goods_seq}">{=strip_tags(.goods_name)}</option>
+						{/}
+					{/}
+				</select>
+
+				<button type="button" class="resp_btn v2" id="frequentlytypesuboptbtn" goods_seq="{goods_seq}">가져 오기</button>
+				<button type="button" class="resp_btn v3" id="optionSetting">옵션 관리</button></span>
+			</span>
+			<!--{ / }-->
+		</td>
+	</tr>
+	</table>
+	<div class="item-title mt10">추가 구성 옵션 상세</div>
+	<div class="table_row_frame">
+		<div class="dvs_top">	
+			<div class="dvs_left">	
+				<button type="button" class="resp_btn v3 removeOption">선택 삭제</button>
+				<!--button type="button" class="addOption resp_btn v2">옵션 추가</button-->
+			</div>
+		</div>
+		<div id="table-grid">
+			<table class="table_row_basic fix optionList grid-cell">
+			<colgroup>
+				<col width="40"><!-- 선택 -->
+				<col width="80"><!-- 추가 혜택 -->
+				<col width="50"><!-- 필수 -->
+				<col width="120"><!-- 옵션명 -->
+				{ ? sc.socialcp_input_type }
+				<col width="100"><col width="220"><!-- 티켓 옵션/코드 -->
+				{ : }
+				<col width="120"><!-- 옵션값 -->
+				<col width="120"><!-- 옵션코드 -->
+				{ / }
+			{ ? sc.package_yn_suboption != 'y' && !sc.suboption_package_count }
+				{ ? sc.socialcp_input_type }
+					<col width="80"><!-- 횟수 -->
+				{:}
+				<col width="100"><!-- 무게 -->
+				{/}
+				<col width="100"><!-- 재고 -->
+				<col width="100"><!-- 불량 -->
+				<col width="105"><!-- 안전재고 -->
+			{ : }
+				<col width="250"><!-- 패키지 연결 상품 -->
+				<col width="140"><!-- 패키지 상품 발송 수량 -->
+			{/}
+			{ ? goods.provider_seq > 1 }
+				<col width="170"><!-- 정산금액 -->
+			{:}
+			{ ? sc.package_yn_suboption != 'y' && !sc.suboption_package_count  }<col width="180"><!-- 매입가(평균) -->{ / }
+			{/}
+				<col width="140"><!-- 정가 -->
+				<col width="140"><!-- 판매가 -->
+				<col width="210"><!-- 마일리지 -->
+				<col width="130"><!-- 옵션노출 -->
+			</colgroup>
+			<thead>
+			<tr>
+				<th><label class="resp_checkbox"><input type="checkbox" name="chkall" value="y"></label></th>
+				<th>추가 혜택</th>
+				<th>필수</th>
+				<th>옵션명</th>
+				<th>옵션값</th>
+				<th>옵션코드</th>
+				{ ? sc.package_yn_suboption != 'y' && !sc.suboption_package_count  }<th>무게(kg)</th>{ / }
+				<!--{ ? sc.socialcp_input_type }-->
+				<th class="couponinputtitle"><span class="couponinputsubtitle">{? sc.socialcp_input_type =='price' }금액{:}횟수{/}</span></th>
+				<!--{ / }-->
+				<!--{ ? sc.package_yn_suboption == 'y' && sc.suboption_package_count > 0 }-->
+				<th>
+					연결 상품
+					<!--{ ? suboptions }-->
+					<button type="button" class="resp_btn v2 valign-middle" onclick="package_suboption_make();">상품선택</button>
+					<!--{ / }-->
+				</th>
+				<th> 상품 발송 수량
+					<span class="tooltip_btn" onClick="showTooltip(this, '../tooltip/goods', '#regist_suboption_packge', 'sizeS')"></span>
+				</th>
+				<!--{ : }-->
+				<th>재고</th>
+				<th>불량</th>
+				<th>안전재고</th>
+				<!--{ ? provider_seq == 1 }-->
+				<th>매입가(평균)</th>
+				<!--{ / }-->
+				<!--{ / }-->
+				<th class="{? sc.provider_seq == '1'}hide{/}">
+					<!--{? provider_info.commission_type == 'SACO' || provider_info.commission_type == ''}-->
+					<span class="SACO_title">
+						수수료(%)
+					<!--{: provider_info.commission_type == 'SUPR'}-->
+					<span class="SUPR_title">
+						공급가({=basic_currency_info['currency_symbol']})
+					</span>
+					<!--{:}-->
+					<span class="SUCO_title">
+						공급률(%)
+					</span>
+					<!--{/}-->
+				</th>
+				<th>정가</th>
+				<th>판매가 <span class="required_chk"></span>
+				</th>
+				<th>
+					마일리지 지급
+					<select name="subReservePolicy">
+						<option value="shop">통합</option>
+						<option value="goods" { ? goods.sub_reserve_policy == 'goods' || sub_tmp_policy == 'goods' }selected{ / }>개별</option>
+					</select>
+				</th>
+				<th class="optionStockSetText">옵션 노출</th>
+			</tr>
+			</thead>
+			<tbody>
+			<tr>
+				<td colSpan="{?sc.package_yn_suboption=='y' && sc.suboption_package_count > 0 }7{:}6{/}"><b>일괄적용 →</b></td>
+				<!--{ ? sc.package_yn_suboption != 'y' && !sc.suboption_package_count  }-->
+				<td class="half">
+					<input type="text" size="2" class="weightVal_all onlyfloat resp_text" value="" />
+					<span class="btn small gray"><button type="button" class="save_all resp_btn v2 arrow" id="weightVal_all" target="weightVal">▼</button></span>
+				</td>
+				<!--{ / }-->
+
+				<!--{ ? sc.package_yn_suboption == 'y' && sc.suboption_package_count > 0 }-->
+				<td class="half">
+					<input type="text" class="tmp_package_unit_ea1_all onlynumber resp_text" value="" />
+					<span class="btn small gray"><button type="button" class="save_all resp_btn v2 arrow" id="tmp_package_unit_ea1_all" target="tmp_package_unit_ea1">▼</button></span>
+				</td>
+				<!--{ : }-->				
+				<td class="half">
+					<input type="text" class="subStock_all onlynumber resp_text" value="" />
+					<span class="btn small gray"><button type="button" class="save_all resp_btn v2 arrow" id="subStock_all" target="subStock">▼</button></span>
+				</td>
+				<td class="half">
+					<input type="text" class="subBadStock_all onlynumber resp_text" value="" />
+					<span class="btn small gray"><button type="button" class="save_all resp_btn v2 arrow" id="subBadStock_all" target="subBadStock">▼</button></span>
+				</td>
+				<td class="half">
+					<input type="text" class="subSafeStock_all onlynumber resp_text" value="" />
+					<span class="btn small gray"><button type="button" class="save_all resp_btn v2 arrow" id="subSafeStock_all" target="subSafeStock">▼</button></span>
+				</td>
+					<!--{ ? provider_seq == 1 }-->
+				<td class="half">
+					<input type="text" class="subSupplyPrice_all onlynumber resp_text" value="" />
+					<span class="btn small gray"><button type="button" class="save_all resp_btn v2 arrow" id="subSupplyPrice_all" target="subSupplyPrice">▼</button></span>
+				</td>
+					<!--{ / }-->
+				<!--{ / }-->
+				
+				<!--{ ? provider_seq > 1 }-->
+				<td>
+					<input type="text" class="subCommissionRate_all right" value="" style="width:50px;">
+
+					<!--{? provider_info.commission_type == 'SACO' || provider_info.commission_type == ''}-->
+					<input type="hidden" class="subCommissionType_all" value="SACO" />
+					<!--{:}-->
+					<select class="subCommissionType_all">
+						<option value="SUCO" selected>%</option>
+						<option value="SUPR" selected>{=basic_currency_info['currency_symbol']}</option>
+					</select>
+					<!--{/}-->
+					<span class="btn small gray"><button type="button" class="applyAllCommission resp_btn v2 arrow">▼</button></span>
+				</td>
+				<!--{ / }-->
+
+				<td class="half">
+					<input type="text" class="subConsumerPrice_all right onlyfloat resp_text" style="color:#000;" value="" idx="{..index_}" />
+					<span class="btn small gray"><button type="button" class="save_all resp_btn v2 arrow" id="subConsumerPrice_all" target="subConsumerPrice">▼</button></span>
+				</td>
+				<td class="half">
+					<input type="text" class="subPrice_all right resp_text onlyfloat" value=""/>
+					<span class="btn small gray"><button type="button" class="save_all resp_btn v2 arrow" id="subPrice_all" target="subPrice">▼</button></span>
+				</td>
+				<td>
+					<div class="subReserve_all { ? goods.sub_reserve_policy != 'goods' }hide{ / }">
+						<input class="subReserveRate_all" value="" style="width:40px;" type="text"/>
+						<select name="subReserveUnit_all" class="subReserveUnit_all" style="width:60px;">
+							<option value="percent">%</option>
+							<option value="{=config_system['basic_currency']}">{=basic_currency_info['currency_symbol']}</option>
+						</select>
+						<span class="btn small gray"><button type="button" class="applyAllReserve resp_btn v2 arrow">▼</button></span>
+					</div>
+				</td>
+				<td>
+					<select class="optionView_all">
+						<option value="Y" selected>노출</option>
+						<option value="N">미노출</option>
+					</select>
+					<span class="btn small gray"><button type="button" class="save_all resp_btn v2 arrow" id="optionView_all" target="optionView">▼</button></span>
+				</td>
+			</tr>
+			<!--{ @ suboptions }-->
+				<!--{ @ .value_ }-->
+			<tr class="suboptionTr">
+				<td class="center">
+					<label class="resp_checkbox"><input type="checkbox" name="optDel[]" class="chk" value="{..suboption_seq}"></label>
+					<input type="hidden" name="suboptionSeq[]" value="{..suboption_seq}" />
+					<!--button class="btn_minus delSuboptionButton" type="button" {?..key_==0}ltype="m"{:}ltype="s"{/}></button-->
+				</td>
+				<td class="center subSale_td">
+					<!--{ ? ..key_ == 0 }-->
+					<label class="resp_checkbox"><input type="checkbox" name="subSale[]" size="10" value="{.key_}" {?..sub_sale=='y'}checked="checked"{/} /></label>
+					<!--{ / }-->
+				</td>
+				<td class="center subRequired_td">
+					<!--{ ? ..key_ == 0 }-->
+					<label class="resp_checkbox"><input type="checkbox" name="subRequired[]" size="10" value="{.key_}" {?..sub_required=='y'}checked="checked"{/} /></label>
+					<!--{ / }-->
+				</td>
+				<td class="center suboptTitle_td">
+					<!--{ ? ..key_ == 0 }-->
+					<input type="text" name="suboptTitle[]" value="{..suboption_title}"  class="resp_text" />
+					<input type="hidden" name="suboptType[]" value="{..suboption_type}">
+					<!--{ / }-->
+				</td>
+				<td class="center suboptValue_td">
+					<input type="hidden" name="orgSuboptionSeq[{.key_}][]" value="{..org_suboption_seq}" />
+					<input type="text" name="subopt[{.key_}][]" value="{..suboption}" class="resp_text"  />
+				</td>
+				<td class="center suboptCode_td">
+					<!--{ ? suboption_package_count }-->
+					<input type="hidden" name="suboptCode[{.key_}][]" value="{..suboption_code}" />
+					<!--{ : }-->
+					<input type="text" name="suboptCode[{.key_}][]" value="{..suboption_code}" class="resp_text" title="옵션코드" />
+					<!--{ / }-->
+					<!--{? ..newtype }-->
+						<br/>
+						<!--{? ..newtype == 'color' }-->
+					<div class="colorPickerBtn colorhelpicon helpicon1" opttype="{..suboption_type}"  style="background-color:{..color}" title="[색상]을 클릭하여 변경할 수 있습니다."></div>
+						<!--{: ..newtype == 'address'  }-->
+					<span class="addrhelpicon helpicon" opttype="{..suboption_type}"  title="{? ..zipcode }[{..zipcode}] {..address} {..addressdetail} {:}지역 정보가 없습니다.{/} {? ..biztel }업체 연락처:{..biztel}{/}<br/>[지역]을 클릭하여 변경할 수 있습니다.">지역</span>
+						<!--{: ..newtype == 'date'  }-->
+					<span class="codedatehelpicon helpicon" opttype="{..suboption_type}"  title="{? ..codedate && ..codedate !='0000-00-00' }{..codedate}{:}날짜 정보가 없습니다.{/} <br/>[날짜]를 클릭하여 변경할 수 있습니다.">날짜</span>
+						<!--{: ..newtype == 'dayinput'  }-->
+					<span class="dayinputhelpicon helpicon" opttype="{..suboption_type}"  title="{? ..sdayinput && ..fdayinput }{..sdayinput} ~ {..fdayinput}{:}수동기간 정보가 없습니다.{/} <br/> [생성 및 변경]에서 변경할 수 있습니다.">수동기간</span>
+						<!--{: ..newtype == 'dayauto'  }-->
+					<span class="dayautohelpicon helpicon"  opttype="{..suboption_type}" title="{? ..dayauto_type }'결제확인' {..dayauto_type_title} {..sdayauto}일 {? ..dayauto_type == 'day' }이후{/}부터 + {..fdayauto}일{..dayauto_day_title}{:}자동기간 정보가 없습니다.{/} <br/>[생성 및 변경]에서 변경할 수 있습니다.">자동기간</span>
+						<!--{ / }-->
+					<!--{ / }-->
+
+					<input type="hidden" name="suboptcolor[]" value="{..color}" />
+					<input type="hidden" name="suboptzipcode[]" value="{..zipcode}" />
+					<input type="hidden" name="suboptaddress[]" value="{..address}" />
+					<input type="hidden" name="suboptaddressdetail[]" value="{..addressdetail}" />
+					<input type="hidden" name="suboptbiztel[]" value="{..biztel}">
+					<input type="hidden"  name="codedate[]" value="{..codedate}">
+					<input type="hidden"  name="sdayinput[]" value="{..sdayinput}">
+					<input type="hidden"  name="fdayinput[]" value="{..fdayinput}">
+					<input type="hidden"  name="dayauto_type[]" value="{..dayauto_type}">
+					<input type="hidden"  name="sdayauto[]" value="{..sdayauto}">
+					<input type="hidden"  name="fdayauto[]" value="{..fdayauto}">
+					<input type="hidden"  name="dayauto_day[]" value="{..dayauto_day}">
+					<input type="hidden" name="suboptionnewtype[]" value="{..newtype}" />
+				</td>
+
+				<!--{ ? sc.package_yn_suboption != 'y' && !sc.suboption_package_count }-->
+				<td class="center">
+					<input type="text" name="weightVal[]" value="{..weight}"  class="weightVal onlyfloat resp_text right" />
+				</td>
+				<!--{ / }-->
+
+				<!--{ ? sc.socialcp_input_type }-->
+				<td class="pdr10 couponinputtitle">
+					<input type="text" name="subcoupon_input[]" class="right onlyfloat resp_text"  size="10" value="{..coupon_input}" idx="{..index_}" />
+				</td>
+				<!--{ / }-->
+
+				<!--{ ? sc.package_yn_suboption == 'y' && sc.suboption_package_count > 0}-->
+				<td class="center">
+					<input type="hidden" name="tmp_package_count" value="{..package_count}" />
+				<!--{ ? ..package_error_code1 }-->
+					<div class="package_error">
+						<script>package_error_msg('{..package_error_code1}');</script>
+					</div>
+				<!--{ / }-->
+					<div class="left wp95 mt5 ml10" style="height:60px;">
+						<div class="wp95" style="white-space: nowrap;overflow: hidden;text-overflow: ellipsis;">
+							{?..package_goods_seq1}
+								<a href="../goods/regist?no={..package_goods_seq1}" target="_blank">
+							{/}
+								<span class="tmp_package_goods_seq1">{?..package_goods_seq1}[{..package_goods_seq1}]{/}</span>
+								<span class="tmp_package_goods_name1">{..package_goods_name1}</span>
+							{?..package_goods_seq1}
+								</a>
+							{/}
+						</div>
+						<div class="tmp_package_option_name1">
+							{..package_option1}
+							<span class="tmp_package_goodscode1">{..package_option_code1}{? ..package_option_code1 && ..weight1}, {..weight1}kg{/}</span>
+						</div>
+					</div>
+				</td>
+				<td>
+					<input type="text" name="tmp_package_unit_ea1[]" class = "tmp_package_unit_ea1 right resp_text"  value="{..package_unit_ea1}">
+					<div>
+						{ ? ..package_stock1 }
+							<span class="option-stock tmp_package_stock" optType="option" optSeq="{..package_option_seq1}">
+								{=number_format(..package_stock1)}
+							</span>
+						(<span class="tmp_package_badstock">{..package_badstock1}</span>)
+						/ <span class="tmp_package_ablestock">{..package_ablestock1}</span>
+						/ <span class="tmp_package_ablestock">{..package_safe_stock1}</span>
+						<span class="helpicon" title="현재재고 (불량재고) / 가용재고 / 안전재고"></span>
+						{ / }
+					</div>
+					<input type="hidden" name="tmp_package_option_seq1[]" value="{..package_option_seq1}" />
+					<input type="hidden" name="tmp_package_option1[]" value="{..package_option1}" />
+					<input type="hidden" name="tmp_package_goods_name1[]" value="{..package_goods_name1}" />
+
+				</td>
+				<!--{ : }-->
+					<!--{ ? scm_cfg['use'] == 'Y' && provider_seq == 1 && scm_use_suboption_mode && goods_seq > 0 && ..org_suboption_seq > 0 }-->
+				<td class="pdr10 hand" onclick="scm_warehouse_on('{goods_seq}', this);">
+					<span class="option-stock" optType="suboption" optSeq="{..org_suboption_seq}">{=number_format(..stock)}</span>
+					<input type="hidden" name="subStock[]" value="{..stock}" />
+					<input type="hidden" name="subTotalStock[]" value="{..total_stock}" />
+				</td>
+					<!--{ : scm_cfg['use'] == 'Y' && provider_seq == 1 && scm_use_suboption_mode }-->
+				<td class="pdr10">
+					{=number_format(..stock)}
+					<input type="hidden" name="subStock[]" value="{..stock}" />
+					<input type="hidden" name="subTotalStock[]" value="{..total_stock}" />
+				</td>
+					<!--{ : }-->
+				<td class="pdr10">
+					<input type="text" name="subStock[]" class="subStock right resp_text onlynumber" value="{..stock}" />
+					<input type="hidden" name="subTotalStock[]" value="{..total_stock}" />
+				</td>
+					<!--{ / }-->
+					<!--{ ? scm_cfg['use'] == 'Y' && provider_seq == 1 && scm_use_suboption_mode }-->
+				<td class="pdr10">
+					{=number_format(..badstock)}
+					<input type="hidden" name="subBadStock[]" value="{..badstock}" />
+					<input type="hidden" name="subTotalBadStock[]" value="{..total_badstock}" />
+				</td>
+					<!--{ : }-->
+				<td class="pdr10">
+					<input type="text" name="subBadStock[]" class="subBadStock right resp_text onlynumber" value="{..badstock}" />
+					<input type="hidden" name="subTotalBadStock[]" value="{..total_badstock}" />
+				</td>
+					<!--{ / }-->
+				<td class="pdr10">
+					<input type="text" name="subSafeStock[]" class="subSafeStock right resp_text onlynumber" value="{..safe_stock}" />
+				</td>
+					<!--{ ? provider_seq == 1 }-->
+				<td class="pdr10">
+						<!--{ ? scm_cfg['use'] == 'Y' && scm_use_suboption_mode }-->
+					<span title="{..supply_price}">{=get_currency_price(..supply_price)}</span>
+					<input type="hidden" name="subSupplyPrice[]" value="{..supply_price}" />
+					<input type="hidden" name="subTotalSupplyPrice[]" value="{..total_supply_price}" />
+						<!--{ : }-->
+					<input type="text" name="subSupplyPrice[]" class="subSupplyPrice right resp_text onlyfloat" size="10" value="{=get_currency_price(..supply_price,1)}" idx="{..index_}" />
+					<input type="hidden" name="subTotalSupplyPrice[]" value="{..total_supply_price}" />
+						<!--{ / }-->
+				</td>
+					<!--{ / }-->
+				<!--{ / }-->
+				
+				<td class="half {? sc.provider_seq == '1'}hide{/}">
+					<input class="subCommissionRate resp_text onlyfloat input-box-default-text right" name="subCommissionRate[]" value="{ ? sc.provider_seq == '1' }100{ : }{ ?..commission_rate }{..commission_rate}{ : }0{ / }{ / }" size="3" type="text">
+
+					<!--{? provider_info.commission_type == 'SACO' || provider_info.commission_type == ''}-->
+					<input type="hidden" name="subCommissionType[]" class="subCommissionType" value="SACO" />
+					%
+					<!--{:}-->
+					<select name="subCommissionType[]" class="subCommissionType">
+						<option value="SUCO" {? ..commission_type != 'SUPR'}selected{/}>%</option>
+						<option value="SUPR" {? ..commission_type == 'SUPR'}selected{/}>{=basic_currency_info['currency_symbol']}</option>
+					</select>
+					<!--{/}-->
+				</td>
+
+				<td class="pdr10 pricetd">
+					<input type="text" name="subConsumerPrice[]" style="color:#000;" class="subConsumerPrice right onlyfloat resp_text"  size="10" value="{=get_currency_price(..consumer_price,1)}" idx="{..index_}" />
+				</td>
+				<td class="pdr10 pricetd">
+					<input type="text" name="subPrice[]" class="subPrice right onlyfloat resp_text" size="10" value="{=get_currency_price(..price,1)}" idx="{..index_}" />
+				</td>
+				<td class="center">
+					<div class="reserve-shop-lay {?goods.sub_reserve_policy=='goods'}hide{/}">
+						{reserves.default_reserve_percent}%
+						(<span class="reserve-shop">{=get_currency_price(..reserve,2)}</span>)
+					</div>
+					<div class="reserve-goods-lay {?goods.sub_reserve_policy=='shop'}hide{/}">
+						<input type="text" name="subReserveRate[]" value="{..reserve_rate}" style="width:40px !important;" class="subReserveRate right resp_text onlyfloat" maxlength=5 />
+						<select name="subReserveUnit[]" class="subReserveUnit" style="width:50px">
+							<option value="percent">%</option>
+							<option value="{=config_system['basic_currency']}" {? ..reserve_unit == config_system['basic_currency'] }selected{ / }>{=basic_currency_info['currency_symbol']}</option>
+						</select>
+						(<span class="subReserve">{=get_currency_price(..reserve,2)}</span>)
+					</div>
+				</td>
+				<td class="center ">
+					<select name="optionView[]" class="optionView">
+						<option value="Y" {? ..option_view != 'N'}selected{/}>노출</option>
+						<option value="N" {? ..option_view == 'N'}selected{/}>미노출</option>
+					</select>
+				</td>
+			</tr>
+				<!--{ / }-->
+			<!--{ / }-->
+			</tbody>
+			</table>
+		</div>
+
+		<div class="dvs_top">	
+			<div class="dvs_left">	
+				<button type="button" class="resp_btn v3 removeOption">선택 삭제</button>
+				<!--button type="button" class="addOption resp_btn v2">옵션 추가</button-->
+			</div>
+		</div>
+	</div>
+	
+	<div class="left mt10"  id="frequentlay">
+		<label class="resp_checkbox"><input type="checkbox" name="frequently" value="1" {? goods.frequentlysub==1 || sc.frequentlysub==1} checked="checked" {/} > 옵션 정보 저장</label>
+	</div>
+	</form>
+</div>
+
+	<!--<button type="button" id="suboptionBatch">기준할인가 일괄적용</button>-->
+
+<!-- 추가옵션만들기 다이얼로그 -->
+<div id="subOptDialog" class="hide">
+	<div class="content">
+		<form name="suboptionMakeForm" id="suboptionMakeForm" method="post" action="../goods_process/make_suboption_tmp" target="suboptionFrame">
+		<input type="hidden" name="goods_seq" value="{goods_seq}" />
+		<input type="hidden" name="provider_seq" value="{provider_seq}" />
+		<input type="hidden" name="tmp_seq" value="{tmp_seq}" />
+		<input type="hidden" name="optionCode" size="55" value="" />
+		<input type="hidden" name="socialcpuseopen" id="socialcpuseopen" value="" />
+		<input type="hidden" name="goodsTax" id="goodsTax" value="" />
+		<input type="hidden" name="default_commission_rate" class="default_commission_rate" value="{default_charge.charge}" />
+		<input type="hidden" name="default_commission_type" class="default_commission_type" value="{provider_info.commission_type}" />
+		<table  class="table_basic">
+			<colgroup>
+				<col width="5%" />
+				<col width="13%"/>
+				<col/>
+				<col  width="200"/>
+				<col />
+				<col width="200" />
+			</colgroup>
+			<thead>
+				<tr>
+					<th><button type="button" class="btn_plus btnplusminus" id="addSuboptionMake"></button></th>
+					<th>옵션정보</th>
+					<th>옵션명</th>
+					<th>특수정보</th>
+					<th>옵션값</th>
+					<th>가격</th>
+				</tr>
+			</thead>
+			<tbody>
+			{? sopts_loop }
+				{@ sopts_loop }
+				<tr>
+					<td class="center">
+						{? .index_==0 }
+						<span class="hide"><button type="button" class="btn_minus btnplusminus" onClick="subOptionDel(this)" data-type='minus'></button></span>
+						{ : }
+						<button type="button" class="btn_minus btnplusminus" onClick="subOptionDel(this)" data-type='minus'></button>
+						{ / }
+					</td>
+					<td class="center">
+						<input type="hidden" name="suboptionMakeType[]" class="suboptionMakeType" size="25" value="{.type}" />
+						<input type="hidden" name="suboptionMakeCode[]" class="suboptionMakeCode" size="25" value="{.optcodes}" />
+
+						<input type="hidden" name="suboptionMakenewtype[]" value="{.newtype}" />
+
+						<input type="hidden" name="suboptionMakecolor[]" value="{.colors}" />
+						<input type="hidden" name="suboptionMakezipcode[]" value="{.zipcodes}" />
+						<input type="hidden" name="suboptionMakeaddress[]" value="{.addresss}" />
+						<input type="hidden" name="suboptionMakeaddressdetail[]" value="{.addressdetails}" />
+						<input type="hidden" name="suboptionMakebiztel[]" value="{.biztels}" />
+						<input type="hidden" name="suboptionMakecodedate[]" value="{.codedates}">
+							<select name="suboptionMakeId[]" class="wp95">
+							{ @ .goodssuboptionloop }
+								{? sc.socialcp_input_type }
+									{? ..label_newtype != 'color'}
+									<option value="goodssuboption_{..codeform_seq}" label_type="{..label_type}"  codeform_seq="{..codeform_seq}" label_title="{..label_title}"   {? .code_seq == ..codeform_seq && strstr(.type,'goodssuboption_') } selected="selected" {/}   newtypeid="goodssuboption_{.index_}_{.newtype}" label_newtype="{..label_newtype}"  label_color="{..label_color}" label_zipcode="{..label_zipcode}" label_address="{..label_address}" label_addressdetail="{..label_addressdetail}"  label_biztel="{..label_biztel}"  label_codedate="{..label_codedate}"  label_sdayinput="{..label_sdayinput}" label_fdayinput="{..label_fdayinput}" label_dayauto_type="{..label_dayauto_type}" label_sdayauto="{..label_sdayauto}" label_fdayauto="{..label_fdayauto}" label_dayauto_day="{..label_dayauto_day}">{?  ..label_newtype && ..label_newtype != 'none'  }[특수]{/} {..label_title}</option>
+									{/}
+								{:}
+									{? ..label_newtype == 'color'  || !..label_newtype  || ..label_newtype == 'none' }
+								<option value="goodssuboption_{..codeform_seq}" label_type="{..label_type}"  codeform_seq="{..codeform_seq}" label_title="{..label_title}"   {? .code_seq == ..codeform_seq && strstr(.type,'goodssuboption_') } selected="selected" {/}   newtypeid="goodssuboption_{.index_}_{.newtype}" label_newtype="{..label_newtype}"  label_color="{..label_color}" label_zipcode="{..label_zipcode}" label_address="{..label_address}" label_addressdetail="{..label_addressdetail}"  label_biztel="{..label_biztel}"  label_codedate="{..label_codedate}"  label_sdayinput="{..label_sdayinput}" label_fdayinput="{..label_fdayinput}" label_dayauto_type="{..label_dayauto_type}" label_sdayauto="{..label_sdayauto}" label_fdayauto="{..label_fdayauto}" label_dayauto_day="{..label_dayauto_day}">{?  ..label_newtype && ..label_newtype != 'none'  }[특수]{/} {..label_title}</option>
+									{/}
+								{/}
+							{ / }
+							<option value="direct" {? !strstr(.type,'goodssuboption_') } selected="selected" {/}>직접입력</option>
+						</select>
+					</td>
+					<td class="center">
+						<input type="text" name="suboptionMakeName[]" size="10" class="resp_text" value="{.title}" />
+					</td>
+					<td class="center">
+						<!--{? .newtype && .newtype != 'none' && strstr(.type,'goodssuboption_') //상품코드는수정불가 }-->
+						<select name="suboptionMakespecial[]" readonly="readonly"  disabled="disabled" id="goodssuboption_{.index_}_{.newtype}" class="{.newtype}select">
+							<option value="" >특수정보선택</option>
+							<!--{? sc.socialcp_input_type //티켓상품 }-->
+							<option value="address"  {? .newtype == 'address' } selected="selected" {/}>지역</option>
+							<option value="date"  {? .newtype == 'date' } selected="selected" {/}>날짜</option>
+							<option value="dayauto"  {? .newtype == 'dayauto' } selected="selected" {/}>자동기간</option>
+							<option value="dayinput"  {? .newtype == 'dayinput' } selected="selected" {/}>수동기간</option>
+							<!--{ : }-->
+								<option value="color" {? .newtype == 'color' } selected="selected" {/}>색상</option>
+							<!--{ / }-->
+						</select>
+						<!--{ : }-->
+						<select name="suboptionMakespecial[]" id="goodssuboption_{.index_}_{.newtype}" class="wp95 {.newtype}select">
+							<option value="" >특수정보선택</option>
+							<!--{? sc.socialcp_input_type //티켓상품 }-->
+							<option value="address"  {? .newtype == 'address' } selected="selected" {/}>지역</option>
+							<option value="date"  {? .newtype == 'date' } selected="selected" {/}>날짜</option>
+							<option value="dayauto"  {? .newtype == 'dayauto' } selected="selected" {/}>자동기간</option>
+							<option value="dayinput"  {? .newtype == 'dayinput' } selected="selected" {/}>수동기간</option>
+							<!--{ : }-->
+								<option value="color" {? .newtype == 'color' } selected="selected" {/}>색상</option>
+							<!--{ / }-->
+						</select>
+						<!--{ / }-->
+					</td>
+					<td class="center">
+						<span class='goodssuboptionlay '>
+						{@ .goodssuboptionloop }
+							<span class="goodssuboption_{..codeform_seq} goodssuboptionsublay  {? ((.code_seq != ..codeform_seq && strstr(.type,'goodssuboption_')) || (!strstr(.type,'goodssuboption_'))) }hide{/} ">
+								<button class="resp_btn v2 goodssuboptionbtn" type="button" class="{..label_type}btn" layerid="{..label_type}{..codeform_seq}_lay" label_type="{..label_type}"  codeform_seq="{..codeform_seq}" label_title="{..label_title}"  label_newtype="{..label_newtype}"  label_color="{..label_color}" label_zipcode="{..label_zipcode}" label_address="{..label_address}" label_addressdetail="{..label_addressdetail}"  label_biztel="{..label_biztel}"  label_codedate="{..label_codedate}"  label_sdayinput="{..label_sdayinput}" label_fdayinput="{..label_fdayinput}" label_dayauto_type="{..label_dayauto_type}" label_sdayauto="{..label_sdayauto}" label_fdayauto="{..label_fdayauto}" label_dayauto_day="{..label_dayauto_day}" >선택</button>
+							</span>
+						{ / }
+						</span>
+						<input type="text" name="suboptionMakeValue[]" class="resp_text" value="{.opt}" />
+						<!--div class="suboptionMakeSpecial">
+							<div class="suboptionMakeSpecialsub suboptionMakeColor {? .newtype != 'color' } hide {/}">
+								<span class="desc">※ 색상표 정보는 옵션 생성 후 입력 가능합니다.</span>
+							</div>
+
+							<div class="suboptionMakeSpecialsub suboptionMakeaddress   {? .newtype != 'address' } hide {/}">
+							<span class="desc">※ 지역의 위치정보는 옵션 생성 후 입력 가능합니다.</span>
+							</div>
+
+							<div class="suboptionMakeSpecialsub suboptionMakedate  {? .newtype != 'date' } hide {/}">
+								<span class="desc">※ 날짜 지정은 옵션 생성 후 입력 가능합니다.</span>
+							</div>
+
+							<div class="suboptionMakeSpecialsub suboptionMakedayinput  {? .newtype != 'dayinput' } hide {/}">
+								<input type="text" name="suboptionMakesdayinput[]" id="addoptionMakesdayinput{.index_}" value="{.sdayinput}" class="line suboptionMakesdayinput datepicker"  maxlength="10" size="10" />
+								~
+								<input type="text" name="suboptionMakefdayinput[]"  id="addoptionMakefdayinput{.index_}"  value="{.fdayinput}" class="line suboptionMakefdayinput datepicker"  maxlength="10" size="10" />
+							</div>
+
+							<div class="suboptionMakeSpecialsub suboptionMakenewdayauto  {? .newtype != 'dayauto' } hide {/}">
+								<span> '결제확인' 후
+									<select name="suboptionMakedayauto_type[]" class="suboptionMakedayauto_type" >
+									<option value="month" {? .dayauto_type == 'month' } selected="selected" {/}>해당 월▼</option>
+									<option value="day" {? .dayauto_type == 'day' } selected="selected" {/}>해당 일▼</option>
+									<option value="next" {? .dayauto_type == 'next' } selected="selected" {/}>익월▼</option>
+									</select>
+									<input type="text" name="suboptionMakesdayauto[]"   value="{.sdayauto}" class="line optionMakesdayauto"  maxlength="10" size="2" />일 <span class="suboptionMakenewdayautolaytitle">{? .dayauto_type == 'day' }이후{/}</span>부터
+									+
+									<input type="text" name="suboptionMakefdayauto[]"  value="{.fdayauto}" class="line optionMakefdayauto"  maxlength="10" size="2" />일
+									<select name="suboptionMakedayauto_day[]" class="suboptionMakedayauto_day" >
+								<option value="day"  {? .dayauto_day == 'day' } selected="selected" {/}>동안</option>
+								<option value="end"  {? .dayauto_day == 'end' } selected="selected" {/}>이 되는 월의 말일</option>
+									</select>
+								</span>
+								<br/><span  class="hand optionMakenewdayautolayrealdateBtn"  >미리보기▶ </span><span class="optionMakenewdayautolayrealdate">{.social_start_date_end}</span>
+							</div>
+						</div-->
+					</td>
+					<td class="center">
+						<input type="text" name="suboptionMakePrice[]" class="resp_text" value="{.price}" />
+					</td>
+				</tr>
+				{ / }
+			{ : }
+				<tr>
+					<td class="center">
+						<span class="hide"><button type="button" onClick="subOptionDel(this)" data-type="minus" class="btn_minus btnplusminus"></button></span>
+					</td>
+					<td class="center">
+						<input type="hidden" name="suboptionMakeType[]" class="suboptionMakeType" value="" />
+						<input type="hidden" name="suboptionMakeCode[]" class="suboptionMakeCode" value="" />
+
+						<input type="hidden" name="suboptionMakenewtype[]" value="" />
+						<input type="hidden" name="suboptionMakecolor[]" value="" />
+						<input type="hidden" name="suboptionMakezipcode[]" value="" />
+						<input type="hidden" name="suboptionMakeaddress[]" value="" />
+						<input type="hidden" name="suboptionMakeaddressdetail[]" value="" />
+						<input type="hidden" name="suboptionMakebiztel[]" value="" />
+
+						<input type="hidden" name="suboptionMakecodedate[]" value="" />
+
+						<select name="suboptionMakeId[]" class="wp100">
+							{ @ goodssuboptionloop }
+								{? sc.socialcp_input_type}
+									{? .label_newtype != 'color' //티켓상품 }
+								<option value="goodssuboption_{.codeform_seq}" label_type="{.label_type}"  codeform_seq="{.codeform_seq}" label_title="{.label_title}"   label_newtype="{.label_newtype}"  label_color="{.label_color}" label_zipcode="{.label_zipcode}" label_address="{.label_address}" label_addressdetail="{.label_addressdetail}"  label_biztel="{.label_biztel}"  label_codedate="{.label_codedate}"  label_sdayinput="{.label_sdayinput}" label_fdayinput="{.label_fdayinput}" label_dayauto_type="{.label_dayauto_type}" label_sdayauto="{.label_sdayauto}" label_fdayauto="{.label_fdayauto}" label_dayauto_day="{.label_dayauto_day}">{?  .label_newtype && .label_newtype != 'none'  }[특수]{/} {.label_title}</option>
+									{/}
+								{:}
+									{? .label_newtype == 'color' || !.label_newtype  || .label_newtype == 'none'  //실물상품 }
+										<option value="goodssuboption_{.codeform_seq}" label_type="{.label_type}"  codeform_seq="{.codeform_seq}" label_title="{.label_title}"   label_newtype="{.label_newtype}"  label_color="{.label_color}" label_zipcode="{.label_zipcode}" label_address="{.label_address}" label_addressdetail="{.label_addressdetail}"  label_biztel="{.label_biztel}"  label_codedate="{.label_codedate}"  label_sdayinput="{.label_sdayinput}" label_fdayinput="{.label_fdayinput}" label_dayauto_type="{.label_dayauto_type}" label_sdayauto="{.label_sdayauto}" label_fdayauto="{.label_fdayauto}" label_dayauto_day="{.label_dayauto_day}">{?  .label_newtype && .label_newtype != 'none'  }[특수]{/} {.label_title}</option>
+									{/}
+								{/}
+							{ / }
+							<option value="direct" selected>직접입력</option>
+						</select>
+					</td>
+					<td class="center">
+						<input type="text" name="suboptionMakeName[]" class="resp_text" value="" title="예) 사이즈" />
+					</td>
+					<td class="center">
+						<select name="suboptionMakespecial[]" class="wp100">
+							<option value="" >특수정보선택</option>
+							{? sc.socialcp_input_type}
+							<option value="address" >지역</option>
+							<option value="date" >날짜</option>
+							<option value="dayauto" >자동기간</option>
+							<option value="dayinput" >수동기간</option>
+							{:}
+								<option value="color" >색상</option>
+							{/}
+						</select>
+					</td>
+					<td class="center">
+							<span class='goodssuboptionlay hide'>
+							{ @ goodssuboptionloop }
+								<span class="goodssuboption_{.codeform_seq} goodssuboptionsublay hide ">
+									<button type="button" class="resp_btn v2 {.label_type}btn" layerid="{.label_type}{.codeform_seq}_lay" label_type="{.label_type}"  label_id="{.label_id}"  codeform_seq="{.codeform_seq}" label_title="{.label_title}"  label_newtype="{.label_newtype}"  label_color="{.label_color}" label_zipcode="{.label_zipcode}" label_address="{.label_address}" label_addressdetail="{.label_addressdetail}"  label_biztel="{.label_biztel}"   label_codedate="{.label_codedate}"  label_sdayinput="{.label_sdayinput}" label_fdayinput="{.label_fdayinput}" label_dayauto_type="{.label_dayauto_type}" label_sdayauto="{.label_sdayauto}" label_fdayauto="{.label_fdayauto}" label_dayauto_day="{.label_dayauto_day}">선택</button>
+								</span>
+							{ / }
+							</span>
+							<input type="text" name="suboptionMakeValue[]" class="resp_text" size="45" value="" title="예) 90, 95, 100" />
+						<div class="suboptionMakeSpecial hide">
+							<div class="suboptionMakeSpecialsub suboptionMakeColor hide">
+								<span class="desc">※ 색상표 정보는 옵션 생성 후 입력 가능합니다.</span>
+							</div>
+
+							<div class="suboptionMakeSpecialsub suboptionMakeaddress  hide">
+							<span class="desc">※ 지역의 위치정보는 옵션 생성 후 입력 가능합니다.</span>
+							</div>
+
+							<div class="suboptionMakeSpecialsub suboptionMakedate hide">
+								<span class="desc">※ 날짜 지정은 옵션 생성 후 입력 가능합니다.</span>
+							</div>
+
+							<div class="suboptionMakeSpecialsub suboptionMakedayinput hide">
+								<input type="text" name="suboptionMakesdayinput[]"  id="addoptionMakesdayinput0"  value="" class="resp_text suboptionMakesdayinput datepicker"  maxlength="10" size="10" />
+								~
+								<input type="text" name="suboptionMakefdayinput[]"  id="addoptionMakefdayinput0"  value="" class="resp_text suboptionMakefdayinput datepicker"  maxlength="10" size="10" />
+							</div>
+							<div class="suboptionMakeSpecialsub suboptionMakenewdayauto hide">
+								<span> '결제확인' 후
+									<select name="suboptionMakedayauto_type[]" class="suboptionMakedayauto_type" >
+										<option value="month">해당 월▼</option>
+										<option value="day">해당 일▼</option>
+										<option value="next">익월▼</option>
+									</select>
+									<input type="text" name="suboptionMakesdayauto[]"  value="" class="resp_text optionMakesdayauto"  maxlength="10" size="2" />일 <span class="suboptionMakenewdayautolaytitle"></span>부터
+									+
+									<input type="text" name="suboptionMakefdayauto[]"  value="" class="resp_text optionMakefdayauto"  maxlength="10" size="2" />일
+									<select name="suboptionMakedayauto_day[]" class="voptionMakedayauto_day" >
+									<option value="day">동안</option>
+									<option value="end">이 되는 월의 말일</option>
+									</select>
+								</span>
+								<br/><span  class="hand optionMakenewdayautolayrealdateBtn"  >미리보기▶ </span><span class="optionMakenewdayautolayrealdate"></span>
+							</div>
+						</div>
+					</td>
+					<td class="center">
+						<input type="text" name="suboptionMakePrice[]" class="resp_text"  value="" />
+					</td>
+				</tr>
+			{ / }
+			</tbody>
+		</table>
+		<ul class="bullet_hyphen resp_message">
+			<li>옵션 정보는 <span class="underline blue hand" onclick="window.open('../setting/goods');">상품 코드</span> 에서 미리 등록할 수 있습니다.</li>
+			<li>특수 정보 안내 <span class="underline blue hand" onclick="window.open('https://www.firstmall.kr/customer/faq/1304');">자세히 보기</span> &gt;</li>
+		</ul>
+		<div class="mt20">
+			<label class="resp_checkbox">
+				<input type="checkbox" name="suboption_package_count" value="1"
+					 { ? (scm_cfg['use'] == 'Y' && provider_seq == 1) }checked readonly{:}
+					 	{ ? (count(suboptions[0]) > 0 && sc.suboption_package_count > 0) || (!count(suboptions[0]) && sc.package_yn_suboption == 'y')}checked{/}{ / }
+				> 실제 상품과 연결(출고 시 재고 차감)</label>
+			</label>
+		</div>
+	</div>
+	<div class="footer">
+		<button type="button" class="resp_btn active size_XL" id="gdsuboptioncodemakebtn">확인</button>
+		<button type="button" class="resp_btn v3 size_XL" onClick="closeDialog('subOptDialog')">취소</button>
+	</div>
+	</form>
+</div>
+	
+
+<!--{ @ goodssuboptionloop }-->
+<div id="{.label_type}{.codeform_seq}_lay" class="hide">
+	<div class="content">
+		<table class="table_basic" id="labelTable">
+		<col width="20%" />
+		<col width="40%" />
+		<col width="40%" />
+		<thead>
+		<tr>
+			<th><label class="resp_checkbox"><input type="checkbox" name="chkall" value="y"></label></th>
+			<th>{.label_title}</th>
+			<th>코드값</th>
+		</tr>
+		</thead>
+			<tbody>
+			{@ .code_arr }
+			<tr id=" labelTr"  class=" layer ">
+				<td class="center">
+					<label class="resp_checkbox"><input type="checkbox" name="{.label_type}[]" class="chk null labelCheckbox_{.codeform_seq}"  codeform_seq="{.codeform_seq}"  label_type="{.label_type}"  label_id="{.label_id}" value="{..code}" label_value="{..value}"   label_newtype="{.label_newtype}"  label_color="{..colors}" label_zipcode="{..zipcode}" label_address="{..address}" label_addressdetail="{..addressdetail}"  label_biztel="{..biztel}"  label_codedate="{..codedate}"  label_sdayinput="{..sdayinput}" label_fdayinput="{..fdayinput}" label_dayauto_type="{..dayauto_type}" label_sdayauto="{..sdayauto}" label_fdayauto="{..fdayauto}"  label_dayauto_day="{..dayauto_day}"  {? ..default == "Y" } default="checked" {/}></label>
+				</td>
+				<td id=" labelTd1"  class="its-td left" nowrap="nowrap" >
+					
+					{..value}</label>
+				<!--{ ?.label_newtype }-->
+					<!--{ ?.label_newtype == 'color' }-->
+						→<div class="colorPickerBtn " style="background-color:{..colors}"  ></div>
+					<!--{: .label_newtype == 'address'  }-->
+						→<span class="addrhelpicon1  " alt="{? ..zipcode }[{..zipcode}] {..address} {..addressdetail}{/} {? ..biztel }업체 연락처:{..biztel}{/}"  title="{? ..zipcode }[{..zipcode}] {..address} {..addressdetail}{/} {? ..biztel }업체 연락처:{..biztel}{/}" >{? ..zipcode }[{..zipcode}] {..address} {..addressdetail}{/} {? ..biztel }업체 연락처:{..biztel}{/}</span>
+					<!--{: .label_newtype == 'date'  }-->
+						→<span class="codedatehelpicon1  " alt="{..codedate}" title="{..codedate}">{..codedate}</span>
+					<!--{: .label_newtype == 'dayinput'  }-->
+						→<span class="dayinputhelpicon1  " alt="{..sdayinput} ~ {..fdayinput}" title="{..sdayinput} ~ {..fdayinput}">{..sdayinput} ~ {..fdayinput}</span>
+					<!--{: .label_newtype == 'dayauto'  }-->
+						→<span class="dayautohelpicon1  " alt="'결제확인' {..dayauto_type_title} {..sdayauto}일 {? ..dayauto_type == 'day' }이후{/}부터 + {..fdayauto}일  {..dayauto_day_title}" title="'결제확인' {..dayauto_type_title} {..sdayauto}일 {? ..dayauto_type == 'day' }이후{/}부터 + {..fdayauto}일  {..dayauto_day_title}">결제확인' {..dayauto_type_title} {..sdayauto}일 이후부터 ~ {..fdayauto}일  {..dayauto_day_title}</span>
+					<!--{ / }-->
+					<!--{ / }-->
+				</td>
+				<td id=" labelTd2"  class="its-td center">{..code}</td>
+			</tr>
+			{/}
+			</tbody>
+		</table>
+		<!--//입력폼 -->
+	</div>
+	<div class="footer">
+		<input type="hidden" name="gdsuboptidx" class="gdsuboptidx" value="">
+		<button type="button" id="{.label_type}{.codeform_seq}CodeApply" class="resp_btn active GoodsSubOptionCodeApply" codeform_seq="{.codeform_seq}"  label_type="{.label_type}"  label_id="{.label_id}" label_newtype="{.label_newtype}"  layer_id="{.label_type}{.codeform_seq}_lay">적용하기</button>
+		<button type="button" class="resp_btn v3" onClick="closeDialog('{.label_type}{.codeform_seq}_lay')">취소</button>
+	</div>
+</div>
+<!--{ / }-->
+
+
+<!-- 메세지 리스트 -->
+<div id="getOptionsMessage"  class="option-message hide">
+	<ul>
+		<li>
+			<span style="color:blue">상품코드관리</span>에서 미리 등로개 놓은 옵션정보를 가져와서 옵션을 등록하게 됩니다. 옵션 정보의 일관성을 유지할 수 있게 됩니다.
+			<br/><br/>
+			<span class="btn small orange"><button type="button"  id="btn_goods_option_list"> 안내) 옵션정보 가져오기</button></span>
+		</li>
+	</ul>
+</div>
+
+<div id="optionPriceMessage"  class="option-message hide">
+	<ul>
+		<li>옵션가격의 합이 판매가격이 됩니다.<br/>판매가격은 부모창에서 직접입력 할 수도 있습니다.</li>
+	</ul>
+</div>
+
+<div id="specialOptionMessage"  class="option-message hide">
+	<ul>
+		<li>
+			<span style="font-weight:bold">실물배송상품의 특수옵션 [색상]:</span>
+			특수옵션 색상을 사용하면 상품의 색상을 색상표로 설정할 수 있으며 상품의 색상을 소비자에게 노출할 수 있습니다.
+		</li>
+		<li>
+			<span style="font-weight:bold">티켓발송상품의 특수옵션 [수동기간]:</span>
+			특수옵션 수동기간을 사용하면 티켓의 유효기간을 수동으로 설정할 수 있으며 설정된 유효기간으로 티켓 사용/취소/환불이 자동 제어됩니다.
+		</li>
+		<li>
+			<span style="font-weight:bold">티켓발송상품의 특수옵션 [자동기간]:</span>
+			특수옵션 자동기간을 사용하면 티켓의 유효기간을 자동으로 설정할 수 있으며 설정된 유효기간으로 티켓 사용/취소/환불이 자동 제어됩니다.
+		</li>
+		<li>
+			<span style="font-weight:bold">티켓발송상품의 특수옵션 [날짜]:</span>
+			특수옵션 날짜를 사용하면 티켓의 유효일(ex.공연일)을 설정할 수 있으며 설정된 유효일로 티켓 사용/취소/환불이 자동 제어됩니다.
+		</li>
+		<li>
+			<span style="font-weight:bold">티켓발송상품의 특수옵션 [지역]:</span>
+			특수옵션 지역을 사용하면 티켓의 사용장소(ex.사용가능매장,공연장)를 설정할 수 있으며 설정된 사용장소로 티켓 사용이 제어됩니다.
+			<br/><br/>
+			<span class="btn small orange"><button type="button"  id="btn_goods_special_list"> 안내) 특수 정보 활용</button></span>
+		</li>
+	</ul>
+</div>
+
+
+<!-- 추가구성옵션관리 다이얼로그 -->
+<div id="optionSettingPopup" class="hide">
+	<div class="content">
+		<table  class="table_basic">
+			<colgroup>
+				<col width="80%" />
+				<col width="20%" />
+			</colgroup>
+			<thead>
+				<tr>
+					<th>상품명</th>
+					<th>삭제</th>
+				</tr>
+			</thead>
+			<tbody>
+			<!--{ ? frequentlysublist }-->
+				<!--{ @ frequentlysublist }-->
+				<tr>
+					<td><span class="delFreqOptionName_{.goods_seq}">{.goods_name}</span></td>
+					<td class="center">
+						<button type="button" class="delFreqOption resp_btn v3 size_S" value="{.goods_seq}" data-type="sub" data-packageyn="{.package_yn}">삭제</button>
+					</td>
+				</tr>
+				<!--{ / }-->
+			<!--{ : }-->
+				<tr>
+					<td colspan="2" height="40" class="center">데이터 없음</td>
+				</tr>
+			<!--{ / }-->
+			</tbody>
+		</table>
+		<div class="paging_navigation">{frequentlysubpaginlay}</div>
+	</div>
+	<div class="footer">
+		<button type="button" class="resp_btn v3 size_XL" onClick="closeDialog('optionSettingPopup')">닫기</button>
+	</div>
+
+</div>

@@ -569,7 +569,7 @@
 			{? npay_use && orders.pg == "npay"}
 				네이버페이 주문에 대한 환불은 네이버페이에서 처리됩니다.
 			{ : orders.pg == "talkbuy" }
-				<span class="red">카카오페이 구매 주문에 대한 환불은 카카오페이 구매 파트너 센터에서 처리해야 됩니다.</span>
+				<span class="red">톡체크아웃 주문에 대한 환불은 톡체크아웃 관리자센터에서 처리해야 됩니다.</span>
 			{ : }
 			<label><input type="checkbox" name="manual_refund_yn" value="y" checked /> 전자결제(PG)사 결제취소 처리 후 환불완료처리</label>
 			{ / }

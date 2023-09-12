@@ -2473,7 +2473,7 @@ function openSettingSubOption(){
 	var tmp_seq				= $("input[name='tmp_suboption_seq']").val();
 	var goodsTax			= $("input[name='tax']:checked").val();
 	var policy				= $("input[name='sub_reserve_policy']").val();
-	var windowOption		= 'width='+$(window).width()+'px,height=750px,toolbar=no,titlebar=no,scrollbars=yes,resizeable';
+	var windowOption		= 'width='+$(window).width()+'px,height=900px,toolbar=no,titlebar=no,scrollbars=yes,resizeable';
 	var socialcp_input_type	= eval('$("input[name=\'socialcp_input_type\']:checked").val()');
 	var provider_seq		= gl_provider_seq;
 	var frequentlysub	= $("input[name='frequentlysub']").val();

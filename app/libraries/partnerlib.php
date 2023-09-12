@@ -1,7 +1,7 @@
 <?php
 if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 /**
- * 파트너 주문(API 주문) - 카카오페이 구매 / 네이버페이
+ * 파트너 주문(API 주문) - 톡체크아웃 / 네이버페이
  * 2021-04-07
  * by hyem
  */
@@ -27,7 +27,7 @@ class partnerlib
         }
         $this->market       = $market;
         if ( $this->market == "talkbuy") {
-            $this->marketname = "카카오톡구매";
+            $this->marketname = "톡체크아웃";
         }else{
             $this->marketname = "네이버페이";
         }
@@ -39,7 +39,7 @@ class partnerlib
     }
 
     /* 
-    카카오톡구매
+    톡체크아웃
     주문하기
     */
     function getPartnerSettingInfo($service='', $goods=[], $marketing_admin='', $mode='goods'){
@@ -93,7 +93,7 @@ class partnerlib
 
 					// 네이버페이 구매가능한 배송그룹만 버튼노출되도록 수정 2018-05-23
 					// 네이버페이 api 2.1 상품/주문연동
-					// 카카오톡구매
+					// 톡체크아웃
 					if($this->isShowPartnerButton($service, $setConfig)) {
 
 						$return['use'] = 1;
@@ -106,7 +106,7 @@ class partnerlib
 						if($this->CI->_is_mobile_agent){
 							$setConfig_btn = $setConfig[$market_field.'_btn_mobile_goods'];
 							$btnTmp = explode("-",$setConfig_btn);
-							// 모바일 버튼에는 M 붙임 -- 카카오톡구매만
+							// 모바일 버튼에는 M 붙임 -- 톡체크아웃만
 							if($service == "talkbuy") {
 								$btnTmp[0] .= "M";
 							}
@@ -137,10 +137,10 @@ class partnerlib
 	}
 
 	/**
-	 * 네이버페이/카카오톡구매 버튼 노출 여부
+	 * 네이버페이/톡체크아웃 버튼 노출 여부
 	 */
 	private function isShowPartnerButton($service='', $setConfig=[]) {
-		// 카카오톡구매는 true 리턴
+		// 톡체크아웃는 true 리턴
 		if ($service == 'talkbuy') {
 			return true;
 		}
@@ -175,7 +175,7 @@ class partnerlib
 
 		$market_name = "네이버페이";
 		if($market == "talkbuy")  { 
-			$market_name = "카카오톡구매";
+			$market_name = "톡체크아웃";
 		}
 
 		// 전자결제 설정 체크 @author Sunha Ryu 2019-07-04
@@ -368,7 +368,7 @@ class partnerlib
     }
 
 	/**
-	 * 네이버페이/카카오톡구매 주문하기 상품 제고체크
+	 * 네이버페이/톡체크아웃 주문하기 상품 제고체크
   	*/
 	function partnerOrderStockCheck($cart){
 
@@ -480,7 +480,7 @@ class partnerlib
 		}
 
 		# ------------------------------------------------------------------------------------------------------------
-		# 네이버페이/카카오톡구매 주문가능 상태 체크 시
+		# 네이버페이/톡체크아웃 주문가능 상태 체크 시
 		foreach ($cart_list as $row){
 
 			$selected_goods = false;	//선택한 상품 여부
@@ -538,7 +538,7 @@ class partnerlib
 				$this->culture = 'true';
 			}
 		}
-		# 네이버페이/카카오톡구매 주문가능 상태 체크 종료
+		# 네이버페이/톡체크아웃 주문가능 상태 체크 종료
 		# ------------------------------------------------------------------------------------------------------------
     }
 
@@ -768,7 +768,7 @@ class partnerlib
 			if($log["add_info"] == "npay") {
 				$log["add_info"] = "[네이버페이]";
 			} else if($log["add_info"] == "talkbuy") {
-				$log["add_info"] = "[카카오페이 구매]";
+				$log["add_info"] = "[톡체크아웃]";
 			}
 		}		
 		return $logs;

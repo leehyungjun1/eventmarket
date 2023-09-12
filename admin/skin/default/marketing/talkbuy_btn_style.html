@@ -1,0 +1,58 @@
+<link rel="stylesheet" type="text/css" href="/admin/skin/default/css/common-ui.css?v={=date('Ymd')}" >
+<style>
+	body{background-color: #FFF;}
+	.item-title{padding-left:0; padding-top:0;}
+</style>
+
+<form id="npayFrm" name="npayFrm" method="post" action="../marketing_process/talkbuy_btn_style" target="actionFrame" class="hx100">
+	<input type="hidden" name="mode" value="{=mode}">
+		<div class="contents_container">
+		<div class="content">
+			<div class="item-title">버튼 타입</div>
+			<table class=" table_basic v7 thl">
+				<colgroup>
+					<col width="20%">
+					<col width="40%">
+					<col width="40%">
+				</colgroup>
+				
+					<tr>
+						<th>타입</th>
+						<th>상품상세 페이지</th>
+						<th>장바구니 페이지</th>
+					</tr>
+				
+				<!--{ @ talkbuy_btn }-->
+				<tr>
+					<!--{ @ .value_ }-->
+					<!--{? ..key_ == 0}-->
+					<th class="btn_lay {? .key_ == 0}first{/} left">				
+						<label class="resp_radio">
+							<input type="radio" name="style_code" value="{=..value_.size}-{..value_.darkMode}-{..value_.wishButton}-{..value_.type}" {? sel_talkbuy_style[0]==..value_.size && sel_talkbuy_style[1]==..value_.darkMode && sel_talkbuy_style[2]==..value_.wishButton }checked{/}>
+							{=..value_.btn_style_info}
+						</label>					
+					</th>
+					<td class="btn_lay {? .key_ == 0}first{/}">
+						<div id="nhn_btn{=..key_}_1">
+							<img src="../images/common/talkcheckout/{=..value_.size}-{..value_.darkMode}-{..value_.wishButton}.png">
+						</div>
+					</td>
+					<!--{ : }-->
+					<td class="btn_lay">
+						<div id="nhn_btn{=..key_}_1">
+							<img src="../images/common/talkcheckout/{=..value_.size}-{..value_.darkMode}-{..value_.wishButton}.png">
+						</div>
+					</td>
+					<!--{ / }-->
+					<!--{ / }-->
+				</tr>
+				<!--{ / }-->
+			</table>		
+		</div>
+
+		<div class="footer">
+			<button type="submit" class="resp_btn active size_XL">저장</button>
+			<button type="button" class="resp_btn v3 size_XL" onClick="parent.lay_npay_popup_close()">취소</button>
+		</div>
+	</div>
+</form>

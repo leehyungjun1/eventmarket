@@ -2505,7 +2505,7 @@ class RefundLibrary
 		$refund_payment_name["kakaomoney"]			= array("paycode" => $data_order['payment']	,"name" => "카카오머니 취소");
 		$refund_payment_name["payco_coupon"]		= array("paycode" => $data_order['payment']	,"name" => "페이코 쿠폰결제 취소");
 		$refund_payment_name["pos_pay"]				= array("paycode" => $data_order['payment']	,"name" => "Pos 결제 취소");
-		$refund_payment_name["talkbuy_manual"]		= array("paycode" => "manual"				,"name" => "[수동] 카카오페이구매 취소 (카카오페이 구매 파트너 센터에서 직접 취소)");
+		$refund_payment_name["talkbuy_manual"]		= array("paycode" => "manual"				,"name" => "[수동] 톡체크아웃 취소 (톡체크아웃 관리자센터에서 직접 취소)");
 
 		$refund_payment = array();
 		foreach($return as $val){
