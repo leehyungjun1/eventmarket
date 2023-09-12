@@ -1,0 +1,228 @@
+{ #layout_header }
+<style>
+    .contents_container td {text-align: center;}
+    .align_left {text-align: left !important;}
+
+</style>
+<script type="text/javascript">
+    var default_search_pageid	= "manager_log";
+
+	$(document).ready(function() {
+		$(".select_date").click(function() {
+			if(typeof($(this).attr("settarget")) == "undefined") { 
+				default_key = ''; 
+			}else{
+				default_key = $(this).attr("settarget"); 
+			}
+			set_period($(this).attr("id"),default_key);
+		});
+		
+		$("select[name='action_type']").on('change', function(){
+			//$(this).val()
+			var action_type = $(this).val();
+			var action_type_old = $("input[name='action_type_old']").val();
+			
+			if(action_type != action_type_old){
+				$("select[name='action_menu']").empty();
+				
+				var action_menus = {action_menu_json};
+				var action_menu_contents = '<option value="0" selected>- 메뉴 전체 -</option>';
+				
+				if(action_menus[action_type]){
+					$.each(action_menus[action_type], function(index, value){
+						action_menu_contents += '<option value="'+index+'">'+value+'</option>';
+					});
+				}
+				
+				$("select[name='action_menu']").html(action_menu_contents);
+				$("input[name='action_type_old']").val(action_type);
+			}
+		});
+
+		$("select[name='provider_seq_selector']").on('change', function(){
+			var provider_seq = $(this).val();
+			var provider_old = $("input[name='provider_old']").val();
+			
+			if(provider_seq != provider_old){
+				$("select[name='manager_seq']").empty();
+				
+				$.ajax({
+					type: 'GET',  
+					url: '/admin/setting/manager_list',
+					data: {provider_seq: provider_seq},
+					success:function(data){
+						var list = jQuery.parseJSON(data);
+						var contents = '<option value="0" selected>- 처리자 전체 -</option>';
+				
+						$.each(list, function(index, value){
+							contents += '<option value="'+value.manager_seq+'">'+value.manager_id+' ('+value.mname+')</option>';
+						});
+						
+						$("select[name='manager_seq']").html(contents);
+						$("input[name='provider_old']").val(provider_seq);
+					}, error:function(e){
+						alert(e.responseText);
+					}
+				});
+			}
+		});
+		
+		//로그 상세 보기
+		$(".button_detail").on('click', function(){
+			var manager_log_seq = $(this).data('seq');
+			
+			$.ajax({
+				type: 'GET',  
+				url: '/admin/setting/manager_log_detail',
+				data: {seq: manager_log_seq},
+				success:function(data){
+					if(data == 'ERROR_AUTH'){
+						alert('접근 권한이 없습니다.');
+						return false;
+					}
+					
+					if(data == 'ERROR_SEQ'){
+						alert('로그 번호를 찾을 수 없습니다.');
+						return false;
+					}
+					
+					var list = jQuery.parseJSON(data);
+					var contents = "";
+					
+					if(list.type == 'list'){
+						$('#log_detail table thead').html('<tr><th style="width:7%">No.</th><th style="width:15%">메뉴</th><th style="width:48%">권한</th><th style="width:15%">변경 전</th><th style="width:15%">변경 후</th></tr>');
+						
+						if(list.data.length > 0){
+							$.each(list.data, function(index, value){
+								if(index != 'type'){
+									contents += '<tr>';
+									contents += '<td>'+parseInt(index + 1)+'</td>';
+									contents += '<td>'+value['menu']+'</td>';
+									contents += '<td>'+value['action']+'</td>';
+									contents += '<td>'+value['before']+'</td>';
+									contents += '<td>'+value['status']+'</td>';
+									contents += '</tr>';
+								}
+							});
+						} else {
+                            contents += '<tr>';
+                            contents += '<td colspan="5"><center>변경 내역이 없습니다.</center></td>';
+                            contents += '</tr>';
+						}
+					} else if(list.type == 'dialog'){
+						$('#log_dialog .content').html(list.desc);
+						openDialog("상세", "log_dialog", "");
+						return false;
+					} else {
+						$('#log_detail table thead').html('<tr><th style="width:23%">항목</th><th style="width:77%">내용</th></tr>');
+						contents = list.desc;
+					}
+					
+                    $('#log_detail table tbody').html(contents);
+					
+					if(list.type == 'list'){
+						openDialog("변경 내역 상세", "log_detail", {"width":"800","height":"600"});
+					} else {
+						openDialog("검색 내역 상세", "log_detail", {"width":"600","height":"500"});
+					}
+					
+				}, error:function(e){
+					alert(e.responseText);
+				}
+			});
+		});
+		
+		//리스트 보기 갯수 변경 시
+		$("select[name='perpage']").on('change',function(){
+			$("form[name='settingForm']").submit();
+		});
+		
+		//엑셀 다운로드
+		$(".excel_down").on('click',function(){
+			var params = $('#settingForm').serialize();
+			var list_total = $('#search_count b').text();
+			$.ajax({
+				type: 'GET',  
+				url: '/admin/setting/manager_log',
+				data: {is_excel: 'Y', list_total: list_total, params: params}, 
+				success:function(args){
+					if(args.indexOf("[Error]") >= 0){
+						alert(args);
+					} else {
+						window.location.href = '/admin/excel_spout/file_download?url=' + args;
+					}
+				}, error:function(e){
+					alert(e.responseText);
+				}
+			});
+		});
+
+		//날짜 클릭
+		$(".select_date").on("click", function(){
+			$('input[name="select_date_regist"]').val($(this).attr('id'));
+			$(this).css('position', 'relative');
+			$(this).css('z-index', '999');
+		})
+    });
+
+	function search_init(){
+		$('form').find('input:text').val('');
+		$('form').find('select').val(0);
+		$("input[name='provider_seq']").val(0);
+		$("select[name='provider_seq_selector']").next(".ui-combobox").find("input").val('- 입점사 전체 -');
+		$("select[name='provider_seq_selector']").trigger('change');
+		$('select[name="manager_seq"]').val(0);
+		$('#today').trigger('click');
+	}
+
+</script>
+
+<form name="settingForm" id="settingForm" method="get" enctype="multipart/form-data" action="/admin/setting/manager_log">
+<input type="hidden" name="action_type_old" value=""/>
+<input type="hidden" name="provider_old" value=""/>
+<!-- 페이지 타이틀 바 : 시작 -->
+<div id="page-title-bar-area">
+	<div id="page-title-bar">
+        <ul class="page-buttons-left">
+			<li><button type="button" onclick="document.location.href='../setting/manager';" class="resp_btn v3 size_L">리스트 바로가기</button></li>
+		</ul>
+		<!-- 타이틀 -->
+		<div class="page-title">
+			<h2>개인정보처리 관리</h2>
+		</div>
+	</div>
+</div>
+<!-- 페이지 타이틀 바 : 끝 -->
+
+<!-- 검색폼 : 시작 -->
+<div class="search_container">
+    {# manager_log_search }
+</div> <!-- search_container end -->
+<!-- 검색폼 : 끝 -->
+
+<div class="contents_dvs v2">
+	{# manager_log_list }
+	<div class="paging_navigation">{pagin}</div>
+</div>
+</form>
+
+</div>
+
+<div id="log_detail" class="hide">
+    <div class="content">	
+        <table class="table_basic">
+            <thead></thead>
+            <tbody></tbody>
+        </table>
+    </div>
+    <div class="footer">
+		<button type="button" class="resp_btn v3 size_XL" onClick="closeDialog('log_detail');">닫기</button>
+	</div>
+</div>
+<script type="text/javascript" src="/app/javascript/js/admin-searchDefaultConfig.js?mm={=date('Ymd')}"></script>
+
+<div id="log_dialog" class="hide">
+	<div class="content">	
+    </div>
+</div>
+{ #layout_footer }
