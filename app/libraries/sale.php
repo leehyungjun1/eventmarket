@@ -1901,7 +1901,7 @@ class sale
 
 		//상품의 할인적용금액보다 주문서 쿠폰 할인금액이 큰경우 주문서 쿠폰 할인금액 재계산
 		if( $sale_option_price && $return['sale_price'] > $sale_option_price ) {
-			$return['sale_price'] = $sale_option_pricee;
+			$return['sale_price'] = $sale_option_price;
 		}
 
 		if($this->total_price_cal == $this->sum_option_total_price){

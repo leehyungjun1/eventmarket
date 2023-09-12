@@ -1805,9 +1805,6 @@ if(is_file_facebook_tag == true){
 					f.attr("target","tar_opener");
 					mobile_pay_layer();
 				}
-				if (gl_pg_company == 'lg') {
-					f.attr("target","");
-				}
 			}
 
 			f.submit();

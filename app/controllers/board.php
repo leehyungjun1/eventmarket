@@ -2631,13 +2631,15 @@ class Board extends front_base {
 
 	public function zoom()
 	{
-		$board = $this->skin.'/board/_zoom.html';
-		$url		= "../data/board/".$_GET['id']."/".$_GET['url'];
-		$width	= $_GET['width'];
+		$board = $this->skin . '/board/_zoom.html';
 
-		$this->template->assign("url",$url);
-		$this->template->assign("width",$width);
-		$this->print_layout($board);
+		$url = "/data/board/".$this->input->get('id')."/".$this->input->get('url');
+		$width = $this->input->get('width');
+
+		$this->template->assign('url', $url);
+		$this->template->assign('width', $width);
+		$this->template->define('tpl', $board);
+		$this->template->print_('tpl');
 	}
 
 	// 180928 cscenter LNB 파일 추가

@@ -1136,13 +1136,7 @@ class order2exportmodel extends CI_Model {
 					list($opttype,$shipping_seq,$opt_seq) = $this->get_info_by_export_item_seq($data_option['export_item_seq']);
 
 					if( $shipping_seq != $shipping_data['shipping_seq'] ) continue;
-
-					if( $shipping_data['tot_request_ea'] > 0 ) {
-						$shipping_exists = true;
-					}
-
-					// 출고 수량이 0이라면 검증 제외
-					if( $shipping_data['options'][$option_seq]['request_ea'] <= 0 ) continue;
+					$shipping_exists = true;
 
 					$arr_shipping_data[$export_key] = $shipping_data;
 
@@ -1429,15 +1423,12 @@ class order2exportmodel extends CI_Model {
 
 							if( array_key_exists($suboption_seq,$option_data['suboptions']) ){
 
-								// 출고 수량이 0이라면 검증 제외
-								if( $shipping_data['options'][$option_seq]['suboptions'][$suboption_seq]['request_ea'] <= 0 ) continue;
-
 								if($data_suboption['request_ea']=='ALL') {
 									$data_suboption['request_ea'] =  $shipping_data['options'][$option_seq]['suboptions'][$suboption_seq]['request_ea'];
 									$export_data['OPT'][$option_seq]['SUB'][$suboption_seq]['request_ea'] = $shipping_data['options'][$option_seq]['request_ea'];
 									$export_data['OPT'][$option_seq]['SUB'][$suboption_seq]['ea'] = $shipping_data['options'][$option_seq]['ea'];
 								}
-
+								if( $data_suboption['request_ea'] <= 0 ) continue;
 								// 실물 추가옵션의 재고체크
 								$suboption 	= $shipping_data['options'][$option_seq]['suboptions'][$suboption_seq]['suboption'];
 								$option_key = $goods_seq."/".$suboption;
@@ -1602,13 +1593,7 @@ class order2exportmodel extends CI_Model {
 					if( $shipping_seq != $shipping_data['shipping_seq'] ) continue;
 					if( !array_key_exists($option_seq,$shipping_data['options']) ) continue;
 
-					if( $shipping_data['tot_request_ea'] > 0 ) {
-						$shipping_exists = true;
-					}
-
-					// 출고 수량이 0이라면 검증 제외
-					if( $shipping_data['options'][$option_seq]['request_ea'] <= 0 ) continue;
-
+					$shipping_exists = true;
 					$arr_shipping_data[$export_key] = $shipping_data;
 
 					if(!isset($data_option['title1'])){

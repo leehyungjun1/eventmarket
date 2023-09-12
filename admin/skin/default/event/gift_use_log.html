@@ -1,0 +1,44 @@
+
+{? giftlog }
+<style>
+.giftuse { width:100%; }
+.giftuse ul li { line-height:30px;}
+.giftuse table td { font-family:Verdana, Arial, sans-serif; padding:5px; }
+</style>
+
+<div class="giftuse">
+	<table>
+	<colgroup width="25%">
+	<colgroup width="3%" align="center">
+	<colgroup width="72%">
+	<tr>
+		<td>√ 이벤트명</td>
+		<td>:</td>
+		<td>{=giftlog.gift_title}</td>
+	</tr>
+	<tr>
+		<td>√ 이벤트기간</td>
+		<td>:</td>
+		<td>{=giftlog.gift_sdate} ~ {=giftlog.gift_edate}</td>
+	</tr>
+	<!--{? serviceLimit('H_AD') }-->
+	<tr>
+		<td>√ 보내는판매자</td>
+		<td>:</td>
+		<td>{=giftlog.provider_name}</td>
+	</tr>
+	<!--{ / }-->
+	<tr>
+		<td>√ 구매대상상품</td>
+		<td>:</td>
+		<td>{=giftlog.goods_rule_text}</td>
+	</tr>
+	<tr>
+		<td>√ 증정방식</td>
+		<td>:</td>
+		<td>{=giftlog.gift_rule_text}</td>
+	</tr>
+	</table>
+</div>
+
+{ / }

@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>파일 첨부</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, user-scalable=no, charset=utf-8"  />
+<link rel="stylesheet" href="../../css/goods_image_popup.css" type="text/css"  charset="utf-8"/>
+<link rel="stylesheet" type="text/css" href="/app/javascript/plugin/jquploadify/uploadify.css" />
+<style>
+body, p, h1, h2, h3, h4, h5, h6, ul, ol, li, dl, dt, dd, form, fieldset, legend, input, textarea, button, select {margin:0; padding:0;}
+img {max-width:100%; vertical-align:middle;}
+form {clear:both}
+legend {visibility:hidden; overflow:hidden; position:absolute; top:0; left:0; width:0; height:0; padding:0; font-size:0; line-height:0}
+body,th,td,input,select,textarea,button{font-family:'나눔고딕',NanumGothic,'맑은 고딕',Malgun Gothic,'돋움',Dotum,'굴림',Gulim,HelveticaNeue-Light,AppleSDGothicNeo-Light,sans-serif; font-size:14px; line-height:1.4; color:#555;}
+input[type=text],
+input[type=number],
+input[type=tel],
+input[type=date],
+input[type=password] {border:1px solid #ccc; background:#fff; height:30px;}
+input[type=button],
+input[type=image],
+input[type=submit],
+button {border-radius:0; -webkit-appearance:none;}
+textarea {border:1px solid #ccc; background:#fff; padding:5px;}
+img, fieldset {border:0}
+dl,ul,ol,menu,li{list-style:none}
+em, address {font-style:normal}
+a {text-decoration:none}
+label {cursor:pointer}
+
+.btn_resp { border:1px #ccc solid; background:#fff; box-sizing:border-box; text-align:center; color:#333; cursor:pointer; vertical-align:middle; border-radius:2px; transition:border-color 0.2s, background-color 0.2s; }
+a.btn_resp, span.btn_resp { display:inline-block; }
+.btn_resp.size_c { height:42px; font-size:16px; line-height:40px; min-width:100px; padding:0 14px; }
+.btn_resp.color2 { border-color:#357bc3; background-color:#357bc3; color:#fff; }
+
+.header { padding-left:10px; }
+.alert { margin:0; padding:10px 10px 60px; }
+.alert li.inside {list-style-type:disc;margin-left: 20px;}
+#img_viewer { padding:10px 0 0; }
+#img_viewer>div { padding-top:10px; }
+#img_viewer>div font { font-size:15px; color:#357bc3; font-weight:bold; font-family:verdana; }
+.header { height:40px; padding:0; }
+.header h1 { height:40px; margin:0; padding:0 0 0 10px; line-height:40px; }
+.header a.close { display:block; position:absolute; right:0; top:0; margin:0; padding:0; width:40px; height:40px; text-align:center; font-size:16px; line-height:40px; color:#fff; text-decoration:none; }
+
+.modal_loading_spinner { position:fixed; left:0; top:0; right:0; bottom:0; z-index:9999; width:100%; height:100%; background: rgba(0,0,0,.4); opacity:0.7;}
+.modal_loading_spinner:after { display:block; content:''; box-sizing:border-box; width:100px; height:100px; position:absolute; left:50%; top:50%; margin:-50px 0 0 -50px; border:10px #fff solid; border-top-color:#2492dd; border-radius:50%;  animation:loader_rotate 1s linear infinite; }
+@keyframes loader_rotate {
+	0% { transform:rotate(0deg); }
+	100% { transform:rotate(360deg); }
+}
+
+</style>
+
+
+<script type="text/javascript" src="/app/javascript/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="/app/javascript/plugin/editor/js/popup.js"></script>
+<script type="text/javascript" src="/app/javascript/js/common.js?dummy=20210713191300"></script>
+<script type="text/javascript">
+var realfilename	= [];
+var incimage		= [];
+
+var board_id = '{board_id}';
+var insert_image = '{insert_image}';
+
+</script>
+
+<!--  html5 -->
+<script type="text/javascript" src="/app/javascript/plugin/jquery_fileupload/jquery.ui.widget.js?v={=date('Ymd')}"></script>
+<script type="text/javascript" src="/app/javascript/plugin/jquery_fileupload/jquery.fileupload.js?v={=date('Ymd')}"></script>
+<script type="text/javascript" src="/app/javascript/js/image.uploader.js?v={=date('Ymd')}"></script>
+<script type="text/javascript">
+var isPopup = (!window.opener) ? false : true;
+if (isPopup === false) {
+	throw ('잘못된 경로로 접근하셨습니다');
+}
+
+
+function uploadImageView(result) {
+	$("#imgtb").show();
+
+	var viewhtml = '<div>';
+	viewhtml += '<img src="' + result.filePath + '" height="50" class="pd5" style="vertical-align: middle;"/>';
+	viewhtml += '<font size="+1">' + result.fileInfo.client_name + '</font>';
+	viewhtml += '</div>';
+	$("#img_viewer").append(viewhtml);
+}
+
+
+$(function(){
+	'use strict';
+
+	// 단건파일 업로드'전' 실행되는 이벤트
+	singleFileUpload.event.singleAdd(function (file) {
+		$('#modal_loading_spinner').show();
+	});
+
+	// 단건파일 업로드'후' 실행되는 이벤트
+	singleFileUpload.event.singleDone(function (response) {
+		if (response.result[0].status === 1) {
+			var result = response.result[0];
+
+			if (result.fileInfo.is_image === true ){
+				uploadImageView(result);
+				// 첨부파일
+				realfilename.push(result.fileInfo.orig_name + '^^' + result.fileInfo.client_name + '^^' + result.fileInfo.file_size + '^^' + result.fileInfo.file_type);
+				// 첨부내용 base64 인코딩
+				var incFile = btoa('<img src="' + result.filePath + '" width="' + result.fileInfo.image_height + '" height="'+ result.fileInfo.image_height + '" class="txc-image" alt="" />');
+				incimage.push(incFile);
+			}
+		} else {
+			var fileName = response.files[0].name;
+			var errorMessage = response.result[0].msg;
+			
+			alert('파일명 : ' + fileName + " \n" + errorMessage);
+		}
+	});
+
+	// 모든파일 업로드'후' 실행되는 이벤트
+	singleFileUpload.event.multiDone(function(file){
+		$('#modal_loading_spinner').hide();
+	});
+
+	// 파일업로드 설정값
+	singleFileUpload.eventRegist({
+		url : '/common/board_temporary_fileupload',
+		fileIdSelector : '#uploader',
+	});
+	
+	$("#saveGoodsImg").on('click', function () {
+		opener.parent.addAttachImage(realfilename, incimage);
+		window.self.close();
+	});
+
+});
+</script>
+</head>
+<body>
+<div class="wrapper">
+	<div class="header">
+		<h1>파일 첨부</h1>
+		<a href="javascript:void(0);" onclick="closeWindow();" title="닫기" class="close">X</a>
+	</div>
+	<div class="body">
+		<ul class="alert">
+			<li>- 여러 개의 파일을 한꺼번에 등록 가능합니다. (멀티업로드)</li>
+			<li>- 첨부 가능한 용량 및 개수는 아래와 같습니다.
+				<ul>
+					<li class="inside"> 한 개 파일 : 최대 6MB</li>
+					<li class="inside">여러 개 파일 : 최대 20MB, 최대 20개</li>
+				</ul>
+			</li>
+		    <li style="padding-top:10px;">
+				<div style="float:left;">
+					<label for="uploader" id="file_image"></label>
+					<input type="file" id="uploader" name="Filedata" style="color:transparent;" accept="image/*" multiple>
+					<div id="imgtb" class="hide">
+						<div id="img_viewer"></div>
+					</div>
+				</div>				
+
+			</li>
+		
+		</ul>
+
+		<div style="position:fixed; bottom:0; left:0; right:0; text-align:center; padding:10px; background:#fff;">
+			<span class="btn large cyanblue"><button type="button" id="saveGoodsImg" class="btn_resp size_c color2">저장</button></span>
+		</div>
+	</div>
+</div>
+<div id="modal_loading_spinner" class="modal_loading_spinner" style="display:none;"></div>
+</body>
+</html>

@@ -1895,9 +1895,7 @@
 						f.attr("target","tar_opener");
 						mobile_pay_layer();
 					}
-					if (gl_pg_company == 'lg') {
-						f.attr("target","");
-					}
+		
 				}
 			}else if(gl_mobile==''){
 				if(gl_pg_company != 'inicis') {

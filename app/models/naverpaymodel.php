@@ -2435,7 +2435,6 @@ class naverpaymodel extends CI_Model {
 				$order_params['pg']					= 'npay';
 				$order_params['payment_type']		= $payment_type;
 				$order_params['payment']			= $PaymentMeans;			//결제수단
-				$order_params['shipping_method']	= $user_shipping_method;
 				$order_params['shipping_cost']		= $shipping_cost;
 				$order_params['sitetype']			= $sitetype;				//판매환경
 				$order_params['memo']				= $delivery_memo;

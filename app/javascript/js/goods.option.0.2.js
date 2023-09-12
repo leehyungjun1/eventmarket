@@ -431,10 +431,13 @@ var jscls_option_select	= function(){
 							if	(filename){
 								$('#'+id).closest('table').find('img.prevImg').attr('src', filepath+filename).show();
 								$('#'+id).closest('table').find('.prevTxt').html(filename);
+								// 이미지 즉시 반영되도록 개선
+								$('#prevImg').attr('src', filepath+filename);
 							}else{
 								$('#'+id).closest('table').find('img.prevImg').attr('src','about:blank;').hide();
 								$('#'+id).closest('table').find('.prevTxt').html('');
 							}
+
 							filepath	= filepath.replace(/^\//, '');	// 첫 문자열이 "/"인 경우 제거
 							$('#'+id).closest('table').find('input.fmuploadInputs').val(filepath+filename);
 						}

@@ -966,6 +966,11 @@ class goods extends selleradmin_base {
 		if(isset($goods_seq) ) {
 			$goods = $this->goodsmodel->get_goods($goods_seq);
 			if (!isset($goods['goods_seq'])) pageBack('존재하지 않는 상품입니다.');
+
+			if($goods['provider_seq'] != $this->providerInfo['provider_seq']){
+				pageBack("권한이 없습니다.");
+				exit;
+			}
 		}
 
 		/*

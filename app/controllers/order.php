@@ -7587,7 +7587,7 @@ class order extends front_base {
 		if( $this->_is_mobile_agent)
 		{
 			if($this->pg_param['mobilenew'] == 'y') $this->pg_open_script();
-			echo("<form name='lg_settle_form' method='post' action='../lg_mobile/auth'>");
+			echo("<form name='lg_settle_form' method='post' action='../lg_mobile/auth' target='_parent'>");
 			echo("<input type='hidden' name='order_seq' value='".$this->pg_param['order_seq']."' />");
 			echo("<input type='hidden' name='goods_name' value='".$this->pg_param['goods_name']."' />");
 			echo("<input type='hidden' name='goods_seq' value='".$this->pg_param['goods_seq']."' />");

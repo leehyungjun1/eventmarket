@@ -1,0 +1,306 @@
+<form name="writeform" id="writeform" method="post" action="{=sslAction('../board_process')}"  {? ismobile && (manager.file_use == 'Y' || filelist)} enctype="multipart/form-data" {/} target="actionFrame">
+	<input type="hidden" name="mode" id="mode" value="{mode}" />
+	<input type="hidden" name="board_id" id="board_id" value="{_GET.id}" />
+	<input type="hidden" name="reply" id="reply" value="{_GET.reply}" />
+	{? seq }
+	<input type="hidden" name="seq" id="seq" value="{seq}" />
+	{/}
+	<input type="hidden" name="returnurl" id="returnurl" value="{? backtype=='view' }{boardurl->view}{:}{boardurl->lists}{/}" />
+	<input type="hidden" name="popup" value="{_GET.popup}" >
+	<input type="hidden" name="iframe" value="{_GET.iframe}" >
+	<input type="hidden" name="goods_seq" value="{_GET.goods_seq}" >
+
+	<div class="viewbox">
+		<table class="bbswrite_table_style"  width="100%" cellpadding="0" cellspacing="0" border="0" >
+			<colgroup>
+				<col width="15%" /><col />
+			</colgroup>
+			<tbody>
+				<tr>
+					<th scope="row">작성자</th>
+					<td>
+						{? defined('__ISUSER__') && name //회원}
+						<input type="hidden" name="name" id="name" value="{name}" >
+						<input type="text" size="25" value="{name}"  readonly="readonly" disabled="disabled" class="required line" />
+						{:}
+						<input type="text" name="name" id="name" size="25" value="{name}"  title="Please enter your name." class="required line" />
+						{/}
+					</td>
+				</tr>
+				{? pw }
+				<input type="hidden" name="oldpw" value="{pw}" >
+				{:}
+				<tr>
+					<th scope="row">비밀번호</th>
+					<td>
+						<input type="password" name="pw" id="pw" size="25" value=""  title="Please enter a password."  password="password"  class="required line" />
+					</td>
+				</tr>
+				{/}
+				{? categorylist}
+				<tr>
+					<th scope="row">Subject</th>
+					<td>
+						<select  name="category" id="addcategory" class="required line"  >
+							<option value="" selected="selected" >- Select a subject -</option>
+							{@ categorylist}
+							<option value="{.value_}" {? datacategory == .value_} selected="selected"  {/}>{.value_}</option>
+							{/}
+						</select>
+					</td>
+				</tr>
+				{/}
+				<!--{? manager.video_use == 'Y' //동영상사용인경우 }-->
+				<tr>
+					<th scope="row">Video</th>
+					<td>
+						<table border="0" cellpadding="0" cellspacing="0">
+							<tbody>
+								<tr>
+									<td align="center">
+										<div id="boardVideolay" >
+											<!--{? file_key_w && uccdomain_fileswf}-->
+											<label ><input type="checkbox" name="video_del" value="1" >Delete</label>
+											<div>
+												<embed src="{uccdomain_fileswf}" width="200" height="200" allowfullscreen="true" wmode="transparent"></embed>
+											</div>
+											<!--{/}-->
+										</div>
+									</td>
+									<td><button type="button" class="batchVideoRegist bbs_btn" board_seq="{seq}" >Add video</button></td>
+								</tr>
+							</tbody>
+						</table>
+					</td>
+				</tr>
+				<!--{:  file_key_w && uccdomain_fileswf }-->
+				<tr>
+					<th scope="row">Video</th>
+					<td>
+						<div id="boardVideolay" >
+							<label ><input type="checkbox" name="video_del" value="1" >Delete</label>
+							<div>
+								<embed  src="{uccdomain_fileswf}" width="200" height="200" allowfullscreen="true" wmode="transparent"></embed>
+							</div>
+						</div>
+					</td>
+				</tr>
+				<!--{ / }-->
+				{? manager.auth_reply_use == 'Y'}
+				<tr>
+					<th scope="row">답변시</th>
+					<td>
+						<table  width="100%" cellpadding="0" cellspacing="0" border="0">
+							<tbody>
+								<tr>
+									{? manager.sms_reply_user_yn == 'Y' }
+									<th scope="row">SMS</th>
+									<td>
+										<input type="text" name="tel1" id="tel1" size="25" value="{? tel2 }{tel2}{: tel1}{tel1}{/}"  /> '-' 포함
+										<label for="board_sms"><input type="checkbox" name="board_sms" id="board_sms" value="1" {? (seq && rsms=='Y') || (!seq && (tel1 || tel2)) } checked="checked" {/} /> SMS로 답변받기</label>
+									</td>
+									{/}
+									<th scope="row">이메일</th>
+									<td>
+										<input type="text" name="email" id="email" size="25" value="{email}" />
+										<label for="board_email"><input type="checkbox" name="board_email" id="board_email" value="1"  {?(seq && remail=='Y') || (!seq && email)   } checked="checked" {/}/> Get e-mail</label>
+									</td>
+								</tr>
+							</tbody>
+						</table>
+					</td>
+				</tr>
+				{ / }
+				<tr>
+					<th scope="row">제목</th>
+					<td>
+						<input type="text" name="subject" id="subject" value="{subject}" class="required line"  title="Please enter a title."  style="width:70%" />
+						<!-- <input type="checkbox" name="notice" id="notice"  value="1" {noticeckeck} /><label for="notice" > 공지글</label> -->
+						<span class="{hiddenlay}" ><input type="checkbox" name="hidden" id="hidden"  value="1" {hiddenckeck} /><label for="hidden" > 비밀글</label></span>
+						{displayckeck}
+					</td>
+				</tr>
+				<tr>
+					<td colspan="2" class="contents">
+						<textarea name="contents" id="contents" class="required daumeditor"  style='width:100%; height:300px;' >{contents}</textarea>
+					</td>
+				</tr>
+				{? (manager.file_use == 'Y' || filelist) //첨부파일 사용중이거나 첨부파일이 있는 경우 }
+				{#mobile_file}
+				{/}
+				{? manager.autowrite_use == 'Y' && !defined('__ISUSER__')}
+				<tr>
+					<th scope="row">스팸방지</th>
+					<td>{#securimage}</td>
+				</tr>
+				{/}
+				{? !defined('__ISUSER__') //비회원 개인정보 동의}
+				<tr>
+					<th scope="row" class="center" colspan="2">
+						<label><input type="radio" name="agree" value="Y" /> 개인정보 수집ㆍ이용에 동의합니다.</label>&nbsp;&nbsp;&nbsp;
+						<label><input type="radio" name="agree" value="N" checked /> 개인정보 수집ㆍ이용에 동의하지 않습니다.</label>
+					</th>
+				</tr>
+				<tr>
+					<td colspan="2"  class="contents pdb10">
+						<textarea style="width:98.5%; height:150px; overflow:auto;" readonly>{policy}</textarea>
+					</td>
+				</tr>
+				{/}
+				<tr>
+					<th scope="row" class="center" colspan="2">
+						<div class="after">
+							After adding questions
+							<input type="radio" name="backtype" id="backtype1" value="list" {? (!backtype || backtype=='list') } checked="checked" {/} /> <label for="backtype1">Go to the list</label>
+							<input type="radio" name="backtype" id="backtype2" value="view" {? backtype=='view' } checked="checked" {/} /> <label for="backtype2">본문으로 이동</label>
+						</div>
+					</th>
+				</tr>
+			</tbody>
+		</table>
+		<!-- //테이블 -->
+
+		<div class="btn_wrap">
+			<button type="button" class="bbs_btn btn_chg medium" name="data_save_btn" id="data_save_btn">확인</button>
+			<button type="button" class="bbs_btn_gray btn_gray medium" onclick="{? _GET.popup }self.close();{:}document.location.href='{boardurl->lists}';{/}">취소</button>
+		</div>
+		<!-- //버튼 -->
+	</div>
+</form>
+<!-- //서브메뉴 바디 -->
+
+<script type="text/javascript">
+	//<![CDATA[
+	$(document).ready(function() {
+
+		$("#backtype2").click(function() {
+			$("#returnurl").val('{boardurl->view}');
+		});
+
+		$("#backtype1").click(function() {
+			$("#returnurl").val('{boardurl->lists}');
+		});
+
+		// 게시글저장
+		$('#data_save_btn').click(function() {
+			$("#writeform").submit();
+		});
+
+		$('#writeform').validate({
+			onkeyup: false,
+			rules: {
+				subject: {required:true},
+				{? manager.autowrite_use == 'Y' && !defined('__ISUSER__') //비회원 }
+				captcha_code:{required:true},
+				{/}
+				{? !defined('__ISUSER__') //비회원 개인정보 동의}
+				pw:{required:true},
+				agree:{required:true},
+				{/}
+				contents: { required:true}
+			},
+			messages: {
+				name: { required:getAlert('et369')}, //<font color="red">작성자를 입력해 주세요.</font>
+				category: { required:getAlert('et370')}, //<font color="red">분류를 선택해 주세요.</font>
+				{? manager.autowrite_use == 'Y' &&  !defined('__ISUSER__') //비회원 }
+				captcha_code: { required:getAlert('et371')}, //<font color="red">스팸방지 코드를 입력해 주세요.</font>
+				{/}
+				{?  !defined('__ISUSER__') //비회원 }
+				pw: { required:getAlert('et372')}, //<font color="red">비밀번호를 입력해 주세요.</font>
+				agree:{required:getAlert('et373')}, //<font color="red"><b>개인정보 수집ㆍ이용에 동의해 주세요.</b></font>
+				{/}
+				subject: { required:getAlert('et374')} //<font color="red">제목을 입력해 주세요.</font>
+			},
+			errorPlacement: function(error, element) {
+				setDefaultText();
+				error.appendTo(element.parent());
+			},
+			submitHandler: function(f) {
+					{? !defined('__ISUSER__') //비회원 개인정보 동의}
+						if($("input[name='agree']:checked").val()!='Y'){						
+							setDefaultText();
+							//개인정보 수집ㆍ이용에 동의하셔야 합니다.
+							alert(getAlert('et375'));
+							$("input[name='agree']").focus();
+							return false;
+						}
+					{/}
+
+					if($("#addcategory").val() == "newadd"){//신규분류
+						if(!$("#newcategory").val() ) {
+							setDefaultText();
+							//신규분류를 입력해 주세요.
+							alert(getAlert('et376'));
+							$("#newcategory").focus();
+							return false;
+						}
+					}
+
+					var bcontents = $("#writeform").find("#contents").val();
+					if(!bcontents || bcontents.toLowerCase() == "<p>&nbsp;</p>"  || bcontents.toLowerCase() == "<p><br></p>" ){
+						setDefaultText();
+						//내용을 입력해 주세요.
+						alert(getAlert('et377'));
+						$("#contents").focus();
+						return false;
+					}
+
+					if (submitFlag == true)
+					{
+					//게시물을 등록하고 있습니다. 잠시만 기다려 주세요.
+					 alert(getAlert('et378'));
+					 return false;
+					}   
+					submitFlag = true;
+					f.submit();
+				}
+		});
+	});
+
+	{? (manager.file_use == 'Y' || filelist) && !ismobile //첨부파일 사용중이거나 첨부파일이 있는 경우  }
+		function readfilelistNew(attachments){
+			{? filelist}
+				attachments['image'] = [];
+				attachments['file'] = [];
+				{@ filelist}
+					var  filePath = '{.realfiledir}';
+					var  filePathurl = '{.realfileurl}';
+					{? realthumbfile }
+						var  realthumbfile = '{.realthumbfiledir}';
+						var  thumbfilePathurl = 'http://{_SERVER.HTTP_HOST}{.realthumbfileurl}';
+					{/}
+					var  orig_name = '{.orignfile}';
+					var  file_size = {.sizefile};
+					var  typefile = '{.typefile}';
+
+					{? .is_image || strstr(.typefile,'image') || in_array(.typefile, array('jpg','jpeg','png','gif','bmp','tif','pic')) }
+						attachments['image'].push({
+							'attacher': 'image',
+							'data': {
+								'imageurl': filePathurl,
+								'filename': orig_name,
+								'filesize': file_size,
+								'imagealign': 'C',
+								'originalurl': filePath,
+								'thumburl': {? realthumbfile } thumbfilePathurl {:}filePathurl{/}
+							}
+						});
+					{:}
+						attachments['file'].push({
+							'attacher': 'file',
+							'data': {
+								'filename': orig_name,
+								'filesize': file_size,
+								'filemime':typefile,
+								'originalurl': filePath,
+								'attachurl': filePath
+							}
+						});
+					{/}
+				{/}
+				return attachments;
+			{/}
+		}
+	{/}
+	//]]>
+</script>

@@ -1,0 +1,1214 @@
+{ #layout_header }
+
+<script type="text/javascript" src="/app/javascript/plugin/jquery.colorpicker.min.js"></script>
+<script type="text/javascript" src="/app/javascript/plugin/custom-color-picker.js"></script>
+<script type="text/javascript" src="/app/javascript/plugin/jquery.colorpicker.min.js"></script>
+<script type="text/javascript" src="/app/javascript/plugin/custom-color-picker.js"></script>
+<script type="text/javascript" src="/app/javascript/plugin/editor/js/editor_loader.js?dummy=120824"></script>
+<script type="text/javascript" src="/app/javascript/plugin/editor/js/daum_editor_loader.js?dummy={=date('YmdH')}"></script>
+<script type="text/javascript" src="/app/javascript/jquery/jquery.ajax.form.js"></script>
+<script type="text/javascript" src="/app/javascript/js/ajaxFileUpload.js"></script>
+<script type="text/javascript" src="/app/javascript/js/admin/gCategorySelectList.js?mm={=date('Ymd')}"></script>
+<script type="text/javascript" src="/app/javascript/js/admin/gGoodsSelectList.js?mm={=date('Ymd')}"></script>
+<script type="text/javascript" src="/app/javascript/js/admin/gGiftGoodsSelectList.js?mm={=date('Ymd')}"></script>
+<script type="text/javascript" src="/app/javascript/js/admin/giftRegist.js?mm={=date('Ymd')}"></script>
+
+<script type="text/javascript">
+$(function(){	
+
+	var sGlUrl		= "{= get_connet_protocol()}{= _SERVER.HTTP_HOST}/link/etc/"+encodeURIComponent($(".event_view_btn").data("tpl_path"));
+	var sDesignUrl	= sGlUrl;
+	
+	{? mode == "new" }
+	//쿠폰신규생성 후 뒤로가기 시 리스트로 이동
+	history.pushState(null, null, location.href);
+		window.onpopstate = function () {
+			document.location.href="/admin/event/gift_catalog";
+	};
+	{/}
+
+	/*<!--{ ? operation_type == 'light' }--> 라이트 버전일 경우 주소*/
+	sGlUrl			= "{= get_connet_protocol()}{= _SERVER.HTTP_HOST}/promotion/gift_view?gift="+$(".event_view_btn").data("code");
+	/*<!--{ / }-->*/
+	
+	
+	// 서브밋 발생시 딤드처리
+	$(":submit").on("click",function(){
+		loadingStart();
+	});
+
+	$(".colorpicker").customColorPicker();
+	
+	// ajax 이미지 업로드 이벤트 바인딩
+	$('#bannerUploadButton').createAjaxFileUpload(uploadConfig, uploadCallback);
+	$('#eventBannerUploadButton').createAjaxFileUpload(uploadConfig, uploadCallback);
+	$('#m_eventBannerUploadButton').createAjaxFileUpload(uploadConfig, uploadCallback);
+
+	{? event.banner_filename}imgUploadEvent("#bannerUploadButton", "", "/data/event/", "{event.banner_filename}"){/}		
+	{? event.event_banner}imgUploadEvent("#eventBannerUploadButton", "", "/data/event/", "{event.event_banner}"){/}	
+	{? event.m_event_banner}imgUploadEvent("#m_eventBannerUploadButton", "", "/data/event/", "{event.m_event_banner}"){/}
+
+	$(".select_date").click(function() {
+		switch($(this).attr("id")) {
+			case 'today' :
+				$("input[name='start_date']").val(getDate(0));
+				$("input[name='end_date']").val(getDate(0));
+				break;
+			case '3day' :
+				$("input[name='start_date']").val(getDate(0));
+				$("input[name='end_date']").val(getDate(-3));
+				break;
+			case '1week' :
+				$("input[name='start_date']").val(getDate(0));
+				$("input[name='end_date']").val(getDate(-7));
+				break;
+			case '1month' :
+				$("input[name='start_date']").val(getDate(0));
+				$("input[name='end_date']").val(getDate(-30));
+				break;
+			case '3month' :
+				$("input[name='start_date']").val(getDate(0));
+				$("input[name='end_date']").val(getDate(-90));
+				break;
+			default :
+				$("input[name='start_date']").val('');
+				$("input[name='end_date']").val('');
+				break;
+		}
+	});
+	
+	/*<!--{ ? !event.provider_seq }-->*/
+	$(".select_date").eq(3).trigger("click");
+	/*<!--{ / }-->*/
+
+	/*<!--{ ? event.provider_seq }-->*/
+	$("select[name='provider_seq']").find("option[value='{ event.provider_seq }']").attr('selected', true);
+	/*<!--{ / }-->*/
+
+	$("input[name='goods_rule']").on("change", function(){
+		if($("input[name='gift_gb']:checked").val() == 'order'){
+			var provider_seq	= $(".provider_seq").val();
+			var ship_grp_seq	= $("#ship_grp_seq").val();
+			var flag			= false;
+			if(!provider_seq)	{ flag = true; }
+			if(!ship_grp_seq)	{ flag = true; }
+			if(flag) 
+			{
+				$("input[name='goods_rule']").eq(0).prop("checked",true).trigger("click");
+			}
+		}
+	});
+
+	// 보내는 판매자 선택 :: 2016-11-08 lwh
+	$("select[name='provider_seq_selector']").change(function(){
+		$("#ship_grp_seq").html('<option value="">배송그룹 선택</option>');
+		if( $(this).val() > 0 ){
+			$("input[name='provider_seq']").val($(this).val());
+			$("input[name='provider_name']").val($("option:selected",this).text());
+			$("input[name='goods_rule']").eq(0).prop("checked",true).trigger("click");
+
+			// 배송그룹 검색
+			$.ajax({
+				'type': "get",
+				'url': "../event/ship_grp_ajax",
+				'data': "provider_seq="+$(this).val(),
+				'dataType': 'json',
+				success: function(res){
+					$.each(res, function(){
+						var opt = '<option value="' + this.shipping_group_seq + '">' + this.shipping_group_name + '</option>'
+						$("#ship_grp_seq").append(opt);
+					});
+				}
+			});
+		}else{
+			$("input[name='provider_seq']").val('');
+			$("input[name='provider_name']").val('');
+		}
+	})	
+	.bind('focus',function(){
+		if($(this).val()==$("select[name='provider_seq_selector'] option:first-child" ).text()){
+			$(this).val('');
+		}
+	});
+
+	// 초기화
+	$('#ship_grp_seq, #provider_seq_selector').on('change', function(){
+		$(".gift_area").html('');
+
+		if({? provider}$("#provider_seq_selector").val()!="" && {/} $("#ship_grp_seq").val()!="")
+		{
+			$(".gift_info").show();
+			$(".gift_info").css("border-top", "0");
+			$(".gift_order_info").show();
+			$(".gift_order_info").find("input, select").attr("disabled", false);
+			$("input[name='goods_rule']:checked").trigger("change");			
+		}else{
+			$(".gift_info").hide();
+			$(".gift_order_info").hide();			
+			$(".gift_order_info").find("input, select").attr("disabled", true);
+		}
+	});
+
+	$('input:radio[name="gift_gb"]').on('change', function ()
+	{
+		$(".gift_area").html('');
+
+		$(".gift_info").show();
+		$(".gift_info").css("border-top", "1px solid #0f4897");
+		
+		//이벤트 증정이고 배송그룹 정보가 있고 사은품제공자가 선택되어있을때
+		if($(this).val()=="order"&& $("#ship_grp_seq").val()!="" {? provider} && $("#provider_seq_selector").val()!=""{/})
+		{			
+			$(".gift_order_info").show();			
+			$(".gift_order_info").find("input, select, button").attr("disabled", false);
+			$("input[name='goods_rule']").eq(0).trigger("change");
+			$(".gift_info").css("border-top", "0");
+		}else{			
+			$(".gift_order_info").hide();
+			$(".gift_order_info").find("input, select").attr("disabled", true);
+			$('input[name=gift_rule]').val("price");
+		}		
+
+		if($(this).val()=="order" && $("#ship_grp_seq").val()=="" {? provider} && $("#provider_seq_selector").val()=="0"{/})
+		{			
+			$(".gift_info").hide();			
+		}		
+
+		if($(this).val()=="buy")
+		{
+			$("input[name='order_gift_rule'][value='price']").trigger('change');			
+			$("input[name='goods_rule'][value='reserve']").prop("checked",true);
+		}else{
+			$("input[name='order_gift_rule'][value='default']").trigger('change');
+			$(".gift_gb_order").find("input").attr("disabled", false);
+		}
+		
+	});
+
+	$('input[name=order_gift_rule]').on('change', function()
+	{
+		$('input[name=gift_rule]').val($(this).val());
+	});
+	
+	$(".confirmPopupInfoBtn").on('click', function(){	
+		var id = $(this).parent().parent().attr("id");		
+		addhiddenText(id, id+"Container")
+		closeDialog(id);
+	});
+
+	$(".confirmPopupBannerBtn").on('click', function(){	
+		var text = Editor.getContent();	
+		$("#gift_contents").html(text);
+		closeDialog('giftContents');
+	});
+
+	
+	$(".btnLayClose").on('click',function(){	
+		var id = $(this).parent().parent().attr("id")		
+		closeDialog(id);		
+	});
+
+	$(".btnLayBannerClose").on("click",function(){
+		var targetLayder = $(this).attr("target");
+		closeDialog(targetLayder);
+	});
+
+	$('.popupOpenBtn').on('click', function(){	
+		var name = $(this).data('name');
+		var title;
+		var option;
+
+		switch (name) {
+			case "giftContents" :
+				title = "이벤트 배너 수정";
+				option = {"width":"1000","show" : "fade","hide" : "fade"};
+				view_editor('gift_contents_tmp','');
+				break;
+
+			case "detailPageSetting" :
+				title = "상세 페이지 설정";
+				option = {"width":"1000","show" : "fade","hide" : "fade"};
+				break;
+
+			case "goodInfoStyle" :
+				title = "상품 디스플레이";
+				option = {"width":"1000","height":"800","show" : "fade","hide" : "fade"};
+				break;
+
+			case "snsShare" :
+				title = "이벤트 공유";
+				option =  {"width":"1000","show" : "fade","hide" : "fade"};
+				break;
+		}
+
+		openDialog(title, name,  option);			
+	});	
+	
+	{ ? event.gift_seq }
+		setContentsRadio("gift_gb", "{gift_gb}");
+		setContentsRadio("event_view", "{event.event_view}");	
+		setContentsRadio("banner_view", "{event.banner_view}");	
+		setContentsRadio("order_gift_rule", "{event.gift_rule}");
+		//setContentsRadio("show_link", "{event.show_link}")		
+		$(".confirmPopupInfoBtn").trigger('click');	
+		{? gift_gb =="buy"} $(".gift_gb_order").find("input").attr("disabled", true){/}
+	{:}
+		setContentsRadio("gift_gb", "order");
+		setContentsRadio("event_view", "y");
+		setContentsRadio("banner_view", "n");
+		setContentsRadio("order_gift_rule", "default");
+		//setContentsRadio("show_link", "view")
+	{/}	
+	
+	{ ? config_system.operation_type == 'light' }
+		setContentsRadio("goods_rule", "{? event.goods_rule}{event.goods_rule}{:}category{/}");		
+	{:}
+		setContentsRadio("goods_rule", "{? event.goods_rule}{event.goods_rule}{:}all{/}");
+	{/}
+	
+	{? event.shipping_group_seq && event.provider_seq && gift_gb=='order' }
+		$(".gift_order_info").show();
+		$(".gift_order_info").find("input, select, button").attr("disabled", false);
+		$(".gift_info").css("border-top", "0");
+	{/}
+
+	$(".event_view_btn").click(function(){
+		window.open(sGlUrl);
+	});
+
+	$(".event_design_btn").click(function(){		
+		window.open(sDesignUrl);
+	});
+
+	// 주소복사 플래시 제거
+	$('#url_copy').click(function(){
+		clipboard_copy(sGlUrl);
+		alert("주소가 복사되었습니다.\nHTML소스의 원하시는 위치에 Ctrl+V로 붙여넣기 하세요.");
+	});	
+});
+
+</script>
+
+<form name="eventRegist" id="eventRegist" method="post" enctype="multipart/form-data" action="../event_process/gift_regist" target="actionFrame">
+<!--{ ? event.gift_seq }-->
+<input type="hidden" name="gift_seq" value="{event.gift_seq}" />
+<!--{ / }-->
+<!--{ ? operation_type != 'light' && event.goods_info_image }-->
+<input type="hidden" name="goods_info_image" value="{event.goods_info_image}" />
+<!--{ / }-->
+<input type="hidden" name="gift_rule" value="{event.gift_rule}" />
+
+<!-- 페이지 타이틀 바 : 시작 -->
+<div id="page-title-bar-area">
+	<div id="page-title-bar">
+
+		<!-- 타이틀 -->
+		<div class="page-title">	
+			<h2>사은품 이벤트 {? event.gift_seq}수정{:}등록{/}</h2>	
+		</div>	
+
+		<!-- 우측 버튼 -->
+		<ul class="page-buttons-right" id="page-buttons-right">			
+			<li><button type="submit" onclick="submitEditorForm(document.eventRegist);"  class="resp_btn active size_L">저장</button></li>
+		</ul>
+
+		<!-- 좌측 버튼 -->
+		<ul class="page-buttons-left">
+			<li><button type="button" onclick="document.location.href='./gift_catalog?{query_string}';" class="resp_btn v3 size_L">리스트 바로가기</button></li>
+		</ul>
+	</div>
+</div>
+
+
+<!-- 페이지 타이틀 바 : 끝 -->
+
+<div class="contents_dvs">
+	<div class="item-title">이벤트 정보</div>
+	<table class="table_basic thl">		
+		<tr>
+			<th>이벤트 유형</th>
+			<td { ? event.gift_seq }colspan="3"{/}>				
+				{? gift_gb }
+				{? gift_gb == 'order'}
+					사은품 증정				
+				{:}
+					사은품 교환	
+					<span class="tooltip_btn" onClick="showTooltip(this, '/admin/tooltip/promotion_coupon', '#tip9')"></span>
+				{/}
+
+				<input type="radio" name="gift_gb" value="order" class="hide" /> 
+				<input type="radio" name="gift_gb" value="buy" class="hide" />
+				{:}
+					<div class="resp_radio">
+						<label><input type="radio" name="gift_gb" value="order" checked /> 사은품 증정</label>
+						<label><input type="radio" name="gift_gb" value="buy" /> 사은품 교환</label>						
+					</div>						
+				{/}				
+			</td>
+		</tr>
+
+		<tr>
+			<th>이벤트명</th>
+			<td { ? event.gift_seq }colspan="3"{/}>
+				<div class="resp_limit_text limitTextEvent">
+					<input type="text" name="title" id="" size="60" maxlength="30" value="{event.title}" class="resp_text" />	
+				</div>
+			</td>
+		</tr>	
+
+		<tr>
+			<th>이벤트 기간 <span class="required_chk"></span></th>
+			<td { ? event.gift_seq }colspan="3"{/}>
+				<input type="text" name="start_date"  id="start_date" value="{?event.start_date}{event.start_date}{:}{=date('Y-m-d')}{/}" class="datepicker resp_text"  maxlength="10" size="10" />
+				-
+				<input type="text" name="end_date" id="end_date" value="{?event.end_date}{event.end_date}{:}{=date('Y-m-d',strtotime('1 month'))}{/}" class="datepicker resp_text" maxlength="10" size="10" />
+
+				<div class="resp_btn_wrap">
+					<input type="button"  id="today" value="오늘" class="select_date resp_btn" /></span>
+					<input type="button"  id="3day" value="3일간" class="select_date resp_btn" /></span>
+					<input type="button"  id="1week" value="일주일" class="select_date resp_btn" /></span>
+					<input type="button"  id="1month" value="1개월" class="select_date resp_btn" /></span>
+					<input type="button"  id="3month" value="3개월" class="select_date resp_btn" /></span>					
+				</div>
+			</td>
+		</tr>		
+
+		<!--{ ? event.gift_seq }-->
+		<tr>
+			<th>상태</th>
+			<td colspan="3"><!--{= event.status}--></td>
+		</tr>
+
+		<tr>
+			<th>
+				페이지 진입 제한
+				<span class="tooltip_btn" onClick="showTooltip(this, '/admin/tooltip/promotion_coupon', '#tip10')"></span>
+			</th>
+			<td colspan="3">
+				<div class="resp_radio">
+				<!--{ ? event.status == '진행 중' }-->				
+					<label><input type="radio" name="display" value="y" {? event.display == 'y'}checked{/} /> 가능</label>
+					<label><input type="radio" name="display" value="n" {? event.display == 'n'}checked{/} /> 불가</label>					
+				<!--{ : }-->
+					접속불가
+				<!--{ / }-->
+				</div>
+			</td>
+		</tr>
+
+		<tr>
+			<th>이벤트 페이지</th>
+			<td colspan="3">			
+			<!--{ ? event.gift_seq && operation_type=='heavy' }-->
+				<button type="button" class="event_view_btn resp_btn" data-tpl_path="{event.tpl_path}" data-code="{event.gift_seq}">보기</button>
+			<!--{ : }-->					
+				<a href="{=get_connet_protocol()}{= _SERVER.HTTP_HOST}/promotion/gift_view?gift={event.gift_seq}" target="_blank" title="새창" class="event_view_btn resp_btn" data-tpl_path="{event.tpl_path}" data-code="{event.gift_seq}">보기</a>				
+			<!--{ / }-->
+				<button type="button" id="url_copy" class="resp_btn v2">URL 복사</button>
+			</td>
+		</tr>
+
+		<tr>
+			<th>등록일</th>
+			<td>{=event.regist_date}</td>
+			<th>수정일</th>
+			<td>{=event.update_date}</td>
+		</tr>
+		<!--{ / }-->		
+	</table>
+</div>
+
+<div class="contents_dvs">
+	<div class="item-title">증정 사은품</div>
+	<table class="table_basic thl gift_gb_order hide">		
+		<tr>
+			<th>사은품 제공자 <span class="required_chk"></span></th>
+			<td>				
+				<!--{ ? provider }-->					
+					<select name="provider_seq_selector" id="provider_seq_selector">					
+						<option value="0">선택</option>
+						<!--{ ? event.provider_seq == '1' && gift_gb=='order'}-->
+						<option value="1" selected>본사</option>
+						<!--{ : }-->
+						<option value="1">본사</option>
+						<!--{ / }-->
+						<!--{ @ provider }-->
+							<!--{ ? event.provider_seq == .provider_seq  }-->
+						<option value="{.provider_seq}" selected>{.provider_name}({.provider_id})</option>
+							<!--{ : }-->
+						<option value="{.provider_seq}">{.provider_name}({.provider_id})</option>
+							<!--{ / }-->
+						<!--{ / }-->
+					</select>					
+					<input type="hidden" class="provider_name" name="provider_name" id="provider_name" value="{event.provider_name}" />				
+					<input type="hidden" class="provider_seq" name="provider_seq" id="provider_seq" value="{event.provider_seq}" />				
+				<!--{ : }-->
+					<input type="hidden" class="provider_seq" id="provider_seq" name="provider_seq" value="{provider_info.provider_seq}" />
+					<input type="hidden" name="provider_name" value="{provider_info.provider_name}" />
+					{provider_info.provider_name}
+				<!--{ / }-->
+			</td>
+		</tr>
+
+		<tr>
+			<th>사은품의 배송비 <span class="required_chk"></span></th>
+			<td>				
+				<select name="ship_grp_seq" id="ship_grp_seq">
+					<option value="">배송비 선택</option>
+					<!--{ ? ship_grp_list }-->
+						<!--{ @ ship_grp_list }-->
+							<!--{ ? event.shipping_group_seq == .shipping_group_seq  && gift_gb=='order'}-->
+						<option value="{.shipping_group_seq}" selected>{.shipping_group_name}</option>
+							<!--{ : }-->
+						<option value="{.shipping_group_seq}">{.shipping_group_name}</option>
+							<!--{ / }-->
+						<!--{ / }-->
+					<!--{ / }-->
+				</select> 				
+			</td>
+		</tr>
+	</table>
+	<table class="table_basic thl gift_order_info hide" >
+		<tr style="border-top:0;">
+			<th>상품 선정 기준</th>
+			<td>
+				<div class="resp_radio">
+					<!--{ ? operation_type == 'heavy' }-->
+					<label><input type="radio" name="goods_rule" value="all" {? event.goods_rule=="all"}checked{/} /> 전체</label>
+					<!--{ / }-->
+					<label><input type="radio" name="goods_rule" value="category" {? event.goods_rule=="category"}checked{/}/> 카테고리</label>	
+					<label><input type="radio" name="goods_rule" value="goods" {? event.goods_rule=="goods"}checked{/}/> 상품</label>	
+				</div>
+			</td>
+		</tr>
+
+		<tr class="goods_rule_category hide">
+			<th>혜택 적용 카테고리</th>
+			<td>
+				<input type="button" value="카테고리 선택" class="resp_btn active" onClick="gCategorySelect.open(giftObj.callbackCategoryList,{})" />
+				<div class="mt10 wx600 category_list">
+					<table class="table_basic">
+						<colgroup>
+							<col width="85%" />
+							<col width="15%" />
+						</colgroup>
+						<thead>
+							<tr class="nodrag nodrop">
+								<th>카테고리명</th>
+								<th>삭제</th>	
+							</tr>
+						</thead>
+						<tbody>
+							<tr rownum=0 {? count(issuecategorys) == 0 }class="show"{:}class="hide"{/}>
+								<td class="center" colspan="2">카테고리를 선택하세요</td>
+							</tr>
+						<!--{ @ issuecategorys }-->
+							<tr rownum="{=.category_code}">
+								<td class="center">{.title}</td>
+								<td class="center">
+									<input type="hidden" name='issueCategoryCode[]' value='{.category_code}' />
+									<input type="hidden" name="issueCategoryCodeSeq[{.category_code}]" value="{.issuecategory_seq}" />
+									<button type="button" class="btn_minus"  selectType="category" seq="{=.category_code}" onClick="gCategorySelect.select_delete('minus',$(this));"></button></td>
+							</tr>
+							<!--{ / }-->
+						</tbody>
+					</table>
+				</div>
+			</td>
+		</tr>
+
+		<tr class="goods_rule_goods hide">
+			<th>혜택 적용 상품</th>
+			<td class="t_select_goods">
+				<input type="button" value="상품 선택" class="resp_btn active btn_select_goods" />
+				<input type="button" value="선택 삭제" class="select_goods_del resp_btn v3" selectType="goods_list" />				
+				<div class="mt10 wx600">
+					<div class="goods_list_header">
+						<table class="table_basic tdc">
+							<colgroup>
+								<col width="10%" />
+								<!--{ ? serviceLimit('H_AD') }-->
+								<col width="25%" />
+								<col width="45%" />
+								<!--{ : }-->
+								<col width="70%" />
+								<!--{ / }-->
+								<col width="20%" />
+							</colgroup>
+							<tbody>
+								<tr>
+									<th><label class="resp_checkbox"><input type="checkbox" name="chkAll" value="goods"></label></th>
+									<!--{ ? serviceLimit('H_AD') }-->
+									<th>입점사명</th>
+									<!--{/}-->
+									<th>상품명</th>
+									<th>판매가</th>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+					<div class="goods_list">
+						<table class="table_basic tdc">
+							<colgroup>
+								<col width="10%" />
+								<!--{ ? serviceLimit('H_AD') }-->
+								<col width="25%" />
+								<col width="45%" />
+								<!--{ : }-->
+								<col width="70%" />
+								<!--{ / }-->
+								<col width="20%" />
+							</colgroup>
+							<tbody>
+								<tr rownum=0 {? count(issuegoods) == 0 }class="show"{:}class="hide"{/}>
+									<td class="center" colspan="4">상품을 선택하세요</td>
+								</tr>
+							<!-- issueGoods, issueGoodsSeq  ==> select_goods_list -->								
+							<!--{ @ issuegoods }-->
+								<tr rownum="{=.goods_seq}">
+									<td>
+										<label class="resp_checkbox"><input type="checkbox" name='issueGoodsTmp[]' class="chk" value='{.goods_seq}' /></label>
+										<input type="hidden" name='issueGoods[]' value='{.goods_seq}' />
+										<input type="hidden" name="issueGoodsSeq[{.goods_seq}]" value="{.issuegoods_seq}" /></td>
+									<!--{ ? serviceLimit('H_AD') }-->
+									<td>{=.provider_name}</td>
+									<!--{/}-->
+									<td class='left'>
+										<div class="image"><img src="{=viewImg(.goods_seq,'thumbView')}" width="50"></div>
+										<div class="goodsname">
+											{? .goods_code}<div>[상품코드:{=.goods_code}]</div>{/}
+											<div>{.goods_kind_icon} <a href="/admin/goods/regist?no={.goods_seq}" target="_blank">[{=.goods_seq}]{=getstrcut(strip_tags(.goods_name),30)}</a></div>
+										</div>
+									</td>
+									<td class='right'>{=get_currency_price(.price,2)}</td>
+								</tr>
+							<!--{ / }-->
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</td>
+		</tr>
+	</table>
+	<table class="table_basic gift_info thl hide" style="border-top:0;">
+		<tr>
+			<th>사은품 증정 기준</th>
+			<td>
+				<div class="resp_radio gift_gb_order hide mb10">
+					<label><input type="radio" name="order_gift_rule" value="default" checked/> 주문 금액</label>
+					<label><input type="radio" name="order_gift_rule" value="price"/> 주문 금액별 사은품 지정</label>
+					<label><input type="radio" name="order_gift_rule" value="quantity"/> 주문 금액별 사은품 수량 지정</label>
+				</div>
+				
+				<div class="resp_radio gift_gb_buy hide">
+					마일리지와 교환
+					<input type="radio" name="goods_rule" value="reserve" {? event.goods_rule=="reserve"}checked{/} class='hide' />					
+				</div>
+
+				<!-- 1. 주문금액 선택 시 -->
+				<table class="table_basic v10 wx600 order_gift_rule_default hide mt5">				
+					<tr>
+						<th>기준 설정</th>						
+					</tr>
+					<tr>						
+						<td class="clear">
+							<table class="table_basic thl v3">	
+								<colgroup>										
+									<col width="25%" />
+									<col width="75%" />						
+								</colgroup>
+								<tbody>
+									<tr>
+										<th>증정 사은품 <span class="required_chk"></span></th>								
+										<td>
+											<button type="button" class="default_select_gift resp_btn active mb5">사은품 선택</button>	
+				
+											<div class="gift_list default">
+												<table class="table_basic tdc">
+													<colgroup>
+														<col width="80%" />
+														<col width="20%" />
+													</colgroup>
+													<thead>
+														<tr>
+															<th>사은품명</th>
+															<th>삭제</th>
+														</tr>
+													</thead>
+													<tbody>
+														<tr rownum=0 {? count(defaultGifts) == 0 }class="show"{:}class="hide"{/}>
+															<td class="center" colspan="2">사은품을 선택하세요</td>
+														</tr>
+													<!--{ @ defaultGifts }-->
+														<tr rownum="{=.goods_seq}">
+															<td class="left">
+																<div class="image"><img src="{=viewImg(.goods_seq,'thumbView')}" width="50"></div>
+																<div class="goodsname">
+																	{? .goods_code}<div class="desc">[상품코드:{=.goods_code}]</div>{/}
+																	<a href="../goods/gift_regist?no={.goods_seq}" target="_blank">{=getstrcut(.goods_name,30)}</a>
+																</div>
+															</td>
+															<td><input type="hidden" name='defaultGift[]' value='{.goods_seq}' />
+																<button type="button" class="btn_minus" selectType="gift_list.default" onclick="selectItemDelete(this)" seq="{=.goods_seq}"></button></td>
+														</tr>
+													<!--{ / }-->
+													</tbody>
+												</table>
+											</div>
+										</td>
+									</tr>
+									<tr>
+										<th>주문 금액 기준 <span class="required_chk"></span></th>								
+										<td><input type="text" name="sprice1[]" value="{=get_currency_price(default.sprice,1)}" size="5" class="right {=only_numberic_type}"/> {=basic_currency_info['currency_symbol']} 이상</td>
+									</tr>
+								</tbody>
+							</table>
+						</td>					
+					</tr>
+				</table>
+
+				<!-- 2. 주문 금액별 사은품 지정 선택 시 -->
+				<table class="table_basic thl v10 wx600 order_gift_rule_price hide mt5" id="priceTable">
+					<colgroup>	
+						<col width="10%" />
+						<col width="25%" />
+						<col width="65%" />						
+					</colgroup>
+
+					<tr>
+						<th class="center"><button type="button" id="priceAdd" class="btn_plus"></button></th>
+						<th class="center" colspan="2">기준 설정</th>						
+					</tr>
+					<tbody>
+				<!--{? priceLoop }-->
+					<!--{@ priceLoop }-->
+					<tr class="pricetr">
+						<th rowspan="2" class="center"><button type="button" onClick="trDel(this)" class="btn_minus priceDel"></button></th>
+						<th>증정 사은품 <span class="required_chk"></span></th>								
+						<td>
+							<button type="button" class="price_select_gift resp_btn active mb5" onClick="giftGoodsSelect(this)" num={.num} >사은품 선택</button>
+						
+							<div class="gift_list price{.num}">
+								<table class="table_basic tdc w300">
+									<colgroup>
+										<col width="80%" />
+										<col width="20%" />
+									</colgroup>
+									<thead>
+										<tr>
+											<th>사은품명</th>
+											<th>삭제</th>	
+										</tr>
+									</thead>
+									<tbody>
+										<tr rownum=0 {? count(.gifts) == 0 }class="show"{:}class="hide"{/}>
+											<td class="center" colspan="2">사은품을 선택하세요</td>
+										</tr>
+									<!--{ @ .gifts }-->
+										<tr rownum="{=..goods_seq}">
+											<td class="left">
+												<div class="image"><img src="{=viewImg(..goods_seq,'thumbView')}" width="50"></div>
+												<div class="goodsname">
+													{? ..goods_code}<div class="desc">[상품코드:{=..goods_code}]</div>{/}
+													<a href="../goods/gift_regist?no={..goods_seq}" target="_blank">{=getstrcut(..goods_name,30)}</a>
+												</div>
+											</td>
+											<td><input type="hidden" name='price{.num}Gift[]' value='{..goods_seq}' />
+												<button type="button" class="btn_minus" selectType="gift_list.price{.num}" onclick="selectItemDelete(this)" seq="{=..goods_seq}"></button></td>
+										</tr>
+									<!--{ / }-->
+									</tbody>
+								</table>
+							</div>
+							<div id="priceGiftSelect{.num}" class="hide"></div>									
+						</td>						
+					</tr>
+					<tr class="pricetr">
+						<th>
+							<span class="gift_gb_order hide">주문 금액 기준</span> 
+							<span class="gift_gb_buy hide">교환 마일리지</span> 
+							<span class="required_chk"></span>
+						</th>								
+						<td>
+							<div id="pTr1_{.num}">							
+								<input type="text" name="sprice2[]" value="{=get_currency_price(.sprice,1)}" size="5" class="right {=only_numberic_type}" /> {=basic_currency_info['currency_symbol']}
+								<span class="gift_gb_order hide">
+									~ 
+									<input type="text" name="eprice2[]" value="{=get_currency_price(.eprice,1)}" size="5" class="right {=only_numberic_type}" /> {=basic_currency_info['currency_symbol']} 
+									일 때 증정	
+								</span>										
+							</div>
+						</td>
+					</tr>
+					<!--{ / }-->
+				<!--{ : }-->
+					<tr class="pricetr">
+						<th rowspan="2" class="center"><button type="button" onClick="trDel(this)" class="btn_minus priceDel"></button></th>
+						<th>증정 사은품 <span class="required_chk"></span></th>								
+						<td>
+							<button type="button" class="price_select_gift resp_btn active mb5" onClick="giftGoodsSelect(this)" num=1 >사은품 선택</button>
+						
+							<div class="gift_list price1">
+								<table class="table_basic tdc">
+									<colgroup>
+										<col width="80%" />
+										<col width="20%" />
+									</colgroup>
+									<thead>
+										<tr>
+											<th>사은품명</th>
+											<th>삭제</th>	
+										</tr>
+									</thead>
+									<tbody>
+										<tr rownum=0 class="show">
+											<td class="center" colspan="2">사은품을 선택하세요</td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
+
+							<div id="priceGiftSelect1" class="hide"></div>
+						</td>						
+					</tr>
+					<tr class="pricetr">
+						<th>
+							<span class="gift_gb_order hide">주문 금액 기준</span> 
+							<span class="gift_gb_buy hide">교환 마일리지</span> 
+							<span class="required_chk"></span>
+						</th>								
+						<td>					
+							<input type="text" name="sprice2[]" value="" size="5" class="right {=only_numberic_type}" /> {=basic_currency_info['currency_symbol']} 
+							<span class="gift_gb_order hide">
+								~ 
+								<input type="text" name="eprice2[]" value="" size="5" class="right {=only_numberic_type}" /> {=basic_currency_info['currency_symbol']}								
+								일 때 증정	
+							</span>												
+						</td>
+					</tr>									
+				<!--{ / }-->
+					</tbody>
+				</table>
+
+				<!-- 3. 주문 금액별 사은품 수량 지정 선택 시 -->
+				<div class="order_gift_rule_quantity hide mt5">
+					<table class="table_basic thl wx600">	
+						<colgroup>	
+							<col width="25%" />
+							<col width="75%" />
+						</colgroup>
+						<tbody>
+							<tr>
+								<th>증정 사은품 <span class="required_chk"></span></th>								
+								<td>
+									<button type="button" class="qty_select_gift resp_btn active mb5">사은품 선택</button>	
+		
+									<div class="gift_list qty">
+									<table class="table_basic tdc">
+										<colgroup>
+											<col width="80%" />
+											<col width="20%" />
+										</colgroup>
+										<thead>
+											<tr>
+												<th>사은품명</th>
+												<th>삭제</th>	
+											</tr>
+										</thead>
+										<tbody>
+											<tr rownum=0 {? count(qtyGifts) == 0 }class="show"{:}class="hide"{/}>
+												<td class="center" colspan="2">사은품을 선택하세요</td>
+											</tr>
+										<!--{ @ qtyGifts }-->
+											<tr rownum="{=.goods_seq}">
+												<td class="left">
+												<div class="image"><img src="{=viewImg(.goods_seq,'thumbView')}" width="50"></div>
+													<div class="goodsname">
+														{? .goods_code}<div class="desc">[상품코드:{=.goods_code}]</div>{/}
+														<a href="../goods/gift_regist?no={.goods_seq}" target="_blank">{=getstrcut(.goods_name,30)}</a>
+													</div>
+												</td>
+												<td><input type='hidden' name='qtyGift[]' value='{.goods_seq}' />
+													<button type="button" class="btn_minus" onclick="selectItemDelete(this)" selectType="gift_list.qty" seq="{=.goods_seq}"></button></td>
+											</tr>
+										<!--{ / }-->
+										</tbody>
+									</table>
+									</div>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+
+					<table id="qtyTable" class="table_basic v10 wx600 mt5">
+						<colgroup>	
+							<col width="10%" />
+							<col width="25%" />
+							<col width="65%" />							
+						</colgroup>					
+						<tr>
+							<th class="center"><button type="button" id="qtyAdd" class="btn_plus"></button></th>
+							<th colspan="2">기준 설정</th>							
+						</tr>
+						
+					<!--{? qtyLoop }-->
+						<!--{@ qtyLoop }-->
+						<tr class="pricetr">
+							<th rowspan="2" class="center"><button type="button" onClick="trDel(this)" class="btn_minus qtyDel"></th>
+							<th>주문 금액 기준 <span class="required_chk"></span></th>								
+							<td>
+								<input type="text" name="sprice3[]" value="{=get_currency_price(.sprice,1)}" size="5" class="right {=only_numberic_type}" /> {=basic_currency_info['currency_symbol']} 
+								~ 
+								<input type="text" name="eprice3[]" value="{=get_currency_price(.eprice,1)}" size="5" class="right {=only_numberic_type}" /> {=basic_currency_info['currency_symbol']}
+								일 때 증정
+							</td>							
+						</tr>	
+						
+						<tr class="pricetr">
+							<th>증정 사은품 수량 <span class="required_chk"></span></th>								
+							<td><input type="text" name="ea3[]" value="{.ea}" size="3"/> 개</td>							
+						</tr>							
+						<!--{ / }-->
+					<!--{ : }-->
+						<tr class="pricetr">
+							<th rowspan="2" class="center"><button type="button" onClick="trDel(this)" class="btn_minus qtyDel"></th>
+							<th>주문 금액 기준 <span class="required_chk"></span></th>								
+							<td>
+								<input type="text" name="sprice3[]" value="" size="5" class="right {=only_numberic_type}" /> {=basic_currency_info['currency_symbol']} 
+								~ 
+								<input type="text" name="eprice3[]" value="" size="5" class="right {=only_numberic_type}" /> {=basic_currency_info['currency_symbol']}
+								일 때 증정
+							</td>							
+						</tr>	
+						
+						<tr class="pricetr">
+							<th>증정 사은품 수량 <span class="required_chk"></span></th>								
+							<td><input type="text" name="ea3[]" value="" size="3"/> 개</td>
+						</tr>
+					<!--{ / }-->
+				
+					</table>
+				</div>
+			</td>
+		</tr>
+	</table>
+	<div class="resp_message">- 사은품 교환 시 배송비 무료 (배송비 본사부담)</div>
+</div>
+
+<div class="contents_dvs">
+	<div class="item-title">이벤트 상세 페이지</div>
+	<table class="table_basic thl">	
+		<!--{? operation_type == 'light'}-->
+		<tr>
+			<th>이벤트 배너</th>
+			<td id="giftContentsContainer">			
+				<textarea name="gift_contents" id="gift_contents" class="hide" style="width:98%;height:200px;">{event.gift_contents}</textarea>
+				<button type="button" id="popupOpenBtn" class="popupOpenBtn resp_btn v2" data-name="giftContents">수정</button>				
+			</td>
+		</tr>
+		
+		<tr>
+			<th>상세 페이지 설정</th>
+			<td id="detailPageSettingContainer" >
+				<button type="button" class="popupOpenBtn resp_btn v2" data-name="detailPageSetting">설정</button>			
+			</td>
+		</tr>
+		
+		<tr>
+			<th>상품 디스플레이</th>
+			<td id="goodInfoStyleContainer">
+				<button type="button" class="popupOpenBtn resp_btn v2" data-name="goodInfoStyle">설정</button>				
+			</td>
+		</tr>		
+		<!--{ / }-->
+
+		<tr>
+			<th>이벤트 공유</th>
+			<td id="goodInfoStyleContainer">
+				<button type="button" class="popupOpenBtn resp_btn" data-name="snsShare">보기</button>				
+			</td>
+		</tr>	
+		<!--{ ? event.event_seq }-->
+		<tr>
+			<th>QR 코드</th>
+			<td>
+				{=qrcode("event",event.event_seq,4)}
+				<a href="javascript:;" class="qrcodeGuideBtn fx11 lsp-1" key="event" value="{event.event_seq}">자세히▶</a>
+			</td>
+		</tr>
+		<!--{ / }-->
+	</table>
+</div>
+
+<div class="contents_dvs">
+	<div class="item-title">
+		전체 이벤트 페이지
+		<span class="tooltip_btn" onClick="showTooltip(this, '/admin/tooltip/promotion_coupon', '#tip11')"></span>
+	</div>
+	<table class="table_basic thl">		
+		<tr>
+			<th>이벤트 노출 여부</th>
+			<td>
+				<div class="resp_radio">
+					<label><input type="radio" name="event_view" value="y" { ? event.event_view == 'y' } checked {/} > 노출</label>
+					<label><input type="radio" name="event_view" value="n" { ? event.event_view == 'n' || event.event_view == ''} checked {/} > 미노출</label>
+				</div>
+			</td>
+		</tr>	
+		
+		<tr class="event_view_y hide">
+			<th>이벤트 썸네일 설정</th>
+
+			<!--{? operation_type == 'light' }-->
+			<td>			
+				<div class="webftpFormItem">				
+					<label class="resp_btn v2"><input type="file" id="eventBannerUploadButton" class="uploadify">파일선택</label>				
+					<input type="hidden" class="webftpFormItemInput" name="event_banner" value="{event.event_banner}" size="30" maxlength="255" />				
+					<div class="preview_image"></div>
+				</div>
+			</td>
+			<!--{ : }-->				
+			<td class="clear">
+				<table class="table_basic thl v3">									
+					<tbody>
+						<tr>
+							<th>PC</th>								
+							<td>
+								<div class="webftpFormItem">									
+									<label class="resp_btn v2"><input type="file" id="eventBannerUploadButton" class="uploadify">파일선택</label>
+									<input type="hidden" class="webftpFormItemInput" name="event_banner" value="{event.event_banner}" size="30" maxlength="255" />									
+									<div class="preview_image"></div>
+								</div>
+							</td>
+						</tr>
+						<tr>
+							<th>모바일</th>								
+							<td>
+								<div class="webftpFormItem">								
+									<label class="resp_btn v2"><input type="file" id="m_eventBannerUploadButton" class="uploadify">파일선택</label>
+									<input type="hidden" class="webftpFormItemInput" name="m_event_banner" value="{event.m_event_banner}" size="30" maxlength="255" />
+									<div class="preview_image"></div>
+								</div>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+			</td>
+			<!--{ / }-->		
+		</tr>	
+
+		<tr class="event_view_y hide">
+			<th>타이틀</th>
+			<!--{? operation_type == 'light' }-->
+			<td>
+				<div class="resp_limit_text limitTextEvent">
+					<input type="text" name="event_introduce" size="50"  maxlength="30" value="{event.event_introduce}" />
+				</div>				
+				<input type="text" name="event_introduce_color" value="{? event.event_introduce_color}{event.event_introduce_color}{:}#333333{/}" class="colorpicker"/>
+			</td>
+			<!--{ : }-->			
+			<td class="clear">
+				<table class="table_basic thl v3">									
+					<tbody>
+						<tr>
+							<th>PC</th>								
+							<td>
+								<div class="resp_limit_text limitTextEvent">
+									<input type="text" name="event_introduce" size="50"  maxlength="30" value="{event.event_introduce}" />
+								</div>								
+								<input type="text" name="event_introduce_color" value="{? event.event_introduce_color}{event.event_introduce_color}{:}#333333{/}" class="colorpicker"/> 
+							</td>
+						</tr>
+
+						<tr>
+							<th>모바일</th>								
+							<td>
+								<div class="resp_limit_text limitTextEvent">
+									<input type="text" name="m_event_introduce" size="50"  maxlength="30" value="{event.m_event_introduce}" />
+								</div>								
+								<input type="text" name="m_event_introduce_color" value="{? event.m_event_introduce_color}{event.m_event_introduce_color}{:}#333333{/}" class="colorpicker"/>
+							</td>
+						</tr>
+					</tbody>
+				</table>				
+			</td>
+			<!--{ / }-->
+		</tr>	
+		
+		<tr class="event_view_y hide">
+			<th>썸네일 링크 연결</th>
+			<td>				
+				<input type="hidden" name="show_link" value="view"> 
+				이벤트 페이지				
+			</td>
+		</tr>			
+	</table>
+</div>
+
+<div class="contents_dvs">
+	<div class="item-title">상품 상세 페이지</div>
+	<table class="table_basic thl">		
+		<tr>
+			<th>이벤트 노출 여부</th>
+			<td>
+				<div class="resp_radio">
+					<label><input type="radio" name="banner_view" value="y" { ? event.banner_view == 'y' } checked {/} /> 노출</label>
+					<label><input type="radio" name="banner_view" value="n" { ? event.banner_view == 'n' || event.banner_view == ''} checked {/} /> 미노출</label>
+				</div>				
+			</td>
+		</tr>	
+		<!--{ ? operation_type != 'light' }-->
+		<tr class="banner_view_y hide">
+			<th>이벤트 배너</th>
+			<td>
+				<div class="webftpFormItem">					
+					<label class="resp_btn v2"><input type="file" id="bannerUploadButton" class="uploadify">파일선택</label>					
+					<input type="hidden" class="webftpFormItemInput" name="banner_filename" value="{event.banner_filename}" size="30" maxlength="255" />
+					<div class="preview_image"></div>
+				</div>
+			</td>
+		</tr>	
+		<!--{ / }-->	
+		<tr class="banner_view_y hide">
+			<th>이벤트 소개</th>
+			<td><input type="text" class="wp95" name="goods_desc_popup" value="{event.goods_desc_popup}"/></td>
+		</tr>	
+	</table>
+</div>
+
+
+<div id="detailPageSetting" class="hide">
+	<div class="item-title">상세 페이지 설정</div>
+	<table class="table_basic">						
+		<tr>
+			<th>검색필터</th>
+			<td>	
+				<div class="resp_checkbox">
+				<!--{@ aPageManager.filter_col}-->
+					<!--{@ .value_}-->
+						<!--{? in_array(..key_, explode(',', event.search_filter))}-->
+					<label><input type="checkbox" name="search_filter[]" value="{..key_ }" checked /> {..value_ }</label>
+						<!--{ : }-->
+					<label><input type="checkbox" name="search_filter[]" value="{..key_ }" /> {..value_ }</label>
+						<!--{ / }-->
+					<!--{ / }-->				
+				<!--{ / }-->
+				</div>
+			</td>
+		</tr>
+		
+		<tr>
+			<th>정렬</th>
+			<td>
+				<div class="resp_radio">
+				<!--{@ aPageManager.order_col}-->
+					<!--{? .key_ == event.search_orderby}-->
+					<label><input type="radio" name="search_orderby" value="{.key_}" checked /> {.value_}</label>
+					<!--{ : }-->
+					<label><input type="radio" name="search_orderby" value="{.key_}" /> {.value_}</label>
+					<!--{ / }-->
+				<!--{ / }-->
+				</div>
+			</td>
+		</tr>
+
+		<tr>
+			<th>상태</th>
+			<td>
+				<div class="resp_checkbox">
+					<label><input type="checkbox" name="search_status[]" value="" checked disabled /> {= aPageManager.status.desc}</label>
+				<!--{@ aPageManager.status.col}-->
+					<!--{? in_array( .key_, explode(',', event.search_status) )}-->
+					<label><input type="checkbox" name="search_status[]" value="{.key_ }" checked /> {.value_}</label>
+					<!--{ : }-->
+					<label><input type="checkbox" name="search_status[]" value="{.key_ }" /> {.value_}</label>
+					<!--{ / }-->
+				<!--{ / }-->
+				</div>
+			</td>
+		</tr>
+
+		<tr>
+			<th>이미지 사이즈</th>
+			<td>
+				<select name="goods_info_image">
+			<!--{ @ config_load('goodsImageSize') }-->
+				<!--{ ? event.goods_info_image == .key_ }-->
+					<option value="{.key_}" selected>{.value_.name}</option>
+				<!--{ : }-->
+					<option value="{.key_}">{.value_.name}</option>
+				<!--{ / }-->
+			<!--{ / }-->
+				</select>
+			</td>
+		</tr>						
+	</table>
+
+	<div class="footer">
+		<button type="button" class="resp_btn active size_XL confirmPopupInfoBtn">확인</button>
+		<button type="button" class="btnLayClose resp_btn v3 size_XL">취소</button>
+	</div>
+</div>
+
+<div id="goodInfoStyle" class="hide" >
+	<div class="item-title">상품 디스플레이</div>	
+	{#goods_info_style}
+	<div class="footer">
+		<button type="button" class="confirmPopupInfoBtn resp_btn active size_XL">확인</button>
+		<button type="button" class="btnLayClose resp_btn v3 size_XL">취소</button>
+	</div>
+</div>
+
+<div id="snsShare" class="hide">
+	<div class="item-title">이벤트 공유 치환코드</div>
+	<table class="table_basic tdc">		
+		<colgroup>
+			<col width="16.6%" />
+			<col width="16.6%" />
+			<col width="16.6%" />	
+			<col width="16.6%" />
+			<col width="16.6%" />
+			<col width="16.6%" />
+		</colgroup>
+		
+		<thead>
+			<tr>
+				<th>전체</th>
+				<th>페이스북</th>
+				<th>트위터</th>	
+				<th>카카오톡</th>
+				<th>카카오스토리</th>
+				<th>라인</th>	
+			</tr>
+		</thead>	
+		
+		<tbody>
+			<tr>
+				<td><input type="button" class="copy_qrcode_btn resp_btn" data-code="{=snslinkurl('{snsevent}', '이벤트명')}"  onclick="copyContent($(this).data('code'))" value="복사"/></td>					
+				<td><input type="button" class="copy_qrcode_btn resp_btn" data-code="{=snslinkurl('{snsevent}', '이벤트명','fa')//페이스북}"  onclick="copyContent($(this).data('code'))" value="복사"/></td>
+				<td><input type="button" class="copy_qrcode_btn resp_btn" data-code="{=snslinkurl('{snsevent}', '이벤트명','tw')//트위터}"  onclick="copyContent($(this).data('code'))" value="복사"/></td>
+				<td><input type="button" class="copy_qrcode_btn resp_btn" data-code="{=snslinkurl('{snsevent}', '이벤트명','ka')//카카오톡}"  onclick="copyContent($(this).data('code'))" value="복사"/></td>
+				<td><input type="button" class="copy_qrcode_btn resp_btn" data-code="{=snslinkurl('{snsevent}', '이벤트명','ka')//카카오톡}"  onclick="copyContent($(this).data('code'))" value="복사"/></td>
+				<td><input type="button" class="copy_qrcode_btn resp_btn" data-code="{=snslinkurl('{snsevent}', '이벤트명','line')//LINE}"  onclick="copyContent($(this).data('code'))"value="복사"/></td>
+			</tr>
+		<tbody>
+	</table>
+	<div class="resp_message">- SNS 공유하기 활용 방법 <a href="https://www.firstmall.kr/customer/faq/1192" class="resp_btn_txt" target="_blank">자세히 보기</a></div>
+	<div class="footer">		
+		<button type="button" class="btnLayClose resp_btn v3 size_XL">닫기</button>
+	</div>
+</div>
+
+<div id="giftContents">	
+	<textarea name="gift_contents_tmp" id="gift_contents_tmp" style="width:98%;height:200px;" contentHeight="200px">{event.gift_contents}</textarea>
+	<div class="center mt10">
+		<button type="button" class="confirmPopupBannerBtn resp_btn active size_XL">확인</button>
+		<button type="button" class="btnLayBannerClose resp_btn v3 size_XL" target="giftContents">취소</button>
+	</div>
+</div>
+
+<div id="lay_goods_select"></div><!-- 상품선택 레이어 -->
+<div id="lay_category_select"></div><!-- 카테고리 선택 레이어 -->
+<div id="lay_gift_select"></div><!-- 선택 레이어 -->
+</form>
+{ #layout_footer }
