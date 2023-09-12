@@ -112,6 +112,11 @@ class kakaotalkmodel extends CI_Model {
 			$sendData['authKey']		= $config_kakaotalk['authKey'];
 			$sendData['kkoBizCode']		= $tpl_info['kkoBizCode'];
 
+			// 발송 데이터 배열 변수 초기화
+			unset($mobile_arr);
+			unset($replace_msg_arr);
+			unset($smsData_arr);
+
 			$to_sms_count = count($to_sms);
 			for($i=0; $i<$to_sms_count; $i++){
 

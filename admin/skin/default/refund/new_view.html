@@ -649,7 +649,7 @@ var gl_refund_penalty_deductible_price	= '{=tot.refund_penalty_deductible_price}
 			<!--{ ? .index_ == 0 && ..index_ == 0 }-->
 			<!-- 유효기간 -->
 			<td class="info center" rowspan="{=order_goods_cnt}">
-				<!--{ ? data_order.pg != 'npay' &&  ((..emoney_sale_unit*..ea)+(..emoney_sale_rest)) > 0 }-->
+				<!--{ ? data_order.pg != 'npay' &&  refund_emoney_limit_use }-->
 				<div>
 					<select name="refund_emoney_limit_type" class="input_line" style="width:75px !important;padding:2px 2px 2px 0px;letter-spacing:-1px;">
 						<option value="n" {? data_refund.refund_emoney_limit_date == ""}selected{/}>제한없음</option>

@@ -4344,6 +4344,19 @@ function list_src_form_submit(){
 
 // 엑셀 다운로드
 function excel_download(type){
+
+	let checked_stock_warehouse_seq = $('.ms-drop > ul li').find("input[type=checkbox]:checked").attr('data-name','selectItemsc_stock_warehouse_seq[]');
+
+	let list = new Array();
+
+	if (typeof checked_stock_warehouse_seq === 'object' && checked_stock_warehouse_seq.length > 1)  {
+		checked_stock_warehouse_seq.each(function(index){
+			list.push($(this).val());
+		});
+	
+		$("#sc_stock_warehouse").val(list);	
+	} 
+	
 	if	(type == 'select'){
 		// 선택다운, 검색다운 값 목록에 추가
 		if	($("form[name='listFrm']").find("input[name='excel_type']").attr('name')){

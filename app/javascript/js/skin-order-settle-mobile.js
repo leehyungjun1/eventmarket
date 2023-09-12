@@ -71,6 +71,7 @@ if(is_file_facebook_tag == true){
 	// 수동 국가변경 :: 2016-08-16 lwh
 	function chg_shipping_nation(nation){
 		$("#address_nation").val(nation); // 국가 설정값 변경
+		$("#default_address_nation").val(nation); // 국가 설정값 변경
 		check_shipping_nation(); // 국내/해외 체크
 	}
 
@@ -2040,96 +2041,118 @@ if(is_file_facebook_tag == true){
 			}
 		});
 
-		// 모바일 기본 주소 노출
 		if ( is_members == true ) {
-			$.ajax({
-				'url' : 'ajax_get_delivery_address',
-				'data' : {'type':'often'},
-				'dataType' : 'json',
-				'success' : function(res){
-					if(res){
+			// 모바일 기본 주소 노출
+			if ( !$("input[name='recipient_input_address']").val() && !$("input[name='international_address_input']").val() ) {
+				$.ajax({
+					'url' : 'ajax_get_delivery_address',
+					'data' : {'type':'often'},
+					'dataType' : 'json',
+					'success' : function(res){
+						if(res){
 
-						$("input[name='address_group']").val(res.address_group);
+							$("input[name='address_group']").val(res.address_group);
 
-						if(res.defaults=='Y'){
-							$("input[name='save_delivery_address']").closest("div.ez-checkbox").removeClass("ez-checkbox-on");
-							$("input[name='save_delivery_address']").closest("div.ez-checkbox").addClass("ez-checkbox-on");
-							$("input[name='save_delivery_address']").attr('checked',true);
-						}else{
-							$("input[name='save_delivery_address']").removeAttr('checked');
-						}
-
-						// 국가 정보 없는경우 재 등록요구 :: 2016-08-03 lwh
-						if(!res.nation && res.international == 'international'){
-							alert('배송국가가 지정되지 않았습니다.\n수정을 통해 배송국가를 지정해주세요.');
-							return;
-						}
-
-						if(res.nation == 'KOREA' || res.international == 'domestic'){
-							// input values
-							$("#international").val('0');
-							$(".kr_zipcode").show();
-
-							$("input[name='recipient_input_address_type']").val(res.recipient_address_type);
-							$("input[name='recipient_input_address']").val(res.recipient_address);
-							$("input[name='recipient_input_address_street']").val(res.recipient_address_street);
-							$("input[name='recipient_input_address_detail']").val(res.recipient_address_detail);
-							$("input[name='recipient_input_new_zipcode']").eq(0).val(res.recipient_new_zipcode);
-
-							// span values
-							$(".recipient_zipcode").html(res.recipient_new_zipcode);
-							if(res.recipient_address_type == 'street'){
-								$(".recipient_address").html(res.recipient_address_street);
+							if(res.defaults=='Y'){
+								$("input[name='save_delivery_address']").closest("div.ez-checkbox").removeClass("ez-checkbox-on");
+								$("input[name='save_delivery_address']").closest("div.ez-checkbox").addClass("ez-checkbox-on");
+								$("input[name='save_delivery_address']").attr('checked',true);
 							}else{
-								$(".recipient_address").html(res.recipient_address);
+								$("input[name='save_delivery_address']").removeAttr('checked');
 							}
-							$(".recipient_address_detail").html(res.recipient_address_detail);
-							$(".international_nation").html('대한민국');
-							$("#address_nation").val('KOREA').trigger('change');
-						}else{
-							// input values
-							$("#international").val('1');
-							$(".kr_zipcode").hide();
 
-							$("select[name='region']").val(res.region);
-							$("input[name='international_county_input']").val(res.international_county);
-							$("input[name='international_address_input']").val(res.international_address);
-							$("input[name='international_town_city_input']").val(res.international_town_city);
-							$("input[name='international_postcode_input']").val(res.international_postcode);
-							$("input[name='international_country_input']").val(res.international_country);
+							// 국가 정보 없는경우 재 등록요구 :: 2016-08-03 lwh
+							if(!res.nation && res.international == 'international'){
+								alert('배송국가가 지정되지 않았습니다.\n수정을 통해 배송국가를 지정해주세요.');
+								return;
+							}
 
-							// span values
-							var international_address = res.international_address + ',' + res.international_town_city + ',' + res.international_county + ',' + data.international_postcode + ',' + data.international_country;
-							$(".recipient_address").html(international_address);
-							$(".international_nation").html(res.nation);
-							$("#address_nation").val(res.nation).trigger('change');
+							if(res.nation == 'KOREA' || res.international == 'domestic'){
+								// input values
+								$("#international").val('0');
+								$(".kr_zipcode").show();
+
+								$("input[name='recipient_input_address_type']").val(res.recipient_address_type);
+								$("input[name='recipient_input_address']").val(res.recipient_address);
+								$("input[name='recipient_input_address_street']").val(res.recipient_address_street);
+								$("input[name='recipient_input_address_detail']").val(res.recipient_address_detail);
+								$("input[name='recipient_input_new_zipcode']").eq(0).val(res.recipient_new_zipcode);
+
+								// span values
+								$(".recipient_zipcode").html(res.recipient_new_zipcode);
+								if(res.recipient_address_type == 'street'){
+									$(".recipient_address").html(res.recipient_address_street);
+								}else{
+									$(".recipient_address").html(res.recipient_address);
+								}
+								$(".recipient_address_detail").html(res.recipient_address_detail);
+								$(".international_nation").html('대한민국');
+								$("#address_nation").val('KOREA').trigger('change');
+							}else{
+								// input values
+								$("#international").val('1');
+								$(".kr_zipcode").hide();
+
+								$("select[name='region']").val(res.region);
+								$("input[name='international_county_input']").val(res.international_county);
+								$("input[name='international_address_input']").val(res.international_address);
+								$("input[name='international_town_city_input']").val(res.international_town_city);
+								$("input[name='international_postcode_input']").val(res.international_postcode);
+								$("input[name='international_country_input']").val(res.international_country);
+
+								// span values
+								var international_address = res.international_address + ',' + res.international_town_city + ',' + res.international_county + ',' + data.international_postcode + ',' + data.international_country;
+								$(".recipient_address").html(international_address);
+								$(".international_nation").html(res.nation);
+								$("#address_nation").val(res.nation).trigger('change');
+							}
+
+							// 공통 부분 input values
+							$("input[name='address_description_input']").val(res.address_description);
+							$("input[name='recipient_input_user_name']").val(res.recipient_user_name);
+							if (res.recipient_phone != null) {
+								phone = new Array();
+								phone = res.recipient_phone.split('-');
+								$(".delivery_input").find("input[name='recipient_input_phone[]']").each(function(idx){
+									$(".delivery_input").find("input[name='recipient_input_phone[]']").eq(idx).val(phone[idx]);
+								});
+							}
+							if (res.recipient_cellphone != null) {
+								cellphone = new Array();
+								cellphone = res.recipient_cellphone.split('-');
+								$(".delivery_input").find("input[name='recipient_input_cellphone[]']").each(function(idx){
+									$(".delivery_input").find("input[name='recipient_input_cellphone[]']").eq(idx).val(cellphone[idx]);
+								});
+							}
+							// 공통 부분 span values
+							$(".recipient_user_name").html(res.recipient_user_name);
+							$(".cellphone").html(res.recipient_cellphone);
+							$(".phone").html(res.recipient_phone);
+
 						}
-
-						// 공통 부분 input values
-						$("input[name='address_description_input']").val(res.address_description);
-						$("input[name='recipient_input_user_name']").val(res.recipient_user_name);
-						if (res.recipient_phone != null) {
-							phone = new Array();
-							phone = res.recipient_phone.split('-');
-							$(".delivery_input").find("input[name='recipient_input_phone[]']").each(function(idx){
-								$(".delivery_input").find("input[name='recipient_input_phone[]']").eq(idx).val(phone[idx]);
-							});
-						}
-						if (res.recipient_cellphone != null) {
-							cellphone = new Array();
-							cellphone = res.recipient_cellphone.split('-');
-							$(".delivery_input").find("input[name='recipient_input_cellphone[]']").each(function(idx){
-								$(".delivery_input").find("input[name='recipient_input_cellphone[]']").eq(idx).val(cellphone[idx]);
-							});
-						}
-						// 공통 부분 span values
-						$(".recipient_user_name").html(res.recipient_user_name);
-						$(".cellphone").html(res.recipient_cellphone);
-						$(".phone").html(res.recipient_phone);
-
 					}
-				}
-			});
+				});
+			}
+
+			const default_add_nation = $("#default_address_nation").val();
+
+			// 기본배송지 국가체크
+			if (typeof default_add_nation != 'undefined' && default_add_nation.length > 0 && default_add_nation !== 'KOREA') {
+				$("#international").val('1');
+				$(".kr_zipcode").hide();
+
+				var international_county = $("input[name='international_county_input']").val();
+				var international_address = $("input[name='international_address_input']").val();
+				var international_town_city = $("input[name='international_town_city_input']").val();
+				var international_postcode = $("input[name='international_postcode_input']").val();
+				var international_country = $("input[name='international_country_input']").val();
+
+				// span values
+				var international_address = international_address + ',' + international_town_city + ',' + international_county + ',' + international_postcode + ',' + international_country;
+				$(".recipient_address").html(international_address);
+				$(".international_nation").html(default_add_nation);
+				$("#address_nation").val(default_add_nation).trigger('change');
+			}
 		}
 
 		// 디자인팀 수정

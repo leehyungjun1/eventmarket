@@ -1301,6 +1301,16 @@ function feed_ship_chk(obj,mode){
 	}
 }
 
+// EP 마케팅 노출 이벤트명 허용 문자만 입력
+function grp_feed_evt_text_check(obj){
+	const feed_evt_text = $(obj).val();
+	var event_pattern = new RegExp(/[^ㄱ-ㅎ가-힣0-9a-z!?@#$%^&*_=,.:;~'\/\-\+()\[\]\{\}\s]/, 'iug');
+	if(event_pattern.test(feed_evt_text)){
+		var new_feed_evt_text = feed_evt_text.replace(event_pattern, '');
+		$("input[name='grp_feed_evt_text']").val(new_feed_evt_text);
+	}
+}
+
 // EP 마켓팅 배송데이터 설정 :: 2017-02-22 lwh
 function ep_market_set(obj){
 	var feed_pay_type = $(obj).val();

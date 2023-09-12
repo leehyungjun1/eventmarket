@@ -9,10 +9,8 @@ class dbpatch extends front_base {
 	{
 		ob_start();
 ?>
--- FMDEV-2138_1_제디터_연동.sql 실행 쿼리
-ALTER TABLE `fm_goods` ADD `mobile_deploymentId` int(11) NULL COMMENT '반응형 및 전용스킨 Mobile 제디터에 대한 발행번호';
-
-ALTER TABLE `fm_goods` ADD `deploymentId` int(11) NULL COMMENT '전용스킨 PC 제디터에 대한 발행번호';
+-- FMDEV-2145_1_개선-네이버쇼핑_렌탈이벤트_컬럼_정책_변경으로_인한_개선_요청.sql 실행 쿼리
+ALTER TABLE `fm_goods` ADD `rental_period` SMALLINT(10) NULL DEFAULT NULL COMMENT 'EP전송용 판매방식 렌탈 계약기간' AFTER `product_flag`;
 <?
 		$sQuery = ob_get_contents();
 		ob_clean();

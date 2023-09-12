@@ -1251,9 +1251,10 @@ class goods_process extends admin_base {
 				if($upcolumn == 'common_contents' && $info_seq){
 					echo "parent.$('#info_select_seq').val('".$info_seq."');";
 				}
-				echo "parent.$('#".$contents_type."_view').html('".addslashes($editor[$upcolumn])."');";
-				echo "parent.$('#".$contents_type."').text('".addslashes($editor[$upcolumn])."');";
-				echo "parent.$('#".$hidden_upcolumn."').text('".addslashes($editor[$hidden_upcolumn])."');";
+				echo "parent.$('#".$contents_type."_view').html(`".addslashes($editor[$upcolumn])."`);";
+				echo "parent.$('#".$contents_type."').val(`".addslashes($editor[$upcolumn])."`);";
+				echo "parent.$('#".$contents_type."').text(`".addslashes($editor[$upcolumn])."`);";
+				echo "parent.$('#".$hidden_upcolumn."').text(`".addslashes($editor[$hidden_upcolumn])."`);";
 				echo "parent.$('#".$delete_id."').val('');";
 				echo "parent.$('#".$delete_upcolumn."_view').html('');";
 
@@ -2097,6 +2098,8 @@ class goods_process extends admin_base {
 			exit;
 		}
 
+		$aParamsPost = $this->input->post();
+
 		if(!preg_match("/^F_SH_/",$this->config_system['service']['hosting_code'])){
 			$this->load->model('usedmodel');
 			$use_per	= $this->usedmodel->get_used_space_percent();
@@ -2110,8 +2113,8 @@ class goods_process extends admin_base {
 			}
 		}
 		$this->load->model('goodsHandlermodel');
-		$result		= $this->goodsHandlermodel->doBatchUpdate($this->input->post());
-		$mode		= $this->input->post('mode');
+		$result		= $this->goodsHandlermodel->doBatchUpdate($aParamsPost);
+		$mode		= $aParamsPost['mode'];
 
 		if ($result['result'] === true) {
 			if((in_array($mode, array("status", "ifstatus"))) && $result['message']){

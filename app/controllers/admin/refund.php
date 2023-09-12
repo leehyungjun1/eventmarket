@@ -505,6 +505,8 @@ class refund extends admin_base {
 			}
 		}
 
+		$refund_emoney_limit_use = false; // 환불 마일리지 유효기간 사용 여부
+
 		// 환불 상품 데이터 정리
 		foreach($data_refund_item as $k => $data){
 
@@ -965,6 +967,12 @@ class refund extends admin_base {
 			$refund_shipping_items[$data['shipping_seq']]['shipping_cnt']++;
 			$refund_shipping_items[$data['shipping_seq']]['refund_payment']						= $refund_payment;
 			$refund_shipping_items[$data['shipping_seq']]['plus_cnt']							= $plus_cnt;
+
+			// 환불 마일리지 유무 체크(유효기간 노출)
+			if ($data['refund_item_emoney'] > 0) {
+				$refund_emoney_limit_use = true;
+			}
+
 		}
 		
 		// 배송비 노출에 의한 추가 필드 병합 처리
@@ -1127,6 +1135,7 @@ class refund extends admin_base {
 				'return_formula'		=>$return_formula,
 				'cash_price_total'		=>$cash_price_total,
 			    'total_price'            =>  $total_price,
+				'refund_emoney_limit_use' => $refund_emoney_limit_use,
 			)
 		);
 

@@ -230,3 +230,5 @@ table.grp-list tbody tr:nth-child(even) td.ship-bg { background-color:#FFFFE8; }
 .icon_geditor {margin: 0px auto; display:block; width:138px;}
 #geditor span { display: block; text-align: center; margin-bottom: 2%; color: #a6a6a6;}
 #mobile_contents_view, #geditor_mobile_contents_view { max-width: 1280px;}
+#geditor_tooltip > li{ background: none; padding-left: 0;}
+#geditor_tooltip > ul > li { background: none; padding-left: 8px;}

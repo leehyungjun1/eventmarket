@@ -2151,6 +2151,19 @@ $(document).ready(function() {
 	// 입점 마케팅 설정
 	chgfeedinfoNew($('input[name="feed_status"]:checked').val());
 
+	//판매방식 렌탈인 경우, 렌탈 계약 기간 필수
+	$('select[name="product_flag"]').on('change', function(){
+		
+		var unitText	= $(this).find(":selected").text();
+
+		if (unitText == '렌탈'){
+			$(".marketing_rental_period_set").show();
+		}else{
+			$(".marketing_rental_period_set").hide();
+		}
+			
+	});
+
 	$('input[name="marketing_event_set"]').on("click",function(){
 		if($(this).is(":checked")){
 			$(this).parent().next(".marketing_event_set").show();
@@ -2856,5 +2869,22 @@ function openSettingOptionnew(add_goods_seq,params){
 
 	optionTmpPopup.location.replace(url);
 //	window.open(url, 'OPTION_POP', windowOption);
+}
+
+// 입점 마케팅 렌탈 입력값 확인
+function rental_period_check(obj){
+	const rental_period = $(obj).val();
+	var number_pattern = /[^0-9]/;
+	$("input[name='rental_period']").val(rental_period.replace(number_pattern, ''));	
+}
+
+// EP 마케팅 노출 이벤트명 허용 문자만 입력
+function grp_feed_evt_text_check(obj){
+	const feed_evt_text = $(obj).val();
+	var event_pattern = new RegExp(/[^ㄱ-ㅎ가-힣0-9a-z!?@#$%^&*_=,.:;~'\/\-\+()\[\]\{\}\s]/, 'iug');
+	if(event_pattern.test(feed_evt_text)){
+		var new_feed_evt_text = feed_evt_text.replace(event_pattern, '');
+		$("input[name='feed_evt_text']").val(new_feed_evt_text);
+	}
 }
 

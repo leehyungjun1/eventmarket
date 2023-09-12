@@ -59,8 +59,13 @@ class KakaoClient extends Client
         // 토큰 값이 있으면 회원 정보 가져오기
         $kakaoUser = $this->getProfile();
 
+        // 카카오 develop에서 설정된 허용 IP 주소 외 IP 접근 시 에러 발생 케이스
+        if ($kakaoUser['code'] === -401) {
+            return $this->errorResult("허용되지 않은 IP 주소입니다.\\n카카오 developers 페이지에서 허용 서버 IP 주소 확인 바랍니다.");
+        }
+
         // 로그인, 회원가입에 사용할 파라미터 생성
-        $facebookMemberData = [
+        $kakaoMemberData = [
             'userid' => 'kko_'.$kakaoUser['id'],
             'user_name' => $kakaoUser['kakao_account']['name'],
             'nickname' => $kakaoUser['kakao_account']['profile']['nickname'],
@@ -72,7 +77,7 @@ class KakaoClient extends Client
         ];
 
         // 신규 값을 추가하고 전체 회원 정보를 반환받는다
-        $data = $this->config->addMemberData($facebookMemberData);
+        $data = $this->config->addMemberData($kakaoMemberData);
 
         // 카카오싱크 간편가입 여부 확인
         if($kakaoUser['synched_at']) {

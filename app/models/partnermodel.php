@@ -29,6 +29,7 @@ class Partnermodel extends CI_Model {
 		'parallel_import' => array('type' => 'varchar', 'length' => 1, 'require' => false), # 병행수입 여부 (Y)
 		'order_made' => array('type' => 'varchar', 'length' => 1, 'require' => false), # 주문제작상품 여부 (Y)
 		'product_flag' => array('type' => 'varchar', 'length' => 10, 'require' => false), # 판매방식 구분 (도매 / 도매, 렌탈, 대여, 할부, 예약판매, 구매대행)
+		'rental_info' => array('type' => 'varchar', 'length' => 13, 'require' => false), # 렌탈상품의 월렌탈료(최대 9자리) 및 렌탈계약기간(최대 3자리) (50000^12)
 		'adult' => array('type' => 'varchar', 'length' => 1, 'require' => false), # 미성년자 구매 불가 상품 여부 (Y)
 		'goods_type' => array('type' => 'varchar', 'length' => 10, 'require' => false), # 상품구분 (MA / MA: 마트, DF: 면세점, HS: 홈쇼핑, DP: 백화점 상품)
 		'barcode' => array('type' => 'varchar', 'length' => 13, 'require' => false), # 바코드 (8801234560016)
@@ -569,7 +570,7 @@ class Partnermodel extends CI_Model {
 			// 2014-01-16 이벤트 문구 미노출 추가
 			if($data_goods['feed_evt_sdate'] == '0000-00-00') $data_goods['feed_evt_sdate'] = '';
 			if($data_goods['feed_evt_edate'] == '0000-00-00') $data_goods['feed_evt_edate'] = '';
-			$data_goods['event']	= $data_goods['feed_evt_text'];
+			$data_goods['event']	= preg_replace('/[^가-힣0-9a-z!?@#$%^&*_=,.:;\~\'\/\-\+\(\)\[\]\{\}\s]+/iu', '', $data_goods['feed_evt_text']);
 			if( time() < strtotime($data_goods['feed_evt_sdate'].' 00:00:00') || strtotime($data_goods['feed_evt_edate'].' 23:59:59') < time() ){
 				$data_goods['event']	= '';
 			}
@@ -938,6 +939,9 @@ class Partnermodel extends CI_Model {
 			# naver EP 3.0 추가 필드 구성 :: 2018-08-07 lwh
 			if($data_goods['compound_state'])			$row[$data_goods['compound_state']]	= 'Y';
 			if($data_goods['product_flag'])				$row['product_flag']				= $data_goods['product_flag'];
+			if($data_goods['product_flag'] == '렌탈' && $data_goods['rental_period']) {
+				$row['rental_info'] = $data_goods['price'].'^'.$data_goods['rental_period'];
+			}
 			if($data_goods['installation_costs'])		$row['installation_costs']			= $data_goods['installation_costs'];
 
 			if($mobile_price)	$row['price_mobile']			= $mobile_price;
@@ -1168,6 +1172,13 @@ class Partnermodel extends CI_Model {
 				$shopData[$k] = trim(preg_replace("/[\r\n\t]/i", " ", $shopData[$k]));
 			}
 
+			//네이버쇼핑 이벤트 컬럼 정책에 따라 허용되지 않는 문자가 포함되어 있으면 무효 처리
+			//힌글, 영문, 숫자, 허용되는 특수문자 ([] () , . - _ ! ? ' : ; ~ + * @ # $ % ^ & { } = /)를 제외한 문자 강제 치환
+			if($k == 'event_words') {
+				$event_pattern = '/[^가-힣0-9a-z!?@#$%^&*_=,.:;\~\'\/\-\+\(\)\[\]\{\}\s]+/iu';
+				$shopData[$k] = preg_replace($event_pattern, '', $shopData[$k]);
+			}
+	
 			if($v['require']) {
 				$length = mb_strlen($shopData[$k], 'UTF-8');
 

@@ -12,9 +12,9 @@ class naverpaycheck extends CI_Controller {
 		echo '<meta name="robots" content="noindex, nofollow" />';
 
 		if ($hosting_info == 'RT' || ($hosting_info == 'EX' && $ftp == 'data')) {
-			$msg = "해당 쇼핑몰은 소스 미오픈 상태입니다.";
+			$msg = "소스 미오픈(검수 생략)";
 		} elseif ($hosting_info == 'HX' || ($hosting_info == 'EX' && $ftp == 'all')) {
-			$msg = "해당 쇼핑몰은 소스 오픈 상태입니다.";
+			$msg = "소스 오픈(독립형/검수 필요)";
 		} else {
 			$msg = "환경정보 재확인 필요";
 		}

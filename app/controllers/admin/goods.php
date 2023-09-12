@@ -1287,8 +1287,9 @@ class goods extends admin_base {
 		// 제디터 인증키 셋팅 
 		$this->load->library('geditorlib');
 		$serviceKey = $this->geditorlib->getServiceKey();
+		$auth = $this->geditorlib->getAuth(); // 클라이언트 정보 
 		$geditorUrl = $this->geditorlib->getUrl($serviceKey,$goods['mobile_deploymentId']);
-		$this->template->assign(['serviceKey'=>$serviceKey, 'geditorUrl' => $geditorUrl]);
+		$this->template->assign(['serviceKey'=>$serviceKey, 'geditorUrl' => $geditorUrl, 'auth' => $auth]);
 
 		// 상품 신규 등록 시 또는 입점형이 아닐 때 무조건 본사로 지정.
 		if(!isset($goods_seq) || !serviceLimit('H_AD') ) $provider_seq = 1;

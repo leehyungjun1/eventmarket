@@ -111,13 +111,12 @@ class Goodsmodel extends CI_Model {
 	/* 상품등록 파라미터 검증*/
 	public function check_param_regist(){
 
-		$goodsParam = $this->input->post();
-
+		$aPostParams = $this->input->post();
 		$_POST['chkPrice'] = $_POST['price'][0];
 		$_POST['chkStock'] = array_sum($_POST['stock']);
-		if($_POST['chkStock'] < 1) unset($_POST['chkStock']);
+		if($aPostParams['chkStock'] < 1) unset($_POST['chkStock']);
 
-		if($_POST['goods_type']=='gift'){
+		if($aPostParams['goods_type']=='gift'){
 			$_POST['tax']					= 'tax';
 			$_POST['tax_chk']				= 'Y';
 			$_POST['minPurchaseLimit']		= 'unlimit';
@@ -134,16 +133,16 @@ class Goodsmodel extends CI_Model {
 			$_POST['goods_type'] = 'goods';
 		}
 
-		if( !isset($_POST['string_price_use']) ) $_POST['string_price_use'] = 0;
-		if( !isset($_POST['member_string_price_use']) ) $_POST['member_string_price_use'] = 0;
-		if( !isset($_POST['allmember_string_price_use']) ) $_POST['allmember_string_price_use'] = 0;
+		if( !isset($aPostParams['string_price_use']) ) $_POST['string_price_use'] = 0;
+		if( !isset($aPostParams['member_string_price_use']) ) $_POST['member_string_price_use'] = 0;
+		if( !isset($aPostParams['allmember_string_price_use']) ) $_POST['allmember_string_price_use'] = 0;
 
-		if( !isset($_POST['multiDiscountUse']) ) $_POST['multiDiscountUse'] = 0;
-		if( !isset($_POST['optionUse']) ) $_POST['optionUse'] = 0;
-		if( !isset($_POST['subOptionUse']) ) $_POST['subOptionUse'] = 0;
-		if( !isset($_POST['memberInputUse']) ) $_POST['memberInputUse'] = 0;
-		if( !isset($_POST['restockNotifyUse']) ) $_POST['restockNotifyUse'] = 0;
-		if( !isset($_POST['provider_status']) ) $_POST['provider_status'] = 0;
+		if( !isset($aPostParams['multiDiscountUse']) ) $_POST['multiDiscountUse'] = 0;
+		if( !isset($aPostParams['optionUse']) ) $_POST['optionUse'] = 0;
+		if( !isset($aPostParams['subOptionUse']) ) $_POST['subOptionUse'] = 0;
+		if( !isset($aPostParams['memberInputUse']) ) $_POST['memberInputUse'] = 0;
+		if( !isset($aPostParams['restockNotifyUse']) ) $_POST['restockNotifyUse'] = 0;
+		if( !isset($aPostParams['provider_status']) ) $_POST['provider_status'] = 0;
 
 		$chkArr['string_price']						= "";
 		$chkArr['string_price_link']				= "";
@@ -171,12 +170,12 @@ class Goodsmodel extends CI_Model {
 
 		//-----------------------------------------------------------------------------------------------
 		// 본사/입점사 상품 체크
-		if(!$_POST['goodsSeq']){
-			if($_POST['goods_gubun'] == "provider" || defined('__SELLERADMIN__') == true){
-				if($_POST['provider_seq'] == 1) $_POST['provider_seq'] = '';
+		if(!$aPostParams['goodsSeq']){
+			if($aPostParams['goods_gubun'] == "provider" || defined('__SELLERADMIN__') == true){
+				if($aPostParams['provider_seq'] == 1) $_POST['provider_seq'] = '';
 				$this->validation->set_rules('provider_seq', '입점사','trim|required');//|xss_clean
 			}else{
-				if($_POST['provider_seq'] > 1) $_POST['provider_seq'] = 1;
+				if($aPostParams['provider_seq'] > 1) $_POST['provider_seq'] = 1;
 			}
 		}
 		//-----------------------------------------------------------------------------------------------
@@ -185,12 +184,12 @@ class Goodsmodel extends CI_Model {
 			$this->validation->set_rules('connectCategory[]', '카테고리연결','trim|xss_clean');
 		//-----------------------------------------------------------------------------------------------
 		// 상품명
-			if($_POST['goods_type']=='gift'){
+			if($aPostParams['goods_type']=='gift'){
 				$this->validation->set_rules('goodsName', '사은품명','trim|required');//|xss_clean
 			}else{
 				$this->validation->set_rules('goodsName', '상품명','trim|required');//|xss_clean
 			}
-			if( $_POST['useMarket'] == '1' && $_POST['goods_kind'] != 'coupon'){
+			if( $aPostParams['useMarket'] == '1' && $aPostParams['goods_kind'] != 'coupon'){
 				$this->validation->set_rules('goodsNameLinkage', '오픈마켓 상품명','trim|required');
 			}
 			$this->validation->set_rules('purchaseGoodsName', '매입용 상품명','trim');//|xss_clean
@@ -198,7 +197,7 @@ class Goodsmodel extends CI_Model {
 			$this->validation->set_rules('keyword', '상품 검색 태그','trim');//|xss_clean
 		//-----------------------------------------------------------------------------------------------
 		// 판매정보
-			if($_POST['tmp_goodsView'] != "reservation"){
+			if($aPostParams['tmp_goodsView'] != "reservation"){
 				$_POST['display_terms'] 		= '';
 				$_POST['display_terms_type'] 	= '';
 			}
@@ -208,14 +207,14 @@ class Goodsmodel extends CI_Model {
 			$this->validation->set_rules('tax', '부가세','trim|required|xss_clean');
 		//-----------------------------------------------------------------------------------------------
 		// 필수옵션
-			if( $_POST['optionUse'] == '1' ){
+			if( $aPostParams['optionUse'] == '1' ){
 				$this->validation->set_rules('optionViewType', '옵션 출력 형식','trim|required|xss_clean');
 				$chkArr['optionViewType']	= $_POST['optionViewType'];
 			}
 
 			$this->validation->set_rules('chkPrice', '할인가(판매가)','trim|numeric|required|xss_clean');
 			$this->validation->set_rules('chkStock', '재고','trim|numeric|xss_clean');
-			if( isset($_POST['opt']) ){
+			if( isset($aPostParams['opt']) ){
 				$this->validation->set_rules('defaultOption', '기준할인가','trim|required|xss_clean');
 			}
 			$this->validation->set_rules('goodsCode', '상품 코드','trim|xss_clean');
@@ -227,13 +226,13 @@ class Goodsmodel extends CI_Model {
 		//-----------------------------------------------------------------------------------------------
 		// 배송비
 			$this->validation->set_rules('shippingPolicy', '국내 배송','trim|required|xss_clean');
-			if( $_POST['shippingPolicy'] == 'goods' ){
+			if( $aPostParams['shippingPolicy'] == 'goods' ){
 				$this->validation->set_rules('goodsShippingPolicy', '개별 배송비 정책','trim|required|xss_clean');
 				$chkArr['goodsShippingPolicy']	= $_POST['goodsShippingPolicy'];
-				if( $_POST['goodsShippingPolicy'] == 'unlimit' ){
+				if( $aPostParams['goodsShippingPolicy'] == 'unlimit' ){
 					$this->validation->set_rules('unlimitShippingPrice', '개별 배송비 정책','trim|numeric|required|xss_clean');
 					$chkArr['unlimitShippingPrice']	= $_POST['unlimitShippingPrice'];
-				}else if( $_POST['goodsShippingPolicy'] == 'limit' ){
+				}else if( $aPostParams['goodsShippingPolicy'] == 'limit' ){
 					$this->validation->set_rules('limitShippingEa', '개별 배송비 정책','trim|numeric|required|xss_clean');
 					$this->validation->set_rules('limitShippingPrice', '개별 배송비 정책','trim|numeric|required|xss_clean');
 					$this->validation->set_rules('limitShippingSubPrice', '개별 배송비 정책','trim|numeric|required|xss_clean');
@@ -247,14 +246,14 @@ class Goodsmodel extends CI_Model {
 
 			$this->validation->set_rules('shippingWeightPolicy', '해외 배송','trim|xss_clean');
 
-			if( $_POST['shippingWeightPolicy'] == 'goods' ){
+			if( $aPostParams['shippingWeightPolicy'] == 'goods' ){
 				$this->validation->set_rules('goodsWeight', '상품 중량 ','trim|numeric|required|xss_clean');
 				$chkArr['goodsWeight']	= $_POST['goodsWeight'];
 			}
 		//-----------------------------------------------------------------------------------------------
 		// 이벤트
-			if( $_POST['multiDiscountUse'] ){
-				if($_POST['multiDiscountEa'] < 2){
+			if( $aPostParams['multiDiscountUse'] ){
+				if($aPostParams['multiDiscountEa'] < 2){
 					openDialogAlert('복수구매 할인은 최소 2개 이상부터 가능합니다.',400,140,'parent','');
 					exit;
 				}
@@ -263,9 +262,9 @@ class Goodsmodel extends CI_Model {
 		// 기타 정보(최소/최대/구매대상제한)
 			$this->validation->set_rules('minPurchaseLimit', '최소 구매수량','trim|required|xss_clean');
 
-			if( $_POST['minPurchaseLimit'] == 'limit' ){
+			if( $aPostParams['minPurchaseLimit'] == 'limit' ){
 				$this->validation->set_rules('minPurchaseEa', '최소 구매수량','trim|numeric|required|xss_clean');
-				if($_POST['minPurchaseEa'] < 2){
+				if($aPostParams['minPurchaseEa'] < 2){
 					echo("<script>parent.able_save();</script>");
 					openDialogAlert('최소 구매수량은 2개 이상 입력하셔야 합니다.',400,140,'parent','');
 					exit;
@@ -275,11 +274,11 @@ class Goodsmodel extends CI_Model {
 				$_POST['minPurchaseEa'] = 1;
 			}
 			$this->validation->set_rules('maxPurchaseLimit', '최대 구매수량','trim|required|xss_clean');
-			if( $_POST['maxPurchaseLimit'] == 'limit' ){
+			if( $aPostParams['maxPurchaseLimit'] == 'limit' ){
 				$this->validation->set_rules('maxPurchaseEa', '최대 구매수량','trim|numeric|required|xss_clean');
-				if( $_POST['minPurchaseEa'] > $_POST['maxPurchaseEa'] ){
+				if( $aPostParams['minPurchaseEa'] > $aPostParams['maxPurchaseEa'] ){
 					echo("<script>parent.able_save();</script>");
-					openDialogAlert('최대 구매수량은 최소 구매수량('.$_POST['minPurchaseEa'].'개) 이상 입력하셔야 합니다.',400,140,'parent','');
+					openDialogAlert('최대 구매수량은 최소 구매수량('.$aPostParams['minPurchaseEa'].'개) 이상 입력하셔야 합니다.',400,140,'parent','');
 					exit;
 				}
 
@@ -287,7 +286,7 @@ class Goodsmodel extends CI_Model {
 			}
 
 			// 가격 디스플레이 수정 2014-03-14 lwh
-			if( $_POST['string_price_use'] == 1 ){
+			if( $aPostParams['string_price_use'] == 1 ){
 				$this->validation->set_rules('string_price', '가격 대체 문구','trim|required|xss_clean');
 				$chkArr['string_price']							= $_POST['string_price'];
 				$chkArr['string_price_color']					= $_POST['string_price_color'];
@@ -295,7 +294,7 @@ class Goodsmodel extends CI_Model {
 				$chkArr['string_price_link_url']				= $_POST['string_price_link_url'];
 				$chkArr['string_price_link_target']				= $_POST['string_price_link_target'];
 			}
-			if( $_POST['member_string_price_use'] == 1 ){
+			if( $aPostParams['member_string_price_use'] == 1 ){
 				$this->validation->set_rules('member_string_price', '가격 대체 문구','trim|required|xss_clean');
 				$chkArr['member_string_price']					= $_POST['member_string_price'];
 				$chkArr['member_string_price_color']			= $_POST['member_string_price_color'];
@@ -303,7 +302,7 @@ class Goodsmodel extends CI_Model {
 				$chkArr['member_string_price_link_url']			= $_POST['member_string_price_link_url'];
 				$chkArr['member_string_price_link_target']		= $_POST['member_string_price_link_target'];
 			}
-			if( $_POST['allmember_string_price_use'] == 1 ){
+			if( $aPostParams['allmember_string_price_use'] == 1 ){
 				$this->validation->set_rules('allmember_string_price', '가격 대체 문구','trim|required|xss_clean');
 				$chkArr['allmember_string_price']				= $_POST['allmember_string_price'];
 				$chkArr['allmember_string_price_color']			= $_POST['allmember_string_price_color'];
@@ -313,7 +312,7 @@ class Goodsmodel extends CI_Model {
 			}
 
 			// 버튼 디스플레이 수정
-			if( $_POST['string_button_use'] == 1 ){
+			if( $aPostParams['string_button_use'] == 1 ){
 				$this->validation->set_rules('string_button', '버튼 대체 문구','trim|required|xss_clean');
 				$chkArr['string_button']						= $_POST['string_button'];
 				$chkArr['string_button_color']					= $_POST['string_button_color'];
@@ -321,7 +320,7 @@ class Goodsmodel extends CI_Model {
 				$chkArr['string_button_link_url']				= $_POST['string_button_link_url'];
 				$chkArr['string_button_link_target']			= $_POST['string_button_link_target'];
 			}
-			if( $_POST['member_string_button_use'] == 1 ){
+			if( $aPostParams['member_string_button_use'] == 1 ){
 				$this->validation->set_rules('member_string_button', '버튼 대체 문구','trim|required|xss_clean');
 				$chkArr['member_string_button']					= $_POST['member_string_button'];
 				$chkArr['member_string_button_color']			= $_POST['member_string_button_color'];
@@ -329,7 +328,7 @@ class Goodsmodel extends CI_Model {
 				$chkArr['member_string_button_link_url']		= $_POST['member_string_button_link_url'];
 				$chkArr['member_string_button_link_target']		= $_POST['member_string_button_link_target'];
 			}
-			if( $_POST['allmember_string_button_use'] == 1 ){
+			if( $aPostParams['allmember_string_button_use'] == 1 ){
 				$this->validation->set_rules('allmember_string_button', '버튼 대체 문구','trim|required|xss_clean');
 				$chkArr['allmember_string_button']				= $_POST['allmember_string_button'];
 				$chkArr['allmember_string_button_color']		= $_POST['allmember_string_button_color'];
@@ -337,6 +336,15 @@ class Goodsmodel extends CI_Model {
 				$chkArr['allmember_string_button_link_url']		= $_POST['allmember_string_button_link_url'];
 				$chkArr['allmember_string_button_link_target']	= $_POST['allmember_string_button_link_target'];
 			}
+
+		//-----------------------------------------------------------------------------------------------
+		// 입점 마케팅
+		if($aPostParams['product_flag'] == "렌탈"){
+			$this->validation->set_rules('rental_period', '렌탈 계약기간','trim|required|xss_clean|regex_match[/^[1-9]{1}[0-9]{0,2}/]');
+		}
+		if($aPostParams['feed_evt_text'] != ""){
+			$this->validation->set_rules('feed_evt_text', '입점 마케팅 노출 이벤트명','trim|xss_clean|regex_match[/^[가-힣0-9a-z!?@#$%^&*_=,.:;\~\'\/\-\+\(\)\[\]\{\}\s]+$/iu]');
+		}
 		//-----------------------------------------------------------------------------------------------
 		// 관리자 메모
 			$this->validation->set_rules('adminMemo', '관리자 메모','trim|xss_clean');
@@ -559,6 +567,7 @@ class Goodsmodel extends CI_Model {
 		// EP 데이터 추가 get_goods_common_info저장 :: 2018-08-06 lwh
 		$goods['feed_condition'] 			= $_POST['feed_condition'];		// 상품상태
 		$goods['product_flag']				= $_POST['product_flag'];		// 판매방식 구분
+		$goods['rental_period']				= $_POST['rental_period'];		// 판매방식 구분 렌탈인 경우, 렌탈 기간
 		$goods['installation_costs']		= $_POST['installation_costs'];	// 별도 설치비 유무
 		$goods['compound_state']			= $_POST['compound_state']; // 병행수입 및 주문제작여부 (parallel_import:병행수입/order_made:주문제작)
 
@@ -751,8 +760,8 @@ class Goodsmodel extends CI_Model {
  		$goods['hscode']						= $_POST['hscode'];
 
  		// 외부마켓용 검색단어
-		if ($goodsParam['openmarket_keyword']) {
-			$goods['openmarket_keyword'] = $goodsParam['openmarket_keyword'];
+		if ($aPostParams['openmarket_keyword']) {
+			$goods['openmarket_keyword'] = $aPostParams['openmarket_keyword'];
 		}
 
 		// 본사만 추천상품 수정 가능
@@ -871,7 +880,7 @@ class Goodsmodel extends CI_Model {
 			$imagestore_type['imagestore_item'] = "contents";
 		}
 		if($aPostParams['common_contents']){
-			$res['common_info'] = adjustEditorImages($aPostParams['common_contents'], '/'.$dir.'/',$seq);
+			$res['common_contents'] = adjustEditorImages($aPostParams['common_contents'], '/'.$dir.'/',$seq);
 			$imagestore_type['imagestore_item'] = "common_info";
 		}
 		if($aPostParams['mobile_contents']){
@@ -890,8 +899,8 @@ class Goodsmodel extends CI_Model {
 				unset($result_imagehosting['contents']['contents']);
 			}
 			if($aPostParams['common_contents']){
-				$res['common_contents'] = $result_imagehosting['common_info']['contents'];
-				unset($result_imagehosting['common_info']['contents']);
+				$res['common_contents'] = $result_imagehosting['common_contents']['contents'];
+				unset($result_imagehosting['common_contents']['contents']);
 			}
 			if($aPostParams['mobile_contents']){
 				$res['mobile_contents'] = $result_imagehosting['mobile_contents']['contents'];
@@ -1592,7 +1601,6 @@ class Goodsmodel extends CI_Model {
 			$result['b_rstock'] = "-";
 			$result['b_stock'] = "-";
 		}
-
 		//재고관리 사용하는 경우, 총 재고값(rtotal_stock) 창고 기준으로 재계산
 		if($this->scm_cfg['use'] == "Y"){
 			$this->db->select('sum(ea) as rtotal_stock')

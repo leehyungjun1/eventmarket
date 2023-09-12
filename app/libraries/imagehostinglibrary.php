@@ -656,6 +656,7 @@ class Imagehostinglibrary
 		$message = $error_massage = $success_massage = '';
 		foreach ($object as $idx => $params) {
 			if($idx=='mobile_contents') $idx = 'contents';
+			if($idx=='common_contents') $idx = 'common_info';
 			$imagestore_item_title = $imagestore_item[$idx];
 
 			if ($params[0]) { // 배열인 경우

@@ -1174,17 +1174,19 @@
 											에디터
 										</a>	
 									</td>
-									<td  colspan="1" style="float: right; border-bottom: none !important;">
+									{? serviceKey && auth.client_id && auth.client_secret } 
+									<td id="geditorDeployment" colspan="1" style="float: right; border-bottom: none !important;">
 										<input type="hidden" name="service_key" value="{serviceKey}" />
 										<input type="text" id="mobile_deploymentId" name="mobile_deploymentId" placeholder="발행번호" value="{goods.mobile_deploymentId}"/>
 										<button type="button" class="resp_btn active size_M" onclick="setGeditorDeploymentId()">등록</button>
 									</td>
+									{/}
 								</tr>
 								<tr>
 									<td id="geditor" colspan="2">
 										<div class="noContnets {? goods.mobile_deploymentId && goods.goods_seq} hide {/}">
 											<img class="icon_geditor" src="../images/icon_geditor.png">
-											<span>제디터로 완성도 있는 콘텐츠를 쉽게 작성하세요!</span>
+											<span>제디터로 상세페이지를 손쉽게 만들어보세요!</span>
 										</div>
 										<input type="hidden" name="geditorExcute" value="false" />
 										<!-- g에디터 contents 여기에 숨기기-->
@@ -1217,10 +1219,9 @@
 								</tr>							
 							</table>						
 						</div>
-						<!--{:}-->
+						<!--{:}--> <!-- 전용스킨 모바일일 경우-->
 						<button type="button" class="resp_btn v2" onclick="view_editor_pop('mobile_contents','save');">등록</button>
 					</div>
-
 					<textarea class="hide" name="mobile_contents" id="mobile_contents" class="contents_view mt5" readonly>{goods.mobile_contents}</textarea>
 					<div class="contents_view mt5 {? (goods.mobile_contents_copy != '' && goods.mobile_contents_copy != 'N') || (goods.mobile_deploymentId && config_system.operation_type == 'light') }hide{/}" id="mobile_contents_view">{goods.mobile_contents}</div>
 						<!--{/}-->
@@ -1229,8 +1230,8 @@
 					<!--{ ? config_system.operation_type == 'light' }-->
 					<ul class="bullet_hyphen resp_message">
 						<li class="geditorInfo {? (!goods.mobile_deploymentId && goods.goods_seq)} hide {/}" >
-							제디터는 가비아 통합 회원 ID로 로그인 가능하며 사용하고 계신 쇼핑몰 연동 후 이용 가능합니다.
-							<a href="https://firstmall.kr/customer/faq/22301" target="_blank" class="resp_btn v2">제디터 설정 방법</a>
+							제디터는 가비아 통합 회원 ID로 로그인하여 이용 가능합니다.
+							<a target="_blank" href="https://firstmall.kr/customer/faq/22301"><span class="hand blue underline">제디터 사용 방법></span></a>
 						</li>
 						<!--{ ? serviceLimit('H_FR') }-->
 						<li class="editorInfo {?(provider_seq == 1 && !goods.goods_seq) || (goods.provider_seq == 1 && goods.goods_seq && goods.mobile_deploymentId)} hide {/}">
@@ -1273,7 +1274,7 @@
 				<th class="left">공통 정보 설정 <span class="tooltip_btn" onClick="showTooltip(this, '../tooltip/goods', '#tip12')" ></span></th>
 				<td>
 					<div class="resp_radio">
-						<!--label><input type="radio" name="r_info_tmp" value="default" checked="checked" /> 기본 설정</label-->
+						<!--label><input type="radio" name="r_infof_tmp" value="default" checked="checked" /> 기본 설정</label-->
 						<label><input type="radio" name="r_info_tmp" value="loading_info" /> 기존 정보 불러오기</label>
 						<label class="ml20"><input type="radio" name="r_info_tmp" value="create_info" /> 신규 등록</label>
 					</div>
@@ -2101,6 +2102,10 @@
 								<option value="예약판매" {?goods.product_flag=='예약판매'}selected{/}>예약판매</option>
 								<option value="구매대행" {?goods.product_flag=='구매대행'}selected{/}>구매대행</option>
 							</select>
+							<span class="marketing_rental_period_set {? !goods.rental_period} hide {/}">
+								<input type="text" name="rental_period" size='15' class="right" maxlength="3" value="{goods.rental_period}" title="렌탈 계약기간 입력" onkeyup="rental_period_check(this);"/>
+								<span class="tooltip_btn" onClick="showTooltip(this, '../tooltip/goods', '#regist_marketing_rental_period', 'sizeS')"></span>
+							</span>
 						</td>
 					</tr>
 					<tr>
@@ -2141,10 +2146,10 @@
 									<col width="38%">
 								</colgroup>
 								<tr>
-									<th>이벤트명</th>
+									<th>이벤트명<span class="tooltip_btn" onClick="showTooltip(this, '../tooltip/goods', '#feed_evt_text', 'sizeS')"></span></th>
 									<td>
 										<div class="resp_limit_text limitTextEvent">
-											<input type="text" name="feed_evt_text" size='45' class="resp_text" maxlength="100" value="{goods.feed_evt_text}" title="" />
+											<input type="text" name="feed_evt_text" size='45' class="resp_text" maxlength="100" value="{goods.feed_evt_text}" title="" onkeyup="grp_feed_evt_text_check(this);" onchange="grp_feed_evt_text_check(this)"/>
 										</div>
 									</td>
 									<th>이벤트 기간</th>

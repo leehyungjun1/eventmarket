@@ -662,14 +662,26 @@ class SocialManager
     }
 
     // 회원정보 조회
-    private function getMemberData($param) {
+    private function getMemberData($param)
+    {
+        // sns 연동 키
+        $key = $this->socialClient->getKey();
+        $snsIds = $param[$key];
+
         // 네이버의 경우에는 아이디 정책이 바뀌어 기존 회원정보 마이그레이션 작업
         if ($this->socialType === NaverClient::class) {
-            $this->migrationMemberDataForNaver($param['sns_n'], $param['sns_n_old']);
+            $snsIds = $this->migrationMemberDataForNaver($param['sns_n'], $param['sns_n_old']);
         }
 
-        $key = $this->socialClient->getKey();
-        return $this->ci->membermodel->getMemberBySns($key, $param[$key]);
+        $member = $this->ci->membermodel->getMemberBySns($key, $snsIds);
+        
+        /**
+         * @todo 조회한 $member 값 기준으로 fm_membersns의 sns_f 컬럼 값과 일치하는지 판단하는 조건이 필요해 보임
+         * (추후 다른 sns 로그인에서도 모든 회원 조회되는 이슈 발생 시 위 사항 고려해봐야 함)
+         * 발생 이슈 sns - 카카오
+         */
+        
+        return $member;
     }
 
     // 가입 플랫폼 처리
@@ -902,13 +914,18 @@ class SocialManager
 			$whereIn[] = $sns_n_old;
 		}
 
-		// 등록된 네이버 id가 end_id(공통회원인증키)일 경우 id(client id별 회원인증키)로 변경.
-		$this->ci->db->where('status !=', 'withdrawal');
-		$this->ci->db->where_in('sns_n', $whereIn);
-		$this->ci->db->update('fm_member', ["sns_n" => $sns_n]);
+        // 조회, 업데이트 데이터 값 유무 체크
+        if (count($whereIn) > 0 && strlen($sns_n) > 0)  {
+            // 등록된 네이버 id가 end_id(공통회원인증키)일 경우 id(client id별 회원인증키)로 변경.
+            $this->ci->db->where('status !=', 'withdrawal');
+            $this->ci->db->where_in('sns_n', $whereIn);
+            $this->ci->db->update('fm_member', ["sns_n" => $sns_n]);
 
-		$this->ci->db->where_in('sns_f', $whereIn);
-		$this->ci->db->update('fm_membersns', ["sns_f" => $sns_n]);
+            $this->ci->db->where_in('sns_f', $whereIn);
+            $this->ci->db->update('fm_membersns', ["sns_f" => $sns_n]);   
+        }
+        
+        return $whereIn;
 	}
 
     // 기본앱 여부 확인

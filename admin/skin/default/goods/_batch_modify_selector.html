@@ -968,12 +968,12 @@
 					</tr>
 					<tr>
 						<td class="center"><label class="resp_checkbox"><input type="checkbox" class="resp_text ifchk batch_update_item" name="grp_feed_evt_sdate_yn" value="1" /></label></td>
-						<td>노출 이벤트</td>
+						<td>노출 이벤트<span class="tooltip_btn" onClick="showTooltip(this, '../tooltip/goods', '#feed_evt_text', 'sizeS')"></span></td>
 						<td>
 							<input type="text" size="10" readonly class="datepicker" name="grp_feed_evt_sdate" />
 							~
 							<input type="text" size="10" readonly class="datepicker" name="grp_feed_evt_edate" />
-							<input type="text" size="40" name="grp_feed_evt_text" />
+							<input type="text" size="40" name="grp_feed_evt_text" onkeyup="grp_feed_evt_text_check(this);" onchange="grp_feed_evt_text_check(this)"/>
 						</td>
 					</tr>
 					<tr>

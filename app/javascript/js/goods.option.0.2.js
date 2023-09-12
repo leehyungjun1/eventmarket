@@ -503,7 +503,7 @@ var jscls_option_select	= function(){
 			add_price	= obj.price - this.goods_price;
 			obj.price	= obj.ori_price;
 			var x		= this.option_divide_title_count - n;
-			var tmp		= '<option value="' + obj.opt + '" price="' + obj.price + '" infomation="' + obj.infomation + '"';
+			var tmp		= '<option value="' + obj.opt + '" price="' + obj.price + '"consumer_price="' + obj.consumer_price + '"infomation="' + obj.infomation + '"';
 			if	( obj.chk_stock ){
 				if	( obj.color && $("select[name='" + this.options_selectbox_name + "']").eq(n).attr('opttype') == 'color'  ) {
 					if	( obj.ismobile ){

@@ -5227,8 +5227,13 @@ SQL;
 	}
 
 	// SNS 회원 검색
-	public function getMemberBySns($snsType, $snsId)
+	public function getMemberBySns($snsType, $snsIds)
 	{
+		// sns 연동 ID 값 유효성 검증
+		if (!$snsIds || empty($snsIds)) {
+			return;
+		}
+
 		// 암호화 필드 복호화
 		$key = get_shop_key();
 		$decryptField = "
@@ -5237,22 +5242,25 @@ SQL;
 			, AES_DECRYPT(UNHEX(m.phone), '{$key}') as phone
 		";
 
-		//  where_in() 사용하기 위해 string 타입을 array 변경 합니다
-		if (is_string($snsId) === true) {
-			$snsIds[] = $snsId;
+		// 기본 쿼리
+		$this->db->select("m.*, mg.group_name, {$decryptField}") 
+			->from('fm_member AS m')
+			->join('fm_member_group AS mg', 'm.group_seq = mg.group_seq', 'LEFT')
+			// 탈퇴 상태가 아닌 모든 상태
+			->where(['m.status != ' => 'withdrawal']);
+		
+		// sns 연동 ID 값이 배열인 경우 다중 일치 쿼리 설정
+		if (is_array($snsIds)) {
+			$this->db->where_in('m.' . $snsType, $snsIds);
+		
+		// sns 연동 ID 값이 배열 아닌 단일 일치 쿼리 설정
 		} else {
-			$snsIds = $snsId;
+			$this->db->where('m.' . $snsType, $snsIds);
 		}
 
-		return $this->db->select("m.*, mg.group_name, {$decryptField}")
-				->from('fm_member AS m')
-				->join('fm_member_group AS mg', 'm.group_seq = mg.group_seq', 'LEFT')
-				// 탈퇴 상태가 아닌 모든 상태
-				->where(['m.status != ' => 'withdrawal'])
-				// SNS 연동 ID
-				->where_in('m.'.$snsType, $snsIds)
-				->get()
-				->row_array();
+		$result = $this->db->get()->row_array();
+
+		return $result;
 	}
 
 	/**

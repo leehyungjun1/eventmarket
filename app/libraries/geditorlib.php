@@ -10,6 +10,7 @@ class geditorlib
 {
 	private $url = 'https://www.geditor.co.kr/';
 	private $geditor;
+	private $auth;
 
 	public function __construct()
 	{
@@ -54,6 +55,16 @@ class geditorlib
 		}
 
 		return $url;
+	}
+
+	// 클라이언트 정보 가져오기
+	public function getAuth()
+	{
+		if (empty($this->auth)) {
+			$this->auth = config_load('auth');
+		}
+
+		return $this->auth;
 	}
 
 	// 인증키 가져오기

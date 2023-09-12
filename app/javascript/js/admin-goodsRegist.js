@@ -4657,7 +4657,6 @@ function view_editor_pop(contants,viewType){
 		}
 	}else{		
 		contentsHtml = $("#"+contants).val();		
-		if(!goodsSeq) contentsHtml = '';
 	}
 	var newContant = '<textarea name="view_textarea" id="view_textarea" class="daumeditor" style="width:100%;height:400px;" contentHeight="' + height + '" fullMode="1">' + contentsHtml + '</textarea>';
 	$(".view_contents_area").html(newContant);

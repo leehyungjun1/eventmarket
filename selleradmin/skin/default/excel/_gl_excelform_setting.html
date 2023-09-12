@@ -1,0 +1,137 @@
+<script>
+    $(function(){
+        var obj = {=params};
+    
+        if(obj.downloadType == 'old'){
+            $("#edForm").attr("action","../goods_process/download_write");
+        }else{
+            $("#edForm").attr("action","../goods_process/save_excel_form");
+        }
+    
+        $.ajax({
+            'url'       : obj.getUrl,
+            'data'      : {'mode':'newform'},
+            'type'      : 'get',
+            'dataType'  : 'json',
+            'dataSrc'   : '',
+            'success'   : function(res){
+                var formObj =  $("#lay_download_config #edForm");
+                formObj.find("input[name='form_id']").val(res.formData.form_id);
+                formObj.find("input[name='form_name']").val(res.formData.form_name);
+                formObj.find("input[name='form_type']").val(res.formData.form_type);
+                formObj.find("input[name='provider_seq']").val(res.provider_seq);
+                formObj.find("input[name='seq']").val(res.seq);
+                formObj.find("input[name='mode']").val(res.mode);
+                formObj.find("select[name='downloads_item_nouse[]'] option").remove();
+                $.each(res.columnAll,function(code,val){
+                    var option = $("<option value='"+code+"' idx='"+res.sortColumn[code]+"'>"+val+"</option>");
+                    formObj.find("select[name='downloads_item_nouse[]']").append(option);
+                });
+                $.each(res.columnSelect,function(code,val){
+                    var option = $("<option value='"+code+"' idx='"+res.sortColumn[code]+"'>"+val+"</option>");
+                    formObj.find("select[name='chk_cell[]']").append(option);
+                });
+            }
+        });
+    
+        $("#lay_download_config .btn_saved").on("click",function(){
+            $("#edForm").submit();
+        });
+        $("#lay_download_config .btn_close").on("click",function(){
+            closeDialog('lay_download_config');
+        });
+    
+    });
+    
+    function item_sort() {
+        var sel = $('#chk_cell'); 
+        var optionList = sel.find('option');
+        optionList.sort(
+            function(a, b){ 
+                aidx = parseInt($(a).attr('idx'));
+                bidx = parseInt($(b).attr('idx'));
+                if (aidx > bidx) 
+                    return 1; 
+                else if (aidx < bidx) 
+                    return -1; 
+                else 
+                    return 0; 
+            }
+        );
+        sel.find("option").remove();
+        sel.append(optionList);
+    
+    
+    }
+    </script>
+    <script type="text/javascript" src="/app/javascript/js/selectBoxMove.js"></script>
+    <style>
+        select {border:1px solid #d7d6db;padding:3px;}
+        .bg_yellow{background-color:yellow;}
+        select option[value]:checked {background-color: green;}
+        select>option { padding:3px 2px;  }
+    </style>
+    
+    <div class="content">
+        <form id="edForm" name="edForm" method="post" action="../goods_process/save_excel_form" target="actionFrame" onsubmit="return edForm_chkSubmit(this);">
+        <input type="hidden" name="seq">
+        <input type="hidden" name="form_id">
+        <input type="hidden" name="form_name">
+        <input type="hidden" name="form_type">
+        <input type="hidden" name="provider_seq">
+        <input type="hidden" name="mode">
+        
+        <table cellpadding="0" cellspacing="0" width="560">
+        <tr>
+            <td class="center" valign="top">
+                <div class='left'>
+                    <div class="title_dvs"><span class='item-title'>다운로드 가능 항목</span></div>
+                </div>
+                <select multiple="multiple" name="downloads_item_nouse[]" id="downloads_item_nouse" style="width: 250px; height: 380px !important;">
+                </select>
+            </td>
+        
+            <td width="60" class="center">
+               <button type="button" class="resp_btn size_S" id="add_element" style="width:35px;">&gt;</button>
+                <div style="padding-top:6px;"></div>
+               <button type="button" class="resp_btn size_S" id="del_element" style="width:35px;">&lt;</button>
+        
+            </td>
+            <td class="center" valign="top">
+                <div class="left">
+                    <div class="title_dvs">
+                        <span class='item-title'>선택 항목</span>
+                        <button type="button" class="resp_btn v3 size_S" onclick="item_sort()"><img src="../images/common/icon_search_reset.png"> 순서 초기화</button>
+                    </div>    
+                    <select multiple="multiple" name="chk_cell[]" id="chk_cell" style="width: 250px; height: 380px !important;">
+                    </select>
+               </div>
+        
+                <div class='mt5 fr'>
+                    <button type="button" class="resp_btn size_S" id="firstMove">처음</button>
+                    <button type="button" class="resp_btn size_S" id="upMove">위로</button>
+                    <button type="button" class="resp_btn size_S" id="downMove" >아래로</button>
+                    <button type="button" class="resp_btn size_S" id="lastMove" >마지막</button>
+                 </div>
+            </td>
+        </tr>
+        </table>
+    
+        <div class="mt20">
+            <ul class="bullet_hyphen">					
+                <!--{?mode == 'GOODS'}-->
+                <li>필수 옵션, 추가 구성 옵션, 추가 입력 옵션 항목 
+                    <span class="tooltip_btn" onClick="showTooltip(this, '../tooltip/excel', '#tip2', 'sizeS')"></span></li>		
+                <!--{:}-->
+                <li>필수 옵션, 추가 입력 옵션 항목
+                    <span class="tooltip_btn" onClick="showTooltip(this, '../tooltip/excel', '#tip3', 'sizeS')"></span></li>	
+                <!--{/}-->
+            </ul>
+        </div>
+    </form>
+    </div>
+    
+    <div class="footer">
+        <button type="button" class="resp_btn active btn_saved size_XL">저장</button>
+        <button type="button" class="resp_btn btn_close v3 size_XL">닫기</button>
+    </div>
