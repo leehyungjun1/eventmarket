@@ -152,4 +152,26 @@ class KakaoClient extends Client
             'kkouser',
         ];
     }
+
+    //  마케팅 및 광고 활용 동의 여부 조회
+    public function getTermMarketing() {
+        $termData = $this->getTerms();
+
+        $tag = array_column($termData,'tag');
+
+        $returnData = [
+            'sms' => 'n',
+            'mailing' => 'n',
+        ];
+
+        if (in_array('gabiacns_sms_agreement', $tag)) {
+            $returnData['sms'] = 'y';
+        }
+
+        if (in_array('gabiacns_mailing_agreement', $tag)) {
+            $returnData['mailing'] = 'y';
+        }
+
+        return $returnData;
+    }
 }

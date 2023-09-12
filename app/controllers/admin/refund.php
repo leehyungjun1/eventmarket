@@ -735,7 +735,7 @@ class refund extends admin_base {
 				// $tmp_each_sale_price		: 개당판매가					: 버림(상품종판매가 / 주문수량)
 				// $tmp_each_sale_rest		: 개당판매가나머지			: 상품종판매가 - (개당판매가 * 주문수량)
 				$tmp_row_good_price			= $data['price'] * $data['option_ea'];
-				$tmp_row_discont_price		= $data['total_sale'];
+				$tmp_row_discont_price		= $data['total_sale']; 
 				$tmp_row_sale_price			= $tmp_row_good_price - $tmp_row_discont_price;
 				$tmp_each_sale_price		= pfloor($tmp_row_sale_price / $data['option_ea']);
 				$tmp_each_sale_rest			= $tmp_row_sale_price - ($tmp_each_sale_price * $data['option_ea']);		// 최종 환불금액은 하단에서 가산

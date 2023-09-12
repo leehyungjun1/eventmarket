@@ -496,6 +496,15 @@ class common extends front_base  {
 		// 파일명칭
 		$config['file_name'] = $this->randomFileName($_FILES['Filedata']['name']);
 
+		//게시판으로 업로드
+		$this->load->model('Boardmanager');
+		//게시판정보
+		$this->manager = $this->Boardmanager->managerdataidck([
+			'select' => ' * ',
+			'whereis' => ' and id= "' . $boardId . '" ',
+		]);
+		$this->manager['gallery_list_w'] = ($this->manager['gallery_list_w']) ? $this->manager['gallery_list_w'] : 250;
+
 		// 업로드 파일이 이미지인지 확인
 		if ($this->isImage($requestFiles['Filedata']['type']) === true) {
 
@@ -503,7 +512,7 @@ class common extends front_base  {
 
 			$imgWidth = $imgInfo[0];
 		
-			if ($imgWidth > $galleryListWdith) {
+			if ($imgWidth > $this->manager['gallery_list_w']) {
 				// 돌아간 이미지 회전
 				rotateImage($requestFiles['Filedata']['tmp_name']); 
 			}
@@ -519,15 +528,6 @@ class common extends front_base  {
 		if ($uploadResult['status'] === 1) {
 			// 업로드 성공
 			$fileInfo = $uploadResult['fileInfo'];
-
-			//게시판으로 업로드
-			$this->load->model('Boardmanager');
-			//게시판정보
-			$this->manager = $this->Boardmanager->managerdataidck([
-				'select' => ' * ',
-				'whereis' => ' and id= "' . $boardId . '" ',
-			]);
-			$this->manager['gallery_list_w'] = ($this->manager['gallery_list_w']) ? $this->manager['gallery_list_w'] : 250;
 
 			//이미지인경우
 			if ($fileInfo['is_image'] == true && $fileInfo['image_width'] > $this->manager['gallery_list_w']) {

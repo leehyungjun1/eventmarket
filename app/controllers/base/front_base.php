@@ -613,7 +613,7 @@ class front_base_original extends common_base {
 			</script>';
 		}else{
 			if ($this->mobileMode && $this->_is_mobile_agent) {			
-				$this->app_install_popup(); // 모바일 웹 접속시 앱설치 권장 팝업 오픈
+				$this->showMobileAppInstallPopup(); // 모바일 웹 접속시 앱설치 권장 팝업 오픈
 			}
 		}
 		if ($this->config_system['facebook_pixel_use'] == 'Y') {
@@ -849,38 +849,37 @@ class front_base_original extends common_base {
 		}
 	}
 
-	// 모바일 기기 접속인 경우 앱 설치 권장 팝업 노출 여부 설정
-	public function app_install_popup() {
-		
-		$popupuse = getMobilePopupUse(); // 앱 설치 권장 팝업 노출 여부 설정	
-		
-		if ($popupuse === false) { 
-			
-			$mobile_agent_info = getMobilePopupInfo(); // 앱 설치 권장 팝업 정보 가져오기
+	// 모바일 기기 접속인 경우 앱 설치 권장 팝업 노출
+	public function showMobileAppInstallPopup()
+	{
+		// 모바일 앱 설정 정보 조회
+		$mobileAppConfig = getMobileAppConfig();
+		$mobileAppSetting = $mobileAppConfig['mobileAppSetting'];
 
-			if ($mobile_agent_info['app_popup_use'] == 'Y' && $mobile_agent_info['down_url']) {
-				echo $this->print_popuplayer($mobile_agent_info);
-			}
+		// 예외 처리
+		if ($mobileAppSetting['app_popup_use'] === 'N' || !isset($mobileAppSetting['pop_html']) || $_COOKIE['appsettingpopup'] ||
+			in_array('zipcode', $this->uri->rsegments) || $this->input->get('popup') || $this->input->get('iframe')) {
+			return false;
 		}
 
-	}
+		// 모바일 기기에 따른 앱 스토어 주소 설정
+		$httpUserAgent = $_SERVER['HTTP_USER_AGENT'];
+		if (preg_match('/iPhone|iPad/', $httpUserAgent)) {
+			$appStoreUrl = $mobileAppSetting['popup_url_ios'];
+		} else if (preg_match('/Android/', $httpUserAgent)) {
+			$appStoreUrl = $mobileAppSetting['popup_url_and'];
+		}
 
-	// 앱권장 팝업 레이어 출력
-	public function print_popuplayer($mobile_agent_info) {
+		// 앱 설치 권장 팝업 레이어 출력
+		$popupHtml = '<link rel="stylesheet" type="text/css" href="/admin/skin/default/css/mobile_app.css" />';
+		$popupHtml .= '<div class="appPopup_lay" style="margin-left:50%;">';
+		$popupHtml .= '<div class="appPopupBody" style="width:640px;height:350px;position:fixed;z-index:99999;top:150px;margin-left:-150px;">';
+		$popupHtml .=  str_replace("appClosepopup('set');", "appClosepopup('".$appStoreUrl."');", $mobileAppSetting['pop_html']);
+		$popupHtml .= '</div>';
+		$popupHtml .= '</div>';
+		$popupHtml .= '<div id="appPopupModalBack" style="background: rgb(0, 0, 0); position:fixed;left:0px;top:0px;width:100%;height:100%;opacity: 0.5;z-index:99998;"></div>';
 
-		// 주소 치환
-		$pop_html = str_replace("appClosepopup('set');","appClosepopup('".$mobile_agent_info['down_url']."');",$mobile_agent_info['pop_html']);
-
-		$apppop =  '<link rel="stylesheet" type="text/css" href="/admin/skin/default/css/mobile_app.css" />';
-		$apppop .= '<div class="appPopup_lay" style="margin-left:50%;">';
-		$apppop .= '<div class="appPopupBody" style="width:640px;height:350px;position:fixed;z-index:99999;top:150px;margin-left:-150px;">';
-		$apppop .=  $pop_html;
-		$apppop .= '</div>';
-		$apppop .= '</div>';
-		$apppop .= '<div id="appPopupModalBack" style="background: rgb(0, 0, 0); position:fixed;left:0px;top:0px;width:100%;height:100%;opacity: 0.5;z-index:99998;"></div>';
-
-		// 표현부
-		return $apppop;
+		echo $popupHtml;
 	}
 
 }

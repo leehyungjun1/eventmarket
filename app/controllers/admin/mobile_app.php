@@ -347,7 +347,8 @@ class mobile_app extends admin_base
 
 
 	// 앱 설정
-	public function setting(){
+	public function setting()
+	{
 		$this->admin_menu();
 		$this->tempate_modules();
 		$file_path	= $this->template_path();
@@ -360,67 +361,62 @@ class mobile_app extends admin_base
 
 		$this->load->helper('readurl');
 
-		// API 토큰요청
-		unset($params);
-		$params['shopSno']	= $this->config_system['shopSno'];
-		$call_url			= 'http://userapp.firstmall.kr/getmobileapprelease';
-		$read_data			= readurl($call_url,$params);
-		$service_res		= json_decode($read_data,true);
-		$status_txt_arr		= array('00' => '제작중','10' => '제작중',	'20' => '제작중', '30' => '제작중', '40' => '제작중', '80' => '사용중');
-		if ($service_res) foreach ($service_res as $osType => $os_info){
-			unset($info);
-			$info				= $os_info['data'];
-			$info['status_txt'] = ($info['status']) ? $status_txt_arr[$info['status']] : null;
-			if ($info['account_type'] == 'firstmall'){
-				$info['account_type_txt'] = '퍼스트몰 계정';
-			} else if ($info['account_type'] == 'custom'){
-				$info['account_type_txt'] = '고객사 계정';
-			}
-			$app_url['shopApp'][$osType]	= $info['store_url'];
-			$service_info[$osType]			= $info;
+		// 모바일 앱 설정 정보 조회
+		$mobileAppConfig = getMobileAppConfig();
+		$mobileAppSetting = $mobileAppConfig['mobileAppSetting'];
+		$environmentAppInfo = $mobileAppConfig['environmentAppInfo'];
 
-			if ($info['navigation']['type'])
-				$footer_style				=  $info['navigation']['type'];
+		// 앱 상태
+		$statusTxtArr = [
+			'00' => '제작중',
+			'10' => '제작중',
+			'20' => '제작중',
+			'30' => '제작중',
+			'40' => '제작중',
+			'80' => '사용중',
+		];
+		// 등록방식
+		$accountTypeTxtArr = [
+			'firstmall' => '퍼스트몰 계정',
+			'custom' => '고객사 계정',
+		];
 
-			if ($info['notice_popup'])
-				$app_notice_popup = strtoupper($info['notice_popup']);
+		// android, iOS 둘중 하나라도 부가서비스 상태가 서비스 중이거나, 앱 상태가 제작완료 상태인 경우 사용중으로 판단
+		$appUse = false;
+		if (($environmentAppInfo['ANDROID']['status'] === '9' || $environmentAppInfo['ANDROID']['app_status'] === '80') ||
+		$environmentAppInfo['IOS']['status'] === '9' || $environmentAppInfo['IOS']['app_status'] === '80') {
+			$appUse = true;
 		}
 
-		//앱 주소
-		$app_url['adminApp']['ANDROID'] = 'https://play.google.com/store/apps/details?id=kr.firstmall.admin';
-		$app_url['adminApp']['IOS'] = 'https://itunes.apple.com/us/app/%EA%B0%80%EB%B9%84%EC%95%84-%ED%8D%BC%EC%8A%A4%ED%8A%B8%EB%AA%B0-%EA%B4%80%EB%A6%AC%EC%9E%90%EC%95%B1/id1361503547?l=ko&ls=1&mt=8';
+		// OS별 앱 서비스 정보 설정
+		foreach ($environmentAppInfo as $osType => $osInfo) {
+			$info['account_type_txt'] = $accountTypeTxtArr[$osInfo['app_account_type']];
+			$info['period']['start'] = $osInfo['regist_date'];
+			$info['period']['launched'] = $osInfo['start_date'];
+			$info['period']['end'] = $osInfo['expire_date'];
+			$info['status'] = is_numeric($osInfo['app_status']) ? $osInfo['app_status'] : 0;
+			$info['status_txt'] = $statusTxtArr[$osInfo['app_status']];
+			$info['app_store_url'] = $osInfo['app_store_url'];
 
-		// 앱 설정 불러오기
-		$app_config = config_load('app_config');
+			$serviceInfo[$osType] = $info;
 
-		// 앱 신청여부 가져오기
-		// 안드로이드나 iOS 둘중 하나라도 제작완료 상태인 경우 사용중으로 판단
-		$app_use = $service_info['ANDROID']['status'] == '80' || $service_info['IOS']['status'] == '80';
-
-		// 앱 설치 권장 팝업 이슈로 인한 앱 링크 저장 프로세스 추가
-		// 앱이 사용중일 때 아래 프로세스를 실행
-		if($app_use){
-			// 플랫폼 별 따로 저장
-			foreach($service_info as $platform => $data){
-
-				// 앱 설치권장팝업이 사용 설정 되어있고, 중계서버 json 파일의 스토어 url이 세팅 되어있는데, 솔루션 DB에는 값이 없을 때
-				if($app_config['app_popup_use'] == 'Y' && !empty($data['store_url']) && empty($app_config['popup_url_'.strtolower(substr($platform, 0, 3))])){
-
-					// json의 앱 링크를 app_config에 담아서 저장한다
-					$app_config['popup_url_'.strtolower(substr($platform, 0, 3))] = $data['store_url'];
-					config_save('app_config', $app_config);
-				}
+			// DB 앱 스토어 주소 값이 없을 때 설정
+			$popupUrlType = strtolower(substr($osType, 0, 3));
+			if ($appUse && !empty($osInfo['app_store_url']) && empty($mobileAppSetting['popup_url_' . $popupUrlType])) {
+				$mobileAppSetting['popup_url_' . $popupUrlType] = $info['store_url'];
+				config_save('app_config', $mobileAppSetting);
 			}
 		}
 
-		// 앱 하단바 스타일, 업데이트 권장 팝업 설정
-		$app_config['footer_style'] = $footer_style;
-		$app_config['app_notice_popup'] = $app_notice_popup;
+		// view 출력 변수
+		$mobileAppInfo = [
+			'app_use' => $appUse,
+			'app_config' => $mobileAppSetting,
+			'ANDROID' => $serviceInfo['ANDROID'],
+			'IOS' => $serviceInfo['IOS'],
+		];
 
-		$this->template->assign('app_use', $app_use);
-		$this->template->assign($service_info);
-		$this->template->assign('app_config', $app_config);
-		$this->template->assign('app_url', $app_url);
+		$this->template->assign($mobileAppInfo);
 		$this->template->define(array('tpl'=>$file_path));
 		$this->template->print_("tpl");
 	}

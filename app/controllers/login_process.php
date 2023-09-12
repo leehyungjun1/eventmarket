@@ -459,7 +459,7 @@ class login_process extends front_base {
 
 		// 로그아웃 오류로 인해 프로세스 변경 :: 2020-04-21 pjw
 		// 로그아웃 처리 변수
-		$msg				= '로그아웃 되었습니다.';
+		$msg				= getAlert('mb251');
 		$referer			= $this->input->server('HTTP_REFERER');
 		$channel			= $this->input->get('channel');
 		$direct				= $this->input->get('direct');

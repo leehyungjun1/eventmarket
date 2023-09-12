@@ -72,7 +72,7 @@ class AppleClient extends Client
         $appleMemberData = [
             'accessToken' => $appleAccessToken,
             'refreshToken' => $appleRefreshToken,
-            'name' => $appleUser['name']['firstName'].$appleUser['name']['middleName'].$appleUser['name']['lastName'],
+            'user_name' => $appleUser['name']['firstName'].$appleUser['name']['middleName'].$appleUser['name']['lastName'],
             'nickname' => $appleUser['name']['firstName'].$appleUser['name']['middleName'].$appleUser['name']['lastName'],
             'email' => $appleAuthinfo['email'],
             'userid' => $appleAuthinfo['sub'],

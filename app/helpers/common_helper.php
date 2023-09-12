@@ -5231,7 +5231,9 @@ function ImgExif($tmpImgName)
 {
 	$exif = exif_read_data($tmpImgName);
 
-	switch (isset($exif['Orientation']) === true) {
+	$degree = 0;
+
+	switch ($exif['Orientation']) {
 		case 6:
 			$degree = 270;
 
@@ -6025,47 +6027,25 @@ function emojiFilter($string) {
 		."\x{2700}-\x{27BF}";
 	return preg_replace('/['. $symbols . ']+/u', '', $string);
 }
-/**
- * 모바일 기기에 대한 정보 가져오기
- * mobilerMode는 모바일모드 여부,
- *  _is_mobile_agent는 안드로이드인지 IPONE인지 구분
- * 모바일 앱 설치 권장 팝업 정보 가져오기
- */
-function getMobilePopupInfo() 
-{
-	$CI =& get_instance();
-	$app_config = config_load('app_config');
-	$mobile_agent_info = [];
-
-	if (preg_match('/iPhone|iPad/', $_SERVER['HTTP_USER_AGENT'])) {
-		$mobile_agent_info['mobile_agent'] = 'IOS';
-		$mobile_agent_info['down_url']		= $app_config['popup_url_ios'];
-	} else if (preg_match('/Android/', $_SERVER['HTTP_USER_AGENT'])) {
-		$mobile_agent_info['mobile_agent']	= 'ANDROID';
-		$mobile_agent_info['down_url']		= $app_config['popup_url_and'];
-	}
-
-	$mobile_agent_info['app_popup_use'] = $app_config['app_popup_use']; // 앱 설치 권장 팝업 사용여부
-
-	if (isset($app_config['pop_html'])) {
-		$mobile_agent_info['pop_html']	=	$app_config['pop_html'];
-	}
-
-	return $mobile_agent_info;
-}
 
 /**
- * 모바일 기기일 경우 앱 설치 권장 팝업 노출 여부 설정
+ * 모바일 앱 관련 설정 조회
+ * mobileAppSetting => 퍼스트몰 > 관리자 모바일 앱 > 앱 설정 정보
+ * environmentAppInfo => 퍼스트몰 브랜드 사이트 통해 들어온 앱 정보
  */
-function getMobilePopupUse() 
+function getMobileAppConfig()
 {
-	$CI =& get_instance();
-
-	$popupuse = true; // 팝업 노출 여부
+	$mobileAppConfig = [
+		'mobileAppSetting' => config_load('app_config'),
+		'environmentAppInfo' => config_load('system', 'app_info')['app_info'],
+	];
 	
-	if (!$_COOKIE['appsettingpopup'] && !in_array('zipcode',$CI->uri->rsegments) && !$CI->input->get('popup') && !$CI->input->get('iframe')){
-		$popupuse	=	false;
+	// 안드로이드 해지 또는 iOS 해지이고 앱 설치 권장 팝업이 사용중일 때 미사용 처리
+	if (($mobileAppConfig['environmentAppInfo']['ANDROID']['status'] === 'D' || $mobileAppConfig['environmentAppInfo']['IOS']['status'] === 'D')
+		&& $mobileAppConfig['mobileAppSetting']['app_popup_use'] === 'Y') {
+		$mobileAppConfig['mobileAppSetting']['app_popup_use'] = 'N';
+		config_save('app_config', $mobileAppConfig['mobileAppSetting']);
 	}
 
-	return $popupuse;
+	return $mobileAppConfig;
 }
