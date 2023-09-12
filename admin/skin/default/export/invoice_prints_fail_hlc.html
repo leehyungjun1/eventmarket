@@ -1,0 +1,22 @@
+{ #common_html_header }
+<style>
+	html{overflow-y:hidden !important;}
+</style>
+<script type="text/javascript">
+$(window).load(function() {
+	window.resizeTo(800, 500);
+});
+</script>
+<body style="background:#FFF;">
+	<div id="wrap" style="height:100%;">
+		<div class="contents_container pd50">
+			<div class="content center fx20">
+				{=data}
+			</div>
+			<div class="footer">
+				<button type="button" onclick="window.close();" class="resp_btn v3 size_XL">확인</button>
+			</div>
+		</div>
+	</div>
+</body>
+{ #common_html_footer }

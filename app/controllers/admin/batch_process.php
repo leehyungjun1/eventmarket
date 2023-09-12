@@ -93,13 +93,7 @@ class batch_process extends admin_base {
 					$tempArr = explode("&",urldecode($_POST["serialize"]));
 					foreach($tempArr as $k){
 						$tmp = explode("=",$k);
-						if($tmp[1]){
-							if( $tmp[0] == 'snsrute[]' ) {
-								$sc['snsrute'][] = $tmp[1];
-							} else {
-								$sc[$tmp[0]] = $tmp[1];
-							}
-						}
+						$sc[$tmp[0]] = $tmp[1];													
 					}
 				}
 
@@ -185,14 +179,8 @@ class batch_process extends admin_base {
 			}else{
 				$tempArr = explode("&",urldecode($_POST["serialize"]));
 				foreach($tempArr as $k){
-					$tmp = explode("=",$k);
-					if($tmp[1]){
-						if( $tmp[0] == 'snsrute[]' ) {
-							$sc['snsrute'][] = $tmp[1];
-						} else {
-							$sc[$tmp[0]] = $tmp[1];
-						}
-					}
+					$tmp = explode("=",$k);					
+					$sc[$tmp[0]] = $tmp[1];											
 				}
 			}
 
@@ -496,14 +484,8 @@ class batch_process extends admin_base {
 		}else{
 			$tempArr = explode("&",urldecode($_POST["serialize"]));
 			foreach($tempArr as $k){
-				$tmp = explode("=",$k);
-				if($tmp[1]){
-					if( $tmp[0] == 'snsrute[]' ) {
-						$sc['snsrute'][] = $tmp[1];
-					} else {
-						$sc[$tmp[0]] = $tmp[1];
-					}
-				}
+				$tmp = explode("=",$k);				
+				$sc[$tmp[0]] = $tmp[1];				
 			}
 		}
 
@@ -639,25 +621,16 @@ class batch_process extends admin_base {
 		$sc['sort']				= (isset($_POST['sort'])) ?		$_POST['sort']:'desc';
 
 		if($_POST['searchSelect'] == "select"){
-			$sc['member_seq'] = $_POST['selectMember'];
-		}else{
-			$tempArr = explode("&",urldecode($_POST["serialize"]));
+			$sc['member_seq'] = $_POST['selectMember'];			
+		}else{			
+			$tempArr = explode("&",urldecode($_POST["serialize"]));			
 			foreach($tempArr as $k){
 				$tmp = explode("=",$k);
-				if($tmp[1]){
-					if( $tmp[0] == 'snsrute[]' ) {
-						$sc['snsrute'][] = $tmp[1];
-					} else {
-						$sc[$tmp[0]] = $tmp[1];
-					}
-				}
+				$sc[$tmp[0]] = $tmp[1];
 			}
 		}
-
+		
 		if($sc['keyword'] == "이름, 아이디, 이메일, 전화번호, 핸드폰(뒷자리4), 주소, 닉네임") $sc['keyword'] = "";
-		if( $sc['snsrute'] ) {
-			foreach($sc['snsrute'] as $key=>$val){$sc[$val] = 1;}
-		}
 
 		$_POST['type'] = 'direct';
 		$_POST['manager_seq'] = $this->managerInfo['manager_seq'];//마일리지 수동지급시 관리자정보추가
@@ -671,7 +644,6 @@ class batch_process extends admin_base {
 				$_POST['limit_date'] = date("Y-m-d", mktime(0,0,0,date("m")+$month, date("d"), date("Y")+$year));
 			}
 		}
-
 		//마일리지 대량 적립 18.03.08 kmj
 		$sc['limitCount'] = 10000;
 		if($_POST['gb'] == "plus"){
@@ -685,35 +657,38 @@ class batch_process extends admin_base {
 		}
 
 		//$sc['sms_member']	= "y";
-		$limittotalnum		= 30000;
-
-		$count				= $_POST['mcount'] / $limittotalnum;
-		$_POST['emoney']	= get_cutting_price($_POST['emoney']);
+		$limittotalnum = 30000;
+		$totalCount = 0; // 총 처리 건수
+		$count = $_POST['mcount'] / $limittotalnum;
+		$_POST['emoney'] = get_cutting_price($_POST['emoney']);
 
 		if($_POST['mcount'] < $limittotalnum){
 			$count = 1;
 		}
+		
 		ini_set("memory_limit",-1);
+		set_time_limit(0);
 		for($i=0; $i<ceil($count); $i++){
 
 			unset($this->db->queries);
 			unset($this->db->query_times);
 			unset($data);
 			unset($memberArr);
-
+			
 			$sc['page'] = $i * $limittotalnum;
 			$sc['perpage'] = $limittotalnum;
 
 
 			//$sc['sms_member'] = "y";
 			$sc['batchProcess'] = 'y';
-			$data = $this->membermodel->admin_member_list($sc);
+			$data = $this->membermodel->admin_member_list_spout($sc);
 
 			$memberArr = $data['result'];
 
 			foreach($memberArr as $k){
-				if ( $_POST['gb'] == 'plus' || ($_POST['gb'] == 'minus' && $k['emoney'] >= $_POST['emoney'])) {
+				if ($_POST['gb'] == 'minus' && $k['emoney'] >= $_POST['emoney']) {
 					$this->membermodel->emoney_insert($_POST, $k['member_seq']);
+					$totalCount++;
 				}
 			}
 		}
@@ -726,7 +701,7 @@ class batch_process extends admin_base {
 		    'category'		=> 11,
 		    'excel_type'	=> $_POST['searchSelect'],
 		    'context'		=> $_POST['serialize'],
-		    'count'			=> count($memberArr),
+		    'count'			=> $totalCount,
 		    'file_name'		=> $_POST['memo']."|".$_POST['emoney']."|".$_POST['gb'],
 		    'state'			=> 2,
 		    'limit_count'	=> 0,
@@ -769,20 +744,13 @@ class batch_process extends admin_base {
 		$sc['orderby']			= (isset($_POST['orderby'])) ?	$_POST['orderby']:'A.member_seq';
 		$sc['sort']				= (isset($_POST['sort'])) ?		$_POST['sort']:'desc';
 
-		if($_POST['searchSelect'] == "select"){
+		if($_POST['searchSelect'] == "select"){			
 			$sc['member_seq'] = $_POST['selectMember'];
 		}else{
 			$tempArr = explode("&",urldecode($_POST["serialize"]));
-			foreach($tempArr as $k){
-				$tmp = explode("=",$k);
-				if($tmp[1]){
-					//검색조건 중 sns 조건 버그 수정 18.03.08 kmj
-					if($tmp[0] == "snsrute[]"){
-						$sc[$tmp[1]] = true;
-					} else {
-						$sc[$tmp[0]] = $tmp[1];
-					}
-				}
+			foreach($tempArr as $k){				
+				$tmp = explode("=",$k);				
+				$sc[$tmp[0]] = $tmp[1];								
 			}
 		}
 
@@ -813,15 +781,16 @@ class batch_process extends admin_base {
 		}
 
 		//$sc['sms_member']	= "y";
-		$limittotalnum		= 30000;
-
-		$count				= $_POST['mcount'] / $limittotalnum;
+		$limittotalnum = 30000;
+		$totalCount = 0; // 총 처리 건수
+		$count = $_POST['mcount'] / $limittotalnum;
 		$_POST['point'] = get_cutting_price($_POST['point']);
 
 		if($_POST['mcount'] < $limittotalnum){
 			$count = 1;
 		}
 		ini_set("memory_limit",-1);
+		set_time_limit(0);
 		for($i=0; $i<ceil($count); $i++){
 			unset($this->db->queries);
 			unset($this->db->query_times);
@@ -837,8 +806,9 @@ class batch_process extends admin_base {
 
 
 			foreach($memberArr as $k){
-				if ( $_POST['gb'] == 'plus' || ($_POST['gb'] == 'minus' && $k['point'] >= $_POST['point'])) {
+				if ($_POST['gb'] == 'minus' && $k['point'] >= $_POST['point']) {
 					$this->membermodel->point_insert($_POST, $k['member_seq']);
+					$totalCount++;
 				}
 			}
 		}
@@ -851,7 +821,7 @@ class batch_process extends admin_base {
 		    'category'		=> 12,
 		    'excel_type'	=> $_POST['searchSelect'],
 		    'context'		=> $_POST['serialize'],
-		    'count'			=> count($memberArr),
+		    'count'			=> $totalCount,
 		    'file_name'		=> $_POST['memo']."|".$_POST['point']."|".$_POST['gb'],
 		    'state'			=> 2,
 		    'limit_count'	=> 0,
@@ -867,7 +837,7 @@ class batch_process extends admin_base {
 	}
 
 	//지급 프로세스 수정 18.03.19 kmj
-	public function set_payments_new($params, $sc){
+	public function set_payments_new($params, $sc){		
 		ini_set("memory_limit", -1);
 		set_time_limit(0);
 		
@@ -905,8 +875,9 @@ class batch_process extends admin_base {
 		unset($this->db->queries); //쿼리 로그 쓰기 위한 셋팅
 		unset($this->db->query_times);
 		$sc['batchProcess'] = 'y';
-		$memberArr = $this->membermodel->admin_member_list($sc);
-			
+		unset($sc['excel_spout']);
+		$memberArr = $this->membermodel->admin_member_list_spout($sc);
+		
 		$dataBatch	 = array();
 		$dataBatchUp = array();
 		foreach($memberArr['result'] as $k){
@@ -928,8 +899,7 @@ class batch_process extends admin_base {
 			$callback = "parent.location.reload();";
 			openDialogAlert($txtCallPage." 항목은 필수 입니다.", 400, 140, 'parent', $callback);
 			exit;
-		}
-
+		}		
 		if($totalCnt != $params['mcount']){
 			$callback = "parent.location.reload();";
 			openDialogAlert("에러가 발생 했습니다. 에러가 반복 될 경우 관리자에게 문의 하세요.", 400, 140, 'parent', $callback);
@@ -974,7 +944,8 @@ class batch_process extends admin_base {
 	}
 
 	//대량 지급 프로세스 추가 18.03.19 kmj
-	public function set_payments_batch($params, $sc){
+	public function set_payments_batch($params, $sc){	
+		unset($sc['excel_spout']);	
 		if($sc['callPage'] == 'emoney'){
 			$txtCallPage = "마일리지";
 			$category = '11';
@@ -1120,9 +1091,7 @@ class batch_process extends admin_base {
 			$tempArr = explode("&",urldecode($_POST["serialize"]));
 			foreach($tempArr as $k){
 				$tmp = explode("=",$k);
-				if($tmp[1]){
-					$sc[$tmp[0]] = $tmp[1];
-				}
+				$sc[$tmp[0]] = $tmp[1];				
 			}
 		}
 		$app = config_load('member');
@@ -1401,10 +1370,8 @@ class batch_process extends admin_base {
 			}else{
 				$tempArr = explode("&",urldecode($_POST["serialize"]));
 				foreach($tempArr as $k){
-					$tmp = explode("=",$k);
-					if($tmp[1]){
-						$sc[$tmp[0]] = $tmp[1];
-					}
+					$tmp = explode("=",$k);					
+					$sc[$tmp[0]] = $tmp[1];					
 				}
 			}
 
@@ -1549,11 +1516,9 @@ class batch_process extends admin_base {
 				$sc['member_seq'] = $aParmasPost['selectMember'];
 			}else{
 				$tempArr = explode("&",urldecode($aParmasPost["serialize"]));
-				foreach($tempArr as $k){
+				foreach($tempArr as $k){					
 					$tmp = explode("=",$k);
-					if($tmp[1]){
-						$sc[$tmp[0]] = $tmp[1];
-					}
+					$sc[$tmp[0]] = $tmp[1];					
 				}
 			}
 
@@ -1976,14 +1941,8 @@ class batch_process extends admin_base {
 			}else{
 				$tempArr = explode("&",urldecode($aTemps["serialize"]));
 				foreach($tempArr as $k){
-					$tmp = explode("=",$k);
-					if($tmp[1]){
-						if( $tmp[0] == 'snsrute[]' ) {
-							$sc['snsrute'][] = $tmp[1];
-						} else {
-							$sc[$tmp[0]] = $tmp[1];
-						}
-					}
+					$tmp = explode("=",$k);					
+					$sc[$tmp[0]] = $tmp[1];						
 				}
 			}
 
@@ -2099,19 +2058,13 @@ class batch_process extends admin_base {
 			$tempArr = explode("&",urldecode($aTemps["serialize"]));
 			foreach($tempArr as $k){
 				$tmp = explode("=",$k);
-				if($tmp[1]){
-					if( $tmp[0] == 'snsrute[]' ) {
-						$sc['snsrute'][] = $tmp[1];
-					} else {
-						$sc[$tmp[0]] = $tmp[1];
-					}
-				}
+				$sc[$tmp[0]] = $tmp[1];				
 			}
 		}
 
 		$sc['page'] = 0;
 		$sc['perpage'] = 30000;
-
+		$sc['batchProcess'] = 'y';
 		if($sc["keyword"] == "이름, 아이디, 이메일, 전화번호, 핸드폰(뒷자리4), 주소, 닉네임"){
 			$sc["keyword"] = "";
 		}

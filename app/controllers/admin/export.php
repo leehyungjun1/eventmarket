@@ -2110,28 +2110,9 @@ class export extends admin_base {
 	public function _invoice_prints_hlc($loop){
 		$vendor = 'hlc';
 
-		switch($this->invoiceapimodel->config_invoice['hlc']['print_type']){
-			case "label_a":
-				$invoiceWidth=339;
-				$invoiceHeight=670;
-			case "label_b":
-				$invoiceWidth=339;
-				$invoiceHeight=376;
-			break;
-			case "a4":
-				$invoiceWidth=760;
-				$invoiceHeight=339;
-			break;
-		}
-/*
-		$this->template->assign(array(
-			'invoiceWidth' => $invoiceWidth,
-			'invoiceHeight' => $invoiceHeight
-		));
-*/
 
 		$result = $this->invoiceapimodel->hlc_invoice_print($loop);
-
+		
 		if($_POST['gap']){
 			for($i=0;$i<$_POST['gap'];$i++){
 				$result['list'] = array_merge(array(null),$result['list']);
@@ -2139,6 +2120,9 @@ class export extends admin_base {
 		}
 
 		$file_path = str_replace("invoice_prints","invoice_prints_".$vendor,$this->template_path());
+		if($result['code'] == 'fail') {
+			$file_path = str_replace("invoice_prints","invoice_prints_fail_".$vendor,$this->template_path());
+		}
 		$this->template->assign(array('loop'=>$loop));
 		$this->template->assign($result);
 		$this->template->assign(array('print_type'=>$this->invoiceapimodel->config_invoice[$vendor]['print_type']));

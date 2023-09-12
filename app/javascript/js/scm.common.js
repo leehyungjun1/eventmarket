@@ -34,6 +34,8 @@ function commonExcelTable(kind, viewMode, goodsData, perpage, totalCount){
 	var descriptions			= getPageDescriptions();
 
 	if	(current_currency != 'KRW'){
+		// USD인 경우 소수점 등록 필요하여 onlynumber 클래스 적용하지 않도록 수정 
+		supply_batch		= '<div><input type="text" class="excel_table_batch_val " style="width:60%;" /> <span class="btn small gray"><button type="button" onclick="batch_all_price(this, \'supply\');" class="resp_btn v2 arrow">▼</button></span></div>';
 		var thHeader		= [[{'title':'', 'chkClass':'chk', 'rowspan':2}, 
 								{'title':'상품번호<br/>바코드<br/><span class="tooltip_btn" onclick="showTooltip(this, \'/admin/tooltip/scm\', \'#tip6\')"></span>', 'rowspan':2}, 
 								{'title':'상품명/매입용상품명', 'colspan':2, 'rowspan':2}, 

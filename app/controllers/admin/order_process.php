@@ -4676,12 +4676,12 @@ class order_process extends admin_base {
 		$this->load->model('goodsmodel');
 		$this->load->model('membermodel');
 
-		$order_seq			= $_POST['order_seq'];
-		$old_item_seq		= $_POST['old_item_seq'];
-		$old_option_seq		= $_POST['old_option_seq'];
-		$member_seq			= $_POST['member_seq'];
-		$cart_table			= $_POST['cart_table'];
-		$displayId			= $_POST['displayId'];
+		$order_seq			= $this->input->post('order_seq');
+		$old_item_seq		= $this->input->post('old_item_seq');
+		$old_option_seq		= $this->input->post('old_option_seq');
+		$member_seq			= $this->input->post('member_seq');
+		$cart_table			= $this->input->post('cart_table');
+		$displayId			= $this->input->post('displayId');
 		$arrImageExtensions	= array('jpg', 'jpeg', 'png', 'gif', 'bmp', 'tif', 'pic');
 
 		# 주문서 변경
@@ -4705,6 +4705,7 @@ class order_process extends admin_base {
 			exit;
 		}
 
+		$orders = $this->ordermodel->get_order($order_seq);
 
 		$cfg['order']	= config_load('order');
 
@@ -4933,6 +4934,11 @@ class order_process extends admin_base {
 					$export_option[] = $data;
 				}
 				$this->ordermodel->update_option($old_option_seq,$goods['provider_seq'],$export_option);
+				foreach($export_option as $idx => $option) {
+					$accountall['title'.($idx+1)] = $option['title'];
+					$accountall['option'.($idx+1)] = $option['option'];
+					$accountall['optioncode'.($idx+1)] = $option['code'];
+				}
 
 				$option_seq_list = array();
 				$option_seq_list['opt'] = $old_option_seq;
@@ -5025,6 +5031,38 @@ class order_process extends admin_base {
 
 					}
 				}
+
+				## 정산데이터 변경
+				/**
+				 * fm_order_item 업데이트하는것과 동일하게 update (item_seq 기준)
+				 */
+				$this->load->helper('accountall');
+				if(!$this->accountallmodel)$this->load->model('accountallmodel');
+				$update = [
+					'order_goods_seq' => $goods_seq,
+					'order_goods_name' => $goods['goods_name'],
+					'title1' => $accountall['title1'],
+					'title2' => $accountall['title2'],
+					'title3' => $accountall['title3'],
+					'title4' => $accountall['title4'],
+					'title5' => $accountall['title5'],
+					'option1' => $accountall['option1'],
+					'option2' => $accountall['option2'],
+					'option3' => $accountall['option3'],
+					'option4' => $accountall['option4'],
+					'option5' => $accountall['option5'],
+					'optioncode1' => $accountall['optioncode1'],
+					'optioncode2' => $accountall['optioncode2'],
+					'optioncode3' => $accountall['optioncode3'],
+					'optioncode4' => $accountall['optioncode4'],
+					'optioncode5' => $accountall['optioncode5'],
+				];
+				$where = [
+					'order_seq' => $order_seq,
+					'item_seq' => $old_item_seq,
+				];
+				$tb_act_ym = date('Ym', strtotime($orders['deposit_date']));
+				$this->accountallmodel->update_account_calculate($tb_act_ym, $update, $where);
 			}
 
 			$this->goodsmodel->modify_reservation_real($goods_seq);

@@ -2477,6 +2477,7 @@ class naverpaymodel extends CI_Model {
 					}
 				}else{
 					$order_log['message'][] = "fm_order insert fail(".$this->db->last_query().")";
+					continue;	// order 데이터를 insert 못했으면 다른 데이터도 insert 못하게 다음 주문 처리
 				}
 			}else{
 

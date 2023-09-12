@@ -1016,18 +1016,6 @@ class Membermodel extends CI_Model {
 			$sqlWhereClause .= " AND A.sex = '{$sc[sex]}' ";
 		}
 
-		### age
-		$sage_date = $sc['eage']!=0 ? date("Y-m-d", strtotime("- " . $sc['sage'] . " years")) : date("Y-m-d", strtotime("Now"));
-		$eage_date = $sc['eage']!=0 ? date("Y-m-d", strtotime("- " . $sc['eage'] . " years")) : date("Y-m-d", strtotime("Now"));
-
-		if( (!empty($sc['sage']) || $sc['sage'] == '0') && (!empty($sc['eage']) || $sc['sage'] == '0')){
-			$sqlWhereClause .= " AND A.birthday between '" . $eage_date . "' and '" . $sage_date . "'";
-		}else if( !empty($sc['sage']) && empty($sc['eage']) ){
-			$sqlWhereClause .= " AND A.birthday >= '" . $eage_date . "'";
-		}else if( empty($sc['sage']) && !empty($sc['eage']) ){
-			$sqlWhereClause .= " AND A.birthday <= '" . $sage_date . "'";
-		}
-
 		### mailing
 		if( !empty($sc['mailing']) ){
 			$sqlWhereClause .= " AND A.mailing = '{$sc[mailing]}' ";
@@ -1291,12 +1279,12 @@ class Membermodel extends CI_Model {
 			}
 		} else {
 			if($sc['batchProcess'] == 'y'){
-				$sqlWhereClause .= " WHERE A.status != 'dormancy' ";
+				$sqlWhereClause .= " WHERE A.status in ('done', 'hold') ";
 			} else {
 				$sqlWhereClause = " WHERE A.status in ('done','hold','dormancy')";
 			}
 		}
-
+		
 		//18.02.28 kmj 선택 다운로드 일때만 적용 되도록 수정
 		if($sc['excel_type'] == "select" && $sc['excel_spout_query']){
 			$sqlWhereClause .= " AND A.member_seq IN (?)";
@@ -1569,21 +1557,10 @@ class Membermodel extends CI_Model {
 			$bind[] = $sc['sex'];
 		}
 
-		### 만나이
-		$sage_date = $sc['eage']!=0 ? date("Y-m-d", strtotime("- " . $sc['sage'] . " years")) : date("Y-m-d", strtotime("Now"));
-		$eage_date = $sc['eage']!=0 ? date("Y-m-d", strtotime("- " . $sc['eage'] . " years")) : date("Y-m-d", strtotime("Now"));
-		if( !empty($sc['sage']) && !empty($sc['eage'])){
-			$sqlWhereClause .= " AND A.birthday between ? and ?";
-			$bind[] = $eage_date;
-			$bind[] = $sage_date;
-		}else if( !empty($sc['sage']) && empty($sc['eage']) ){
-			$sqlWhereClause .= " AND A.birthday >= ?";
-			$bind[] = $eage_date;
-		}else if( empty($sc['sage']) && !empty($sc['eage']) ){
-			$sqlWhereClause .= " AND A.birthday <= ?";
-			$bind[] = $sage_date;
+		### 특정 회원 선택 시
+		if(!empty($sc['member_seq'])){
+			$sqlWhereClause .= " AND A.member_seq in (".$sc['member_seq'].") ";
 		}
-
 
 		//2020-07-15 전체 다운로드는 탈퇴회원만 빼고 다운로드 되어야함
 		if($sc['excel_type'] == "all" && $sc['excel_spout_query']){
@@ -1594,8 +1571,8 @@ class Membermodel extends CI_Model {
 		$listBind = $bind;
 		if($sc['nolimit'] != 'y') {
 			$limit =" limit ?, ? ";
-			$listBind[] = $sc['page'];
-			$listBind[] = $sc['perpage'];
+			$listBind[] = (int)$sc['page'];
+			$listBind[] = (int)$sc['perpage'];
 		}
 
 		$orderby_arr = [
@@ -1781,7 +1758,28 @@ class Membermodel extends CI_Model {
 				}
 			}
 		}
-		if($registDateWhereClause) $sqlWhereClause.= $registDateWhereClause;
+
+		$sage_date = $sc['eage']!=0 ? date("Y-m-d", strtotime("- " . $sc['sage'] . " years")) : date("Y-m-d", strtotime("Now"));
+        $eage_date = $sc['eage']!=0 ? date("Y-m-d", strtotime("- " . $sc['eage'] . " years")) : date("Y-m-d", strtotime("Now"));
+
+        if(!empty($sc['sage']) && !empty($sc['eage'])){
+            $ageWhereClause .= " AND A.birthday between ? and ?";
+            $bind[] = $eage_date;
+            $bind[] = $sage_date;
+        }else if(!empty($sc['sage']) && empty($sc['eage'])){
+            $ageWhereClause .= " AND A.birthday >= ?";
+            $bind[] = $eage_date;
+        }else if(empty($sc['sage']) && !empty($sc['eage'])){
+            $ageWhereClause .= " AND A.birthday <= ?";
+            $bind[] = $sage_date;
+        }
+
+		if($registDateWhereClause) {
+			$sqlWhereClause.= $registDateWhereClause;
+		}
+		if($ageWhereClause) {
+			$sqlWhereClause.= $ageWhereClause;
+		}		
 		return $sqlWhereClause;
 	}
 

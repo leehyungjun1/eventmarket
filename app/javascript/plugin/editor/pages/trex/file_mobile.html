@@ -130,15 +130,10 @@ $(function(){
 	$("#saveGoodsImg").on('click', function () {
 		// 상품상세 상품후기, 상품문의 게시판 작성 시 파일업로드
 		if (opener.name === 'goods_review_frame' || opener.name === 'goods_qna_frame') {
-			for (let i = 0; i < opener.parent.length; i++) {
-				if (opener.parent[i].name === opener.name) {
-					opener.parent[i].addAttachImage(realfilename, incimage);
-					window.self.close();
-					return;
-				}
-			}
+			opener.parent[opener.name].addAttachImage(realfilename, incimage);
+			window.self.close();
+			return;
 		}
-
 		// 그 외 영역(CS센터) 상품후기, 상품문의 게시판 작성 시 파일업로드
 		opener.parent.addAttachImage(realfilename, incimage);
 		window.self.close();

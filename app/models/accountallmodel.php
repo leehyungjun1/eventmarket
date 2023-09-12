@@ -9962,6 +9962,18 @@ class accountAllmodel extends CI_Model {
 			$statsData[$i]['day_sales_benefit_percent'] = ($statsData[$i]['day_sales_benefit']>0) ? round(($statsData[$i]['day_sales_benefit'] / $statsData[$i]['order_price']) * 100,2) : 0;
 		}
 	}
+
+	/**
+	 * 당월 데이터 및 미정산 데이터 업데이트
+	 */
+	function update_account_calculate($tb_act_ym, $update, $where) {
+		if(count($where) == 0) {
+			return;
+		}
+		
+		$this->db->where($where)->update('fm_account_calculate_'.$tb_act_ym, $update);
+		$this->db->where($where)->update($this->tb_act_cal_sal, $update);
+	}
 }
 
 /* End of file accountallmodel.php */

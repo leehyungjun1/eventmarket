@@ -111,6 +111,8 @@ class Goodsmodel extends CI_Model {
 	/* 상품등록 파라미터 검증*/
 	public function check_param_regist(){
 
+		$goodsParam = $this->input->post();
+
 		$_POST['chkPrice'] = $_POST['price'][0];
 		$_POST['chkStock'] = array_sum($_POST['stock']);
 		if($_POST['chkStock'] < 1) unset($_POST['chkStock']);
@@ -755,7 +757,9 @@ class Goodsmodel extends CI_Model {
  		$goods['hscode']						= $_POST['hscode'];
 
  		// 외부마켓용 검색단어
- 		$goods['openmarket_keyword']			= $_POST['openmarket_keyword'];
+		if ($goodsParam['openmarket_keyword']) {
+			$goods['openmarket_keyword'] = $goodsParam['openmarket_keyword'];
+		}
 
 		// 본사만 추천상품 수정 가능
 		$this->load->model('goodsdisplay');
@@ -2471,8 +2475,8 @@ class Goodsmodel extends CI_Model {
 		//
 		$selectedFields = [
 			'g.goods_seq', 'g.sale_seq', 'g.goods_status', 'g.goods_kind', 'g.socialcp_event', 'g.goods_name', 'g.goods_code', 'g.summary', 'g.string_price_use','g.string_price_color',
-			'g.string_price', 'g.string_price_link', 'g.string_price_link_url', 'g.member_string_price_use', 'g.member_string_price', 'g.member_string_price_link',
-			'g.member_string_price_link_url', 'g.allmember_string_price_use', 'g.allmember_string_price', 'g.allmember_string_price_link',
+			'g.string_price', 'g.string_price_link', 'g.string_price_link_url', 'g.member_string_price_use', 'g.member_string_price', 'g.member_string_price_link','g.member_string_price_color',
+			'g.member_string_price_link_url', 'g.allmember_string_price_use', 'g.allmember_string_price', 'g.allmember_string_price_link','g.allmember_string_price_color',
 			'g.allmember_string_price_link_url', 'g.file_key_w', 'g.file_key_i', 'g.videotmpcode', 'g.videousetotal', 'g.purchase_ea', 'g.shipping_policy',
 			'g.review_count', 'g.review_sum', 'g.reserve_policy', 'g.multi_discount_use', 'g.multi_discount_ea', 'g.multi_discount', 'g.multi_discount_unit',
 			'g.adult_goods', 'g.keyword', 'g.goods_shipping_policy', 'g.unlimit_shipping_price', 'g.limit_shipping_price', 'g.provider_seq', 'g.shipping_group_seq',
@@ -3452,8 +3456,8 @@ class Goodsmodel extends CI_Model {
 
 		$selectedFields = [
 			'g.goods_seq', 'g.sale_seq', 'g.goods_status', 'g.goods_kind', 'g.socialcp_event', 'g.goods_name', 'g.goods_code', 'g.summary',
-			'g.string_price_use', 'g.string_price', 'g.string_price_color', 'g.string_price_link', 'g.string_price_link_url', 'g.member_string_price_use', 'g.member_string_price',
-			'g.member_string_price_link', 'g.member_string_price_link_url', 'g.allmember_string_price_use', 'g.allmember_string_price',
+			'g.string_price_use', 'g.string_price', 'g.string_price_color', 'g.string_price_link', 'g.string_price_link_url', 'g.member_string_price_use', 'g.member_string_price', 'g.member_string_price_color',
+			'g.member_string_price_link', 'g.member_string_price_link_url', 'g.allmember_string_price_use', 'g.allmember_string_price', 'g.allmember_string_price_color',
 			'g.allmember_string_price_link', 'g.allmember_string_price_link_url', 'g.file_key_w', 'g.file_key_i', 'g.videotmpcode', 'g.videousetotal',
 			'g.purchase_ea', 'g.shipping_policy', 'g.review_count', 'g.review_sum', 'g.reserve_policy', 'g.multi_discount_use', 'g.multi_discount_ea',
 			'g.multi_discount', 'g.multi_discount_unit', 'g.adult_goods', 'g.goods_shipping_policy', 'g.unlimit_shipping_price',

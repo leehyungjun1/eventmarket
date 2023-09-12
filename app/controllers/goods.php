@@ -3223,7 +3223,9 @@ class goods extends board {
 			// $sErrorMessage = "검색 결과가 없습니다.";
 			$sErrorMessage = getAlert('gv110');
 		} else {
+			$this->blockpage->bind_not = true;
 			$result = $this->goodslistmodel->goodsSearch($aSearch, $sGoodsQuery, $iTotcount);
+			$this->blockpage->bind_not = false;
 		}
 
 		$result['page']['last']	= ceil($iTotcount / $aSearch['perpage']);

@@ -1,0 +1,304 @@
+<!--<script type="text/javascript" src="/app/javascript/jquery/jquery.form.js" charset="utf8"></script>-->
+<script type="text/javascript" src="/app/javascript/js/admin/gSearchForm.js?mm={=date('Ymd')}"></script>
+<script type="text/javascript" src="/app/javascript/plugin/jquery_pagination/jquery.pager.js" charset="utf8"></script>
+<script type="text/javascript">
+
+var search_opitons = {
+					'pageid':'gl_select_member',
+					'search_mode':'{sc.searchmode}',
+					'defaultPage':1,
+					'divSelectLayId':'member_search_container',
+					'searchFormId':'downloadsearch',
+					'form_editor_use':false,
+					'select_date':'{=sc.select_date}',
+					};
+
+$(function() {
+
+	var issued_type 		= '{=sc.issued_type}';
+	var download_member_url	= '';
+
+	switch(issued_type){
+		case 'coupon':
+			download_member_url = '/admin/coupon/download_member_list';
+		break;
+		case 'promotion':
+			download_member_url = '/admin/promotion/download_member_list';
+		break;
+		default:
+			alert('잘못된 접근입니다');
+			closeDialog('{=sc.divSelectLay}');
+			return false;
+		break;
+	}
+
+	/**
+	 * 페이징 클릭시 페이지를 로딩한다.
+	 * @param int page 페이지번호
+	 */
+	var pageClick = function(destPage) {
+		getAjaxList(destPage);
+	}
+	
+	/**
+	 * 상품을 ajax로 검색한다.
+	 * @param int page 페이지번호
+	 */
+
+	var getAjaxList = function(page) {
+
+		var pageNumber	= page ? page : 1;
+
+		$("#getpage").val(pageNumber);
+
+		const formData = $('#member_search_container #downloadsearch');
+
+		if (formData.find('input[name="sdate"]').val().trim() != '' 
+		&& formData.find('input[name="edate"]').val().trim() !='' 
+		&& (formData.find("input[name='select_date_regist']").val() == '' ||  formData.find("input[name='select_date_regist']").val() == 'all') ) 
+		{
+			formData.find("input[name='select_date_regist']").val('etc');
+		}
+
+		var perpage		= 10;
+
+		var queryString = formData.formSerialize();
+
+		$.ajax({
+			type	: 'post',
+			url		: download_member_url,
+			data	: queryString + '&perpage=' + perpage,
+			dataType: 'json',
+			success	: function(data) {
+				$("#" + search_opitons.divSelectLayId + " #memberAjaxTable").html(data.content);
+				$("#" + search_opitons.divSelectLayId + " #searchcount").html(setComma(data.searchcount));
+				$("#" + search_opitons.divSelectLayId + " #totalcount").html(setComma(data.totalcount));
+				$("#" + search_opitons.divSelectLayId + " #total_page").html(setComma(data.total_page));
+				$("#" + search_opitons.divSelectLayId + " #pager").pager({ pagenumber: data.nowpage, pagecount: data.pagecount, buttonClickCallback: pageClick });
+				$("#" + search_opitons.divSelectLayId + " #member_total_count").val(data.searchcount); //전체 검색 회원 추가 kmj 
+				memberselect();
+			}
+		});
+	}
+	addSelectDateEvent();
+	gSearchForm.init(search_opitons,getAjaxList);
+	getAjaxList();
+
+});
+
+//선택된회원정보와 리스트상의 회원정보 체크하여 구분(td 색상다름)
+function memberselect(){
+
+	var target_member	= $("#target_member").val();
+	var memberList		= target_member.split('|');
+	var newcheckedId	= $("#" + search_opitons.divSelectLayId + " input:checkbox[name$='member_chk[]']");
+
+	newcheckedId.each(function() {
+		if($.inArray($(this).val(),memberList) >= 0){
+			$(this).attr("checked","checked");
+			$(this).closest('tr').addClass('bg-gray');
+		}
+	});
+}
+
+function chkAll(chk){
+	if(chk.checked){
+		$("input:checkbox[name$='member_chk[]']").attr("checked","checked");
+		$("input:checkbox[name$='member_chk[]']").closest('tr').addClass('bg-gray');
+	}else{
+		$("input:checkbox[name$='member_chk[]']").attr("checked",false);
+		$("input:checkbox[name$='member_chk[]']").closest('tr').removeClass('bg-gray');
+	}
+}
+
+function chkmember(chk){
+
+	if(chk.checked){
+
+		$(chk).closest('tr').addClass('bg-gray');
+
+	}else{
+
+		var struser		= $(chk).attr("user_name")+'[' + $(chk).attr("userid") + '] , ';
+		var strseq		=  '|' + $(chk).val();//
+		var oldstruser	= '';
+		var oldstrseq	= '';
+
+		oldstruser	= $("#target_container").html().replace(struser,'');
+		oldstrseq	= $("#target_member").val().replace(strseq,'');
+
+		$("#target_container").html(oldstruser);
+		$("#target_member").val(oldstrseq);
+
+		var target_member	= $("#target_member").val();
+		var newcheckedId	= target_member.split('|');
+
+		var newidx = 0;
+		$.each(newcheckedId,function(k,v){
+			if(v != "" && v != null) newidx++;
+		});
+		if(newidx < 0) {
+			$("#member_search_count").html(0);
+		}else{
+			$("#member_search_count").html(newidx);
+		}
+		$(chk).closest('tr').removeClass('bg-gray');
+	}
+}
+</script>
+<div id="member_search_container" class="content">
+	<div class="search_container">
+	<form name="downloadsearch" id="downloadsearch"  method="post" onsubmit="return false">
+	<input type="hidden"	name="no" value="{sc.issued_seq}" cannotBeReset=1 />
+	<input type="hidden"	name="page" id="getpage" value="{=sc.page}" />
+	<input type="hidden"	name="perpage" value="{=sc.perpage}" />
+	<input type="hidden"	name="issued_type" value="{=sc.issued_type}"  cannotBeReset=1 />
+	<input type="hidden"	name="orderby" id="orderby" value="{=sc.orderby}"  cannotBeReset=1 />
+	<!-- 주문리스트 검색폼 : 시작 -->
+		<table class="table_search">
+		<tr>
+			<th>검색어</th>
+			<td colspan="3">
+				<select name="search_field" class="resp_select">
+				{@ searchfield }
+					<option value="{=.key_}" {? sc.search_field == .key_}selected{/}>{=.value_}</option>
+				{ / }
+				</select>
+				<input type="text" name="search_text" id="download_search_text" value="{=sc.search_text}" class="resp_text wx500" />
+			</td>
+		</tr>
+		<tr>
+			<th>날짜</th>
+			<td colspan="3">
+				<div class="sc_day_date date_range_form">
+					<select name="date_gb" class="resp_select">
+						<option value="regist_date" {? sc.date_gb == "regist_date"}selected{/} >가입일</option>
+						<option value="lastlogin_date" {? sc.date_gb == "lastlogin_date"}selected{/} >최종로그인</option>
+					</select>					
+					<input type="text" name="sdate" value="{sc.sdate}"  class="datepicker line sdate"  maxlength="10" size="12" default_none/>
+					-
+					<input type="text" name="edate" value="{sc.edate}"  class="datepicker line edate" maxlength="10" size="12" default_none />
+					<div class="resp_btn_wrap">
+						<input type="button" value="오늘" range="today" class="select_date resp_btn" settarget="regist" />
+						<input type="button" value="3일간" range="3day" class="select_date resp_btn" settarget="regist" />
+						<input type="button" value="일주일" range="1week" class="select_date resp_btn" settarget="regist" />
+						<input type="button" value="1개월" range="1month" class="select_date resp_btn" settarget="regist" />
+						<input type="button" value="3개월" range="3month" class="select_date resp_btn" settarget="regist" />
+						<input type="button" value="전체" range="all" class="select_date resp_btn" settarget="regist" row_bunch />
+						<input name="select_date_regist" value="{=sc.select_date_regist}" class="select_date_input" type="hidden">
+					</div>
+				</div>
+			</td>
+		</tr>
+		<tr>
+			<th>SMS 수신</th>
+			<td>
+				<div class="resp_radio">
+					<label><input type="radio" name="sms" value=""  {? !sc.sms }checked{/} /> 전체</label>
+					<label><input type="radio" name="sms" value="y" {? sc.sms == "y"}checked{/} /> 동의</label>
+					<label><input type="radio" name="sms" value="n" {? sc.sms == "n"}checked{/} /> 거부</label>
+				</div>
+			</td>
+			<th>이메일 수신</th>
+			<td>
+				<div class="resp_radio">
+					<label><input type="radio" name="mailing" value="" {? !sc.mailing}checked{/} /> 전체</label>
+					<label><input type="radio" name="mailing" value="y" {? sc.mailing == "y"}checked{/} /> 동의</label>
+					<label><input type="radio" name="mailing" value="n" {? sc.mailing == "n"}checked{/} /> 거부</label>
+				</div>
+			</td>
+		</tr>
+		<tr>
+			<th>등급</th>
+			<td>
+				<select name="grade" class="resp_select">
+					<option value="">전체</option>
+					{@ group_arr }
+					<option value="{.group_seq}" {?sc.grade==.group_seq}selected{/}>{.group_name}</option>
+					{ / }
+				</select>
+			</td>
+			<th>구매금액</th>
+			<td>
+				<input type="text" name="sorder_sum" value="{sc.sorder_sum}" class="resp_text onlynumber" size="7"/> ~ <input type="text" name="eorder_sum" value="{sc.eorder_sum}" class="resp_text onlynumber" size="7"/>
+			</td>
+		</tr>
+		<tr>
+			<th>마일리지액</th>
+			<td>
+				<input type="text" name="semoney" value="{sc.semoney}" class="resp_text onlynumber" size="7"/> ~ <input type="text" name="eemoney" value="{sc.eemoney}" class="onlu" size="7"/>
+			</td>
+			<th>주문횟수</th>
+			<td>
+				<input type="text" name="sorder_cnt" value="{sc.sorder_cnt}" class="resp_text onlynumber" size="5"/> ~ <input type="text" name="eorder_cnt" value="{sc.eorder_cnt}" class="resp_text onlynumber" size="5"/>
+			</td>
+		</tr>
+		<tr>
+			<th>리뷰횟수</th>
+			<td>
+				<input type="text" name="sreview_cnt" value="{sc.sreview_cnt}" class="resp_text onlynumber" size="5"/> ~ <input type="text" name="ereview_cnt" value="{sc.ereview_cnt}" class=" onlynumber" size="5"/>
+			</td>
+			<th>방문횟수</th>
+			<td>
+				<input type="text" name="slogin_cnt" value="{sc.slogin_cnt}" class="resp_text onlynumber" size="5"/> ~ <input type="text" name="elogin_cnt" value="{sc.elogin_cnt}" class="resp_text onlynumber" size="5"/>
+			</td>
+		</tr>
+		</table>
+
+		<div class="footer search_btn_lay"></div>
+	</form>
+	</div>
+	<div class="cboth"></div>
+	<!-- 주문리스트 검색폼 : 끝 -->
+
+	<ul class="left-btns clearbox">
+		<li class="left">
+			<div style="margin-top:rpx;">
+				검색 <span id="searchcount">{sc.searchcount}</span>개 
+				(총 <span id="totalcount">{sc.totalcount}</span>개)
+			</div>
+		</li>
+	</ul>
+	<div class="clearbox"></div>
+
+
+	<!-- 주문리스트 테이블 : 시작 -->
+	<table class="table_basic tdc">
+	<colgroup>
+		<col width="5%" />
+		<col width="8%" />
+		<col width="10%" />
+		<col width="15%" />
+		<col width="10%" />
+		<col width="20%" />
+		<col width="20%" />
+		<col width="12%" />
+	</colgroup>
+		<thead>
+		<tr>
+			<th><label class="resp_checkbox"><input type="checkbox" name="chkAll" title="전체선택"></label></th>
+			<th>번호</th>
+			<th>유형</th>
+			<th>아이디</th>
+			<th>이름</th>
+			<th>이메일 (수신)</th>
+			<th>핸드폰 (수신)</th>
+			<th>전화번호</th>
+		</tr>
+		</thead>
+		<tbody id="memberAjaxTable">
+		</tbody>
+	</table>
+	<!-- 주문리스트 테이블 : 끝 -->
+
+	<!-- 페이징 -->
+	<div id="pager" class="paging_navigation center"></div>
+
+</div>
+
+
+<div class="footer" >	
+	<button type="button" class="confirmSelectMember resp_btn active size_XL">선택한 회원 적용</button>
+	<button type="button" class="confirmSearchMember resp_btn active size_XL">검색한 회원 적용</button>
+	<button type="button" class="btnLayClose resp_btn v3 size_XL">닫기</button>
+</div>

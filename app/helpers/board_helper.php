@@ -1492,7 +1492,8 @@ function getcontents($data)
 			"'<meta[^>]*?>'si",
 			"'<audio[^>]*?>'si",
 			"'<video[^>]*?>'si",
-			"'<source[^>]*?>'si"
+			"'<source[^>]*?>'si",
+			"'<object[^>]*?>'si",
 		);
 
 		preg_match_all("/<iframe[^>]*?>/si", $contents, $mat);
@@ -2727,23 +2728,10 @@ function chkIframeInBoardContents($contents, $returnType = 'replace'){
 	}
 
 	// 비정확한 iframe 체크 embed 도 추가 체크하도록 수정 by hed #24792
-	preg_match_all("/\<(iframe|embed)[^\>]*\>/si", $contents, $mat2);
+	// audio, video 태그도 추가 체크하도록 수정 FMDEV-863 + object 태그도 추가 FMDEV-1939
+	preg_match_all("/\<(iframe|embed|audio|video|object)[^\>]*\>/si", $contents, $mat2);
 	if	($mat2[0]){
 		foreach( $mat2[0] as $k => $con){
-			if	($con){
-				if	(!preg_match($patternStr, $con)){
-					$return		= true;
-					$reCon		= str_replace(array('<', '>'), array('[', ']'), $con);
-					$contents	= str_replace($con, $reCon, $contents);
-				}
-			}
-		}
-	}
-
-	// audio, video 태그도 추가 체크하도록 수정
-	preg_match_all("/\<(audio|video)[^\>]*\>/si", $contents, $mat3);
-	if	($mat3[0]){
-		foreach( $mat3[0] as $k => $con){
 			if	($con){
 				if	(!preg_match($patternStr, $con)){
 					$return		= true;
