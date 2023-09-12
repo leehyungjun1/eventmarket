@@ -3086,17 +3086,22 @@ class order extends front_base {
 
 		// 개인정보 취급위탁에 대한 동의 
 		if( (serviceLimit('H_AD') && count($arr_provider_name)) > 0 || !serviceLimit('H_AD')) { //입점 상품이 있을 경우
-			$privacy['policy_third_party'] = str_replace("{sellerName}",implode(', ',$arr_provider_name), serviceLimit('H_AD') === true?$member['policy_third_party']:$member['policy_third_party_normal']);
-			
 			if($member['delegationYN'] == 'Y'){
 				//$privacy['policy_delegation'] = str_replace("{shopName}",$arrBasic['companyName'],$member['policy_delegation']);
 				$privacy['policy_delegation'] = $member['policy_delegation'];
 				$privacy['policy_delegation'] = str_replace("{sellerName}",implode(', ',$arr_provider_name),$privacy['policy_delegation']);
 			}
-		} 
+		}
 
-		if(!serviceLimit('H_AD') && $member['thirdPartyYN'] == 'Y'){
-			$privacy['policy_third_party'] = str_replace("{sellerName}",implode(', ',$arr_provider_name), serviceLimit('H_AD') === true?$member['policy_third_party']:$member['policy_third_party_normal']);
+		/**
+		 * [주문]개인정보 제3자 제공에 대한 동의
+		 * 입점사는 policy_third_party / 일반몰은 policy_third_party_normal
+		 * 입점사는 무조건 사용 , 일반몰은 사용 안함이면 unset
+		 */
+		$policy_third_party = serviceLimit('H_AD') === true ? $member['policy_third_party'] : $member['policy_third_party_normal'];
+		$privacy['policy_third_party'] = str_replace('{sellerName}', implode(', ', $arr_provider_name), $policy_third_party);
+		if (!serviceLimit('H_AD') && $member['thirdPartyYN'] == 'N') {
+			unset($privacy['policy_third_party']);
 		}
 
 		//$privacy['policy_order'] = str_replace("{domain}",$arrBasic['domain'],str_replace("{shopName}",$arrBasic['companyName'],$member['policy_order']));
@@ -6274,20 +6279,6 @@ class order extends front_base {
 
 				$this->db->insert('fm_order_item', $insert_params);
 				$item_seq = $this->db->insert_id();
-
-				/* 상품 대표카테고리 정보 */
-				$insert_params = array();
-				$insert_params['item_seq'] = $item_seq;
-				$data['r_category']		= ($data['p_category'])? $data['p_category'] : $data['r_category'];
-				foreach($data['r_category'] as $i=>$category_code){
-					$query = $this->db->query("select title from fm_category where category_code='{$category_code}'");
-					$res = $query->row_array();
-					if($res['title'] && $i<4 ){
-						$insert_params['title'.($i+1)] = $res['title'];
-						$insert_params['depth']++;
-					}
-				}
-				$this->db->insert('fm_order_item_category', $insert_params);
 
 				if( $data['goods_kind'] == 'coupon' ) {
 					//티켓상품 주문취소설정 @2013-10-22

@@ -1,0 +1,785 @@
+
+<script type="text/javascript">
+var old_idx		= '{_GET.idx}';		// 클릭지역
+var get_idx		= '{_GET.idx}';		// 선택지역
+var get_p_type	= '{_GET.p_type}';	// 배송설정타입
+var get_nation	= '{_GET.nation}';	// 배송국가타입
+var limitType	= 'all';
+
+// 하위 주소 검색
+function getchildAddress(address_type){
+	var SIDO				= $("select[name='SIDO'] option:selected").val();
+	var SIGUNGU				= $("select[name='SIGUNGU'] option:selected").val();
+	var DONG				= $("select[name='DONG'] option:selected").val();
+	var parent_address_str	= '';
+
+	// 하위 주소 초기화
+	parent_address_str = resetchildAddress(address_type);
+
+	var params = {'address_type':address_type,'nation':'{_GET.nation}','limitType':limitType};
+	if(SIDO)	params.SIDO = SIDO;
+	if(SIGUNGU) params.SIGUNGU = SIGUNGU;
+	if(DONG)	params.DONG = DONG;
+	
+	var url = '../popup/zipcode_zone_ajax';
+	$.getJSON(url, params, function(data){
+		var disable_status	= false;
+		var disable_tag		= '';
+		for(var i=0;i<data.length;i++){
+			disable_status	= false;
+			disable_tag		= '';
+			if(data[i][address_type] == ''){ // 중간이 빈 값에 대한 예외처리
+				var tmpSel = '';
+				if(address_type == 'SIGUNGU')
+					tmpSel = $("select[name='SIDO']").val();
+				else if(address_type == 'DONG')
+					tmpSel = $("select[name='SIGUNGU']").val();
+
+				var otpHtml = "<option value=\"\">"+tmpSel+"</option>";
+				$("select[name='"+address_type+"']").append(otpHtml);
+				$("select[name='"+address_type+"'] option:eq(0)").attr("selected", "selected").trigger('change');
+			}else{ // 옵션 추가
+				var ri = '';
+				var ri_txt = '';
+				if(address_type == 'STREET' && data[i]['RI']){
+					ri		= " ("+data[i]['RI']+")";
+					ri_txt	= "||"+data[i]['RI'];
+				}
+
+				// 비활성화 작업 disabled
+				var diff_str = parent_address_str + ' ' + data[i][address_type] + ri;
+				if(address_type == 'SIDO') diff_str = data[i][address_type];
+
+				disable_status	= chk_disable_address_option(diff_str, 'all');
+				if	(disable_status){
+					disable_tag	= ' disabled';
+				}
+
+				var otpHtml = "<option value=\""+data[i][address_type]+ri_txt+"\" "+disable_tag+">"+data[i][address_type]+ri+"</option>";
+				$("select[name='"+address_type+"']").append(otpHtml);
+			}
+		}
+	});
+}
+
+// 하위 주소 초기화
+function resetchildAddress(address_type){
+	var SIDO				= $("select[name='SIDO'] option:selected").val();
+	var SIGUNGU				= $("select[name='SIGUNGU'] option:selected").val();
+	var DONG				= $("select[name='DONG'] option:selected").val();
+	var parent_address_str	= '';
+
+	if(address_type == 'SIDO'){
+		SIDO = SIGUNGU = DONG = '';
+		$("select[name='SIDO']").empty().data('options');
+		$("select[name='SIGUNGU']").empty().data('options');
+		$("select[name='DONG']").empty().data('options');
+		$("select[name='STREET']").empty().data('options');
+	}else if(address_type == 'SIGUNGU'){
+		SIGUNGU = DONG = '';
+		parent_address_str	= SIDO;
+		$("select[name='SIGUNGU']").empty().data('options');
+		$("select[name='DONG']").empty().data('options');
+		$("select[name='STREET']").empty().data('options');
+	}else if(address_type == 'DONG'){
+		DONG				= '';
+		parent_address_str	= SIDO;
+		if	(SIGUNGU)	parent_address_str	+= ' ' + SIGUNGU;
+		$("select[name='DONG']").empty().data('options');
+		$("select[name='STREET']").empty().data('options');
+	}else if(address_type == 'STREET'){
+		parent_address_str	= SIDO;
+		if	(SIGUNGU)	parent_address_str	+= ' ' + SIGUNGU;
+		if	(DONG)		parent_address_str	+= ' ' + DONG;
+		$("select[name='STREET']").empty().data('options');
+	}
+
+	return parent_address_str;
+}
+
+// 이미 선택된 값 체크
+function chk_disable_address_option(srcAddress, type){
+	var returnVal	= false;
+	$('.sel_address_txt_{_GET.p_type}').each(function(){
+		if	(type == 'all'){
+			if	($(this).val() == srcAddress){
+				returnVal	= true;
+				return true;
+			}
+		}else{
+			var target_cnt = srcAddress.length;
+			if	($(this).val().substring(0,target_cnt) == srcAddress){
+				returnVal	= true;
+				return true;
+			}
+		}
+	});
+
+	return returnVal;
+}
+
+// 선택 버튼 - 선택된 내용 조합
+function select_address(){
+	var SIDO	= $("select[name='SIDO']").val();
+	var SIGUNGU = $("select[name='SIGUNGU']").val();
+	var DONG	= $("select[name='DONG']").val();
+	var STREET	= $("select[name='STREET']").val();
+	var address_arr = new Array(SIDO);
+	if(SIGUNGU)	address_arr.push(SIGUNGU);
+	if(DONG)	address_arr.push(DONG);
+
+	if(!SIDO && !SIGUNGU && !DONG && !STREET){
+		alert('먼저 지역을 선택해주세요.');
+		return false;
+	}
+	
+	insert_address(address_arr, STREET);
+	return false;
+}
+
+function insert_address(addrs, street) {
+	var shipping_cost_seq	= $("input[name='shipping_cost_seq']").val();
+	var shipping_group_seq	= $("input[name='shipping_group_seq").val();
+	var shipping_set_seq	= $("input[name='shipping_set_seq").val();
+	var nation				= get_nation;
+	var zone_name			= $("input[name='zone_select_box_name").val();
+	var shipping_opt_type	= $("select[name='shipping_opt_type["+get_p_type+"]']").val();
+	
+	var shipping_opt_sec_cost	= new Array();
+	var costIdx					= parseInt(get_idx);
+	var areaLength				= $("input[name='shipping_cost["+get_p_type+"][]']").length;
+	var secLength				= $("input[name='section_st["+get_p_type+"][]']").length;
+	var areaTerm				= parseInt(areaLength)/parseInt(secLength);
+	
+	var costTotal = 0;
+	$("input[name='shipping_cost["+get_p_type+"][]']").each(function(index, val) {
+		if(index == costIdx){
+			shipping_opt_sec_cost.push($(this).val());
+			costIdx = costIdx + areaTerm; 
+			
+			costTotal += parseInt($(this).val());
+		}
+	});
+	
+	if(costTotal <= 0 && shipping_opt_type != 'free'){
+		alert("지역 배송비가 모두 0 입니다. 배송비를 입력 해 주세요.");
+		return false;
+	}
+	
+	var shipping_opt_sec_st = new Array();
+	$("input[name='section_st["+get_p_type+"][]']").each(function(index, val) {
+		shipping_opt_sec_st.push($(this).val());
+	});
+	var shipping_opt_sec_ed = new Array();
+	$("input[name='section_ed["+get_p_type+"][]']").each(function(index, val) {
+		shipping_opt_sec_ed.push($(this).val());
+	});
+	
+	$.ajax({
+		'url' : '../setting/shipping_zone_insert',
+		'data' : { 'shipping_cost_seq': shipping_cost_seq, 'shipping_group_seq': shipping_group_seq, 'nation': nation, 'addrs' : addrs, 'street' : street, 'idx': get_idx, 'p_type': get_p_type, 'shipping_set_seq': shipping_set_seq, 'zone_name': zone_name, 'shipping_opt_type': shipping_opt_type, 'shipping_opt_sec_cost': shipping_opt_sec_cost, 'shipping_opt_sec_st': shipping_opt_sec_st, 'shipping_opt_sec_ed': shipping_opt_sec_ed },
+		'dataType' : 'json', //'json'
+		'success' : function(res) {
+			if (res == 'ERROR') {
+				alert('등록 에러. 재시도 해보세요.');
+				return false;
+			} else if (res == 'duplicate') {
+				alert('이미 등록된 지역입니다.');
+				return false;
+			} else {
+				if(!res){
+					alert('0개 지역이 등록 되었습니다.');
+					return false;
+				}
+				alert(res.num + '개 지역이 등록 되었습니다.');
+				
+				var idName = "price_"+get_p_type;
+				var className = "zone_idx_"+get_idx;
+				
+				if($("#"+idName+" ."+className).find('input[name="zone_count['+get_p_type+'][]"]').length <= 0){
+					$("#"+idName+" ."+className+" .add_zone").append('<input type="hidden" name="zone_count['+get_p_type+'][]" value="'+res.total+'">');
+				} else {
+					$("#"+idName+" ."+className).find('input[name="zone_count['+get_p_type+'][]"]').val(res.total);
+				}
+				
+				if($("#"+idName+" ."+className).find('input[name="zone_cost_seq['+get_p_type+'][]"]').length <= 0){
+					$("#"+idName+" ."+className+" .add_zone").append('<input type="hidden" name="zone_cost_seq['+get_p_type+'][]" value="'+res.shipping_cost_seq+'">');
+				} else {
+					$("#"+idName+" ."+className).find('input[name="zone_cost_seq['+get_p_type+'][]"]').val(res.shipping_cost_seq);
+				}
+				
+				if(!shipping_cost_seq || shipping_cost_seq != res.shipping_cost_seq){
+					$("input[name='shipping_cost_seq']").val(res.shipping_cost_seq);
+					shipping_cost_seq = res.shipping_cost_seq;
+				}
+				shipping_zone_list('', shipping_cost_seq, 0, 1);
+				
+				$("#"+idName+" ."+className+" .zone_cnt").text("("+res.total+")");
+				$("#"+idName+" ."+className+" .add_zone").attr("data-total", res.total);
+				$("#"+idName+" ."+className+" .add_zone").attr("data-seq", res.shipping_cost_seq);
+				$("#"+idName+" ."+className+" .std_btn_area").css("display", 'none');
+				
+				$("input[name='total_count']").val(res.total);
+				
+				var costIdx = parseInt(get_idx);
+				var i = 0;
+				$("input[name='shipping_cost_seq["+get_p_type+"][]']'").each(function(index) {
+					if(index == costIdx){
+						$(this).val(res.shipping_costs_seqs[i]);
+						costIdx = costIdx + areaTerm; 
+						i++;
+					}
+				});
+			}
+		}
+	});
+}
+
+// 선택된 지역 테이블 추가
+function add_address(sel_address, add_type, num){
+	var sel_address_txt = '';
+	var sel_address_zibun = '';
+	var sel_address_street = '';
+	if(sel_address[0])	sel_address_txt += sel_address[0];
+	if(sel_address[1])	sel_address_txt += ' ' + sel_address[1];
+	if(sel_address[2])	sel_address_txt += ' ' + sel_address[2];
+
+	// [2]배열까지 공통
+	sel_address_street	= sel_address_txt;
+	sel_address_zibun	= sel_address_txt;
+
+	if(sel_address[3]){
+		sel_address_street	+= ' ' + sel_address[3];
+		sel_address_txt		+= ' ' + sel_address[3];
+	}
+	if(sel_address[4]){
+		sel_address_zibun	+= ' ' + sel_address[4];
+		sel_address_txt		+= ' (' + sel_address[4] + ')';
+	}
+
+	var sel_address_join = sel_address.join('||');
+
+	if(add_type == 'add'){ // set일때는 disabled 처리 X
+
+		// 선택된 지역 disabled
+		var nowPos = sel_address.length - 1;
+		var street_txt	= '';
+		if(!sel_address[1] && sel_address[2]){
+			nowPos = nowPos + 1;
+		}
+		if	(nowPos == 3 || nowPos == 4){
+			if(nowPos == 4){
+				street_txt = sel_address[nowPos - 1] + '||' + sel_address[nowPos];
+			}else{
+				street_txt = sel_address[nowPos];
+			}
+			$("select[name='STREET']").find("option[value='" + street_txt + "']").attr('disabled', true);
+			$("select[name='STREET']").focus();
+		}else{
+			if($("select.address_select").eq(nowPos).find("option[value='" + sel_address[nowPos] + "']").attr('disabled') == 'disabled'){
+				return false;
+			}
+
+			if(chk_disable_address_option(sel_address_txt, 'match')){
+				default_tr();
+				alert('기존지역에 현재 선택의 하위 지역이 포함되어있습니다.\n하위지역으로 선택해주세요.');
+				return false;
+			}
+
+			$("select.address_select").eq(nowPos).find("option[value='" + sel_address[nowPos] + "']").attr('disabled', true);
+			$("select.address_select").eq(nowPos).focus();
+			if(nowPos == 2){
+				$("select[name='STREET']").empty().data('options');
+			}else{
+				$("select.address_select").eq(nowPos+1).empty().data('options');
+			}
+		}
+	}else{
+		// SIDO 의 선택된 지역이 있다면 disabled
+		/*var tmpSIDO_arr = sel_address_join.split('||');
+		if(tmpSIDO_arr.length == 1){
+			$("select.address_select").eq(0).find("option[value='" + tmpSIDO_arr[0] + "']").attr('disabled', true);
+		}*/
+	}
+
+	var input_hide1	= '<input type="hidden" class="sel_address_street_{_GET.p_type}" name="sel_address_street[{_GET.p_type}]['+get_idx+'][]" value="'+sel_address_street+'" />';
+	var input_hide2	= '<input type="hidden" class="sel_address_zibun_{_GET.p_type}" name="sel_address_zibun[{_GET.p_type}]['+get_idx+'][]" value="'+sel_address_zibun+'" />';
+	var input_hide3	= '<input type="hidden" class="sel_address_join_{_GET.p_type}" name="sel_address_join[{_GET.p_type}]['+get_idx+'][]" value="'+sel_address_join+'" />';
+	var input_hide4	= '<input type="hidden" class="sel_address_txt_{_GET.p_type}" name="sel_address_txt[{_GET.p_type}]['+get_idx+'][]" value="'+sel_address_txt+'" />';
+	
+	//var td_html = '<tr><td class="its-td"><span class="btn-minus"><button class="etcDel" onclick="del_address(this);" type="button"></button></span>&nbsp;&nbsp;&nbsp;' + sel_address_txt + '<span class="hide_input">' + input_hide1 + input_hide2 + input_hide3 + input_hide4 + '</span></td></tr>';
+	
+	var td_html = '<tr><td><label class="resp_checkbox"><input type="checkbox" class="chk" /></label></td><td>' + num + '</td><td>&nbsp;&nbsp;&nbsp;' + sel_address_txt + '<span class="hide_input">' + input_hide1 + input_hide2 + input_hide3 + input_hide4 + '</span></td></tr>';
+	
+	
+	$("#select_address_tb").append(td_html);
+}
+
+// 선택된 지역 삭제
+function del_address(obj, seqs){
+	var total = $("input[name='total_count']").val();
+	var option_seqs = new Array();
+	$("input[name='shipping_opt_seq["+get_p_type+"][]']").each(function(idx){
+		option_seqs.push($(this).val());
+	});
+	
+	if(parseInt(total - seqs.length) <= 0){
+		alert('최소 1개의 지역은 등록 돼야 합니다.');
+		return false;
+	} else {
+		default_tr();
+		if ($("#select_address_tb").find("tbody > tr").index() == 0) {
+			$("#select_address_tb").append('<tr base_tr="Y" ><td class="its-td center" colspan="3">선택하세요</td></tr>');
+		}
+		
+		$.ajax({
+			'url' : '../setting/shipping_zone_delete', 'data' : { 'zone_seq' : seqs, 'option_seqs': option_seqs},
+			'dataType' : 'json', //'json'
+			'success' : function(res) {
+				if (res == 'ERROR') {
+					alert('지역 번호가 정확하지 않습니다.');
+					return false;
+				} else {
+					$.each(seqs, function(index, value) {
+						$('#zone_' + value).remove();
+					});
+
+					var shipping_cost_seq = $("input[name='shipping_cost_seq']").val();
+					var perpage = $(".paging_navigation .on").text();
+					var keyword = $("#keyword_zone").val();
+					if(!perpage){
+						perpage = 1;
+					}
+					keyword = $.trim(keyword);
+					shipping_zone_list('', shipping_cost_seq, 0, perpage, keyword);
+					$("input[name='total_count']").val(parseInt($("input[name='total_count']").val() - res));
+					alert(res + '개 지역이 삭제 되었습니다.');
+				}
+			}
+		});
+
+		$(obj).closest('tr').remove();
+	}
+}
+
+// 기본TR 설정
+function default_tr(){
+	if(!$("#select_address_tb").find("tbody > tr").html()){
+		$("#select_address_tb").append('<tr base_tr="Y" ><td class="its-td center" colspan="3">선택하세요</td></tr>');
+	}
+}
+
+// 부모창의 지역 설정 가져오기
+function get_parent_zone(p_idx){
+	if(p_idx) get_idx = p_idx;
+
+	$("select[name='zone_select_box']").empty().data('options'); // 지역선택박스 초기화
+	$("#select_address_tb").find("tbody").html(''); // 지역선택박스 초기화
+
+	$("#price_"+get_p_type).find(".add_zone",parent.document).each(function(obj){
+		var idx = $(this).closest(".zone_text").attr('idx');
+		var txt = $(this).text();
+		var chk = '';
+
+		// 설정된 상세 지역 가져오기
+		if(get_idx == idx){
+			chk = 'selected';
+			$("input[name='zone_select_box_name']").val(txt);
+
+			if($("#select_address_tb").find("tbody > tr").attr('base_tr') == 'Y'){
+				$("#select_address_tb").find("tbody > tr").remove();
+			}
+
+			var old_address = '';
+			var sel_address = '';
+
+			$("#price_"+get_p_type, parent.document).find("thead > tr").find(".zone_idx_"+get_idx).closest("th").find(".zone_address_area input.sel_address_join_"+get_p_type).each(function(num){
+				old_address = $(this).val();
+				sel_address = old_address.split("||");
+				
+				var num = parseInt(num);
+				num = num+1;
+				
+				add_address(sel_address,'set', num);
+			});
+
+			default_tr();
+		}
+
+		// 설정된 지역 가져오기
+		var otpHtml = "<option value=\""+idx+"\" "+chk+">"+txt+"</option>";
+		$("select[name='zone_select_box']").append(otpHtml);
+	});
+}
+
+// ### 최종 적용 ### //
+/*
+	1. 기본, 추가, 희망배송 구분값 필요.
+	2. 부모창 1번 구분값 하단 해당 지역 하단에 넣는다.
+	3. 지역명변경 필요.
+*/
+function submit_zone(){
+	var idName = "price_"+get_p_type;
+	var className = "zone_idx_"+get_idx;
+		
+	var zone_name_new	= $("input[name='zone_select_box_name']").val().trim();
+	var zone_name_old = $("#"+idName+" ."+className+" .add_zone").find('input[name="shipping_area_name['+get_p_type+'][]"]').val();
+	
+	$("#"+idName+" ."+className+" .add_zone").find('input[name="shipping_area_name['+get_p_type+'][]"]').val(zone_name_new);
+	$("#"+idName+" ."+className+" .add_zone").html($("#"+idName+" ."+className+" .add_zone").html().replace(zone_name_old, zone_name_new));
+	
+	// 창 닫기
+	closeDialog(get_nation+'_'+old_idx);
+}
+
+function excel_upload() {
+	if (!$("input#zone_excel_file").val()) {
+		openDialogAlert('업로드할 파일이 없습니다.', 400, 150);
+		return false;
+	}
+
+	var shipping_cost_seq = $("input[name='shipping_cost_seq']").val();
+
+	var form = $('form#excelUpload')[0];
+	var formData = new FormData(form);
+
+	formData.append('shipping_cost_seq', shipping_cost_seq);
+	formData.append('shipping_group_seq', $("input[name='shipping_group_seq").val());
+	formData.append('shipping_set_seq', $("input[name='shipping_set_seq").val());
+	formData.append('nation', get_nation);
+	formData.append('p_type', get_p_type);
+	formData.append('idx', get_idx);
+	formData.append('zone_name', $("input[name='zone_select_box_name").val());
+	formData.append('shipping_opt_type', $("select[name='shipping_opt_type[" + get_p_type + "]']").val());
+
+	var costIdx = parseInt(get_idx);
+	var areaLength = $("input[name='shipping_cost[" + get_p_type + "][]']").length;
+	var secLength = $("input[name='section_st[" + get_p_type + "][]']").length;
+	var areaTerm = parseInt(areaLength) / parseInt(secLength);
+
+	var shipping_opt_sec_cost = new Array();
+	var costTotal = 0;
+	$("input[name='shipping_cost[" + get_p_type + "][]']").each(function (index, val) {
+		if (index == costIdx) {
+			shipping_opt_sec_cost.push($(this).val());
+			costIdx = costIdx + areaTerm;
+
+			costTotal += parseInt($(this).val());
+		}
+	});
+
+	if (costTotal <= 0 && shipping_opt_type != 'free') {
+		alert("지역 배송비가 모두 0 입니다. 배송비를 입력 해 주세요.");
+		return false;
+	}
+
+	var shipping_opt_sec_st = new Array();
+	$("input[name='section_st[" + get_p_type + "][]']").each(function (index, val) {
+		shipping_opt_sec_st.push($(this).val());
+	});
+	var shipping_opt_sec_ed = new Array();
+	$("input[name='section_ed[" + get_p_type + "][]']").each(function (index, val) {
+		shipping_opt_sec_ed.push($(this).val());
+	});
+
+	formData.append('shipping_opt_sec_cost', shipping_opt_sec_cost);
+	formData.append('shipping_opt_sec_st', shipping_opt_sec_st);
+	formData.append('shipping_opt_sec_ed', shipping_opt_sec_ed);
+
+	$.ajax({
+		type: "post",
+		processData: false,
+		contentType: false,
+		url: '/selleradmin/setting/shipping_zone_upload',
+		data: formData,
+		success: function (res) {
+			if (res == 'ERROR') {
+				alert('등록 에러. 재시도 해보세요.');
+				return false;
+			}
+			if (res == 'ERROR_FILE_EXE') {
+				alert("'xlsx' 형식만 업로드가 가능합니다.");
+				return false;
+			}
+			if (res == 'ERROR_LIMIT') {
+				alert("1회 최대 업로드 수는 1,000개 입니다.");
+				return false;
+			}
+
+			var res = jQuery.parseJSON(res);
+			alert(res.num + '개 지역이 등록 되었습니다.');
+
+			var idName = "price_" + get_p_type;
+			var className = "zone_idx_" + get_idx;
+
+			if (!shipping_cost_seq) {
+				$("#" + idName + " ." + className + " .add_zone").append('<input type="hidden" name="zone_count[' + get_p_type + '][]" value="' + res.total + '">');
+				$("#" + idName + " ." + className + " .add_zone").append('<input type="hidden" name="zone_cost_seq[' + get_p_type + '][]" value="' + res.shipping_cost_seq + '">');
+			} else {
+				$("#" + idName + " ." + className).find('input[name="zone_count[' + get_p_type + '][]"]').val(res.total);
+				$("#" + idName + " ." + className).find('input[name="zone_cost_seq[' + get_p_type + '][]"]').val(res.shipping_cost_seq);
+			}
+
+			if (!shipping_cost_seq || shipping_cost_seq != res.shipping_cost_seq) {
+				$("input[name='shipping_cost_seq']").val(res.shipping_cost_seq);
+				shipping_cost_seq = res.shipping_cost_seq;
+			}
+			shipping_zone_list('', shipping_cost_seq, 0, 1);
+
+			$("#" + idName + " ." + className + " .zone_cnt").text("(" + res.total + ")");
+			$("#" + idName + " ." + className + " .add_zone").attr("data-total", res.total);
+			$("#" + idName + " ." + className + " .add_zone").attr("data-seq", res.shipping_cost_seq);
+			$("#" + idName + " ." + className + " .std_btn_area").css("display", 'none');
+
+			$("input[name='total_count']").val(res.total);
+
+			var costIdx = parseInt(get_idx);
+			var i = 0;
+			$("input[name='shipping_cost_seq[" + get_p_type + "][]']'").each(function (index) {
+				if (index == costIdx) {
+					$(this).val(res.shipping_costs_seqs[i]);
+					costIdx = costIdx + areaTerm;
+					i++;
+				}
+			});
+		}
+	})
+}
+
+$(document).ready(function() {
+
+	// 부모창 설정 지역 및 설정된 상세지역 가져오기
+	get_parent_zone();
+
+	// 기본 SIDO 선택 불러오기
+	getchildAddress('SIDO');
+
+	// 시도 선택시
+	$(".address_select").dblclick(function(){
+		var address_type = $(this).attr('address_type');
+		getchildAddress(address_type);
+	});
+
+	// 시도 일반 선택시 하위 초기화
+	$(".address_select").bind('change',function(){
+		var address_type = $(this).attr('address_type');
+		resetchildAddress(address_type);
+	});
+
+	// 지역 변경시 선택정보 초기화 및 행위
+	$(".zone_select_box").bind("change", function(){
+		if(confirm('변경 시 적용되지 않은 데이터가 초기화 됩니다.\n변경하시겠습니까?') == true){
+			// 해당지역의 설정 지역 가져오기
+			get_parent_zone($(this).val());
+		}else{
+			$(this).val(get_idx);
+		}
+	});
+
+	// 기본도서지역 선택
+	$("input[name='area_select']").bind("change", function(){
+		limitType = $(this).val();
+		if(limitType == 'excel'){
+			$("#zone_excel").show();
+			$("#zone_select").hide();
+			//getchildExcel();
+		} else {
+			$("#zone_excel").hide();
+			$("#zone_select").show();
+			getchildAddress('SIDO');
+		}
+	});
+	
+	//전체 선택
+	$("#del_all").click(function() {
+		if ($(this).attr("checked")) {
+			$(".chk").attr("checked", true).change();
+		} else {
+			$(".chk").attr("checked", false).change();
+		}
+	});
+
+	//선택 삭제
+	$("#del_select").click(function() {
+		if ($(".chk:checked").length <= 0) {
+			alert('삭제 할 지역을 선택하세요.');
+		} else {
+			if (confirm('정말로 삭제하시겠습니까? (확인 버튼 클릭 시 즉시 삭제 됩니다.)') === true) {
+				var del_seqs = new Array();
+
+				$(".chk:checked").each(function(index,value) {
+					del_seqs[index] = $(this).val();
+				});
+
+				del_address($(this),del_seqs);
+			}
+		}
+	});
+	
+	//지역 엑셀 다운로드 
+	$("#excel_down").click(function() {
+		var shipping_cost_seq	= $("input[name='shipping_cost_seq']").val();
+		var shipping_group_name	= $("input[name='shipping_group_name").val();
+		var zone_name			= $("input[name='zone_select_box_name").val();
+		
+		$.ajax({
+			type : "get",
+			url : '../setting/shipping_zone_download',
+			data : {'shipping_cost_seq' : shipping_cost_seq, 'shipping_group_name': shipping_group_name, 'zone_name': zone_name},
+			success : function(args) {
+				if(args == 'ERROR'){
+					alert('지역 번호가 정확하지 않습니다.');
+					return false;
+				} else if(args == '0') {
+					alert('설정 지역이 없습니다.');
+					return false;
+				} else {
+					window.location.href = '/selleradmin/excel_spout/file_download?down_url='+ args;
+				}
+			}
+		})
+	});
+	
+	//지역검색
+	$("#search_zone").click(function() {
+		var keyword = $("#keyword_zone").val();
+		keyword = $.trim(keyword);
+		var shipping_cost_seq = $("input[name='shipping_cost_seq']").val();
+		shipping_zone_list('', shipping_cost_seq,0, 1, keyword);
+	});
+
+	//엑셀 파일 선택
+	$("#zone_excel_file").on("change", function(){
+		var fileValue = $(this).val().split("\\");
+		var fileName = fileValue[fileValue.length-1]; 
+		$("#fileName").html(fileName);		
+	})
+
+});
+</script>
+<div class="content">
+	<div class="item-title">지역등록</div>		
+	<div class="resp_radio l_dvs">
+		<label><input type="radio" name="area_select" value="all" checked /> 직접선택</label>		
+		<label><input type="radio" name="area_select" value="excel" /> 엑셀 업로드</label>
+	</div>	
+	<div id="zone_select">
+		<table class="table_basic thl mt10">		
+			<tr>
+				<th>관리명</th>
+				<td>
+					<input type="text" name="zone_select_box_name" title="선택된 지역명" value="" />
+					<button class="resp_btn active" type="button" onclick="submit_zone();">&nbsp;&nbsp;&nbsp;적용&nbsp;&nbsp;&nbsp;</button></span>
+				</td>
+			</tr>	
+			<tr>				
+				<td colspan="2">
+					<div class="tabBody pdt5">
+					<!-- 시/도 선택 :: START -->
+					<div style="padding-right:15px;float:left;">
+						<select name="SIDO" class="address_select" address_type="SIGUNGU" style="border: 1px solid #cccccc; width:165px; height:350px" size="22">
+						</select>
+					</div>
+					<!-- 시/도 선택 :: END -->
+		
+					<!-- 시/구/군 선택 :: START -->
+					<div style="padding-right:15px;float:left;">
+						<select name="SIGUNGU" class="address_select" address_type="DONG" style="border: 1px solid #cccccc; width:165px; height:350px" size="22">
+						</select>
+					</div>
+					<!-- 시/구/군 선택 :: END -->
+		
+					<!-- 읍/면/동 선택 :: START -->
+					<div style="padding-right:15px;float:left;">
+						<select name="DONG" class="address_select" address_type="STREET" style="border: 1px solid #cccccc; width:165px; height:350px" size="22">
+						</select>
+					</div>
+					<!-- 읍/면/동 선택 :: END -->
+		
+					<!-- 도로명주소 선택 :: START -->
+					<div style="float:left;">
+						<select name="STREET" style="border: 1px solid #cccccc; width:270px; height:350px" size="22" multiple>
+						</select>
+					</div>
+					<!-- 도로명주소 선택 :: END -->
+				</div>
+				</td>
+			</tr>
+		</table>
+	
+		<div class="footer"><button type="button" onclick="select_address();" class="resp_btn active size_XL">등록</button></div>
+	</div>
+
+	<div id="zone_excel" class="hide" style="padding-bottom:20px;">
+		<table class="table_basic thl mt10">		
+			<tr>
+				<th>관리명</th>
+				<td><input type="text" name="zone_select_box_name" title="선택된 지역명" value="" /></td>
+			</tr>	
+			<tr>	
+				<th>파일업로드</th>
+				<td>
+					<form name="excelUpload" id="excelUpload" method="post" action="/selleradmin/setting/shipping_zone_upload" enctype="multipart/form-data"  target="actionFrame">						
+						<label class="resp_btn v2"><input type="file" name="zone_excel_file" id="zone_excel_file" />파일 선택</label>	
+						<span id="fileName"></span>
+					</form>					
+				</td>
+			</tr>
+		</table>
+
+		<div class="footer"><button type="button" onclick="excel_upload();" class="resp_btn active size_XL">업로드</button></div>
+
+		<div class="box_style_05 mt30">
+			<div class="title">안내</div>
+			<ul class="bullet_hyphen">					
+				<li>엑셀 파일 저장 시 <b>＇Excel 통합 문서‘ (.xlsx)</b> 를 선택해주세요. ‘xlsx’ 형식만 업로드가 가능합니다.</li>
+				<li>1회 최대 업로드 수는 1,000개 입니다. 1,000개 이상 등록 시 파일을 나누어 진행하시기 바랍니다.</li>
+				<li>현재 설정된 지역은 삭제되며 엑셀 기준으로 지역이 변경됩니다.</li>
+				<li>도로명 주소로 입력해 주세요.</li>
+			</ul>
+		</div>		
+	</div>
+		
+	<!-- 선택목록 :: START -->
+
+	<div class="table_row_frame mt30">	
+		<div class="dvs_top">	
+			<div class="dvs_left">	
+				<input type="button" value="선택삭제" id="del_select" class="resp_btn v3" />
+				<input type="text" id="keyword_zone" />
+				<input type="button" value="검색" id="search_zone" class="resp_btn active" />
+				<span>* 최소 3글자 이상의 시/도를 포함 한 도로명 주소로 검색해 주세요</span>
+			</div>
+			<div class="dvs_right">	
+				<button type="button" id="excel_down" class="resp_btn"><img src="../images/common/btn_img_ex.gif" align="absmiddle" /> 다운로드</span></button>
+			</div>
+		</div>
+
+		<input type="hidden" name="shipping_cost_seq" value="" />
+		<input type="hidden" name="option_seqs" value="" />
+		<input type="hidden" name="total_count" value="" />
+		<table id="select_address_tb" class="table_row_basic">
+			<thead>
+				<tr>
+					<th><label class="resp_checkbox"><input type="checkbox" id="del_all" value="all" /></label></th>
+					<th>번호</th>
+					<th>
+						<!--{ ? _GET.nation == 'korea' }--> 대한민국 <!--{ : }--> 해외국가 <!--{ / }-->
+					</th>
+				</tr>
+			</thead>
+			<tbody id="select_tbody">
+				<tr base_tr="Y">
+					<td class="its-td center" colspan="3">선택하세요</td>
+				</tr>
+			</tbody>
+		</table>		
+	</div>
+	<div class="paging_navigation footer"></div>
+</div>
+<div class="footer">
+	<button class="resp_btn v3 size_XL" onclick="closeDialogEvent(this);">닫기</button>
+</div>
+<!-- 선택목록 :: END -->
+
+

@@ -1479,7 +1479,7 @@ class design extends admin_base {
 
 		/* 레이아웃 설정 assign */
 		$layout_config = layout_config_load($this->designWorkingSkin,$template_path);
-		$this->template->assign(array('layout_config'=>$layout_config[$template_path]));
+		$this->template->assign(array('layout_config'=>addslashes($layout_config[$template_path])));
 
 		$this->template->assign(array('template_path' => $template_path));
 		$this->template->define(array('tpl'=>$this->template_path()));
@@ -1569,7 +1569,7 @@ class design extends admin_base {
 
 		/* 레이아웃 설정 assign */
 		$layout_config = layout_config_load($this->designWorkingSkin,$template_path);
-		$this->template->assign(array('layout_config'=>$layout_config[$template_path]));
+		$this->template->assign(array('layout_config'=>addslashes($layout_config[$template_path])));
 
 		$this->template->assign(array(
 			'data'=>$flash_data,
@@ -1628,7 +1628,7 @@ class design extends admin_base {
 
 		/* 레이아웃 설정 assign */
 		$layout_config = layout_config_load($this->designWorkingSkin,$template_path);
-		$this->template->assign(array('layout_config'=>$layout_config[$template_path]));
+		$this->template->assign(array('layout_config'=>addslashes($layout_config[$template_path])));
 
 		$this->template->assign(array('template_path' => $template_path));
 		$this->template->define(array('tpl'=>$this->template_path()));
@@ -1662,7 +1662,7 @@ class design extends admin_base {
 
 		/* 레이아웃 설정 assign */
 		$layout_config = layout_config_load($this->designWorkingSkin,$template_path);
-		$this->template->assign(array('layout_config'=>$layout_config[$template_path]));
+		$this->template->assign(array('layout_config'=>addslashes($layout_config[$template_path])));
 
 		$this->template->assign(array('template_path' => $template_path));
 		$this->template->assign(array('realwidth' => $_GET['realwidth']));
@@ -1883,7 +1883,7 @@ class design extends admin_base {
 
 		/* 레이아웃 설정 assign */
 		$layout_config = layout_config_load($this->designWorkingSkin,$template_path);
-		$this->template->assign(array('layout_config'=>$layout_config[$template_path]));
+		$this->template->assign(array('layout_config'=>addslashes($layout_config[$template_path])));
 
 		$this->template->assign(array('data'=>$popup_data, 'template_path' => $template_path, 'popup_seq'=>$popup_seq,'banner_styles'=>$banner_styles));
 		$file_path	= $this->template_path();
@@ -1911,7 +1911,7 @@ class design extends admin_base {
 
 		/* 레이아웃 설정 assign */
 		$layout_config = layout_config_load($this->designWorkingSkin,$template_path);
-		$this->template->assign(array('layout_config'=>$layout_config[$template_path]));
+		$this->template->assign(array('layout_config'=>addslashes($layout_config[$template_path])));
 
 		$this->template->assign(array('template_path' => $template_path));
 		$file_path	= $this->template_path();
@@ -2244,7 +2244,7 @@ class design extends admin_base {
 
 		/* 레이아웃 설정 assign */
 		$layout_config = layout_config_load($this->designWorkingSkin,$template_path);
-		$this->template->assign(array('layout_config'=>$layout_config[$template_path]));
+		$this->template->assign(array('layout_config'=>addslashes($layout_config[$template_path])));
 
 		/* 이벤트페이지에 상품디스플레이 넣을경우 체크 */
 		if($this->eventmodel->is_event_template_file($template_path))
@@ -2555,7 +2555,7 @@ class design extends admin_base {
 
 		/* 레이아웃 설정 assign */
 		$layout_config = layout_config_load($this->designWorkingSkin,$template_path);
-		$this->template->assign(array('layout_config'=>$layout_config[$template_path]));
+		$this->template->assign(array('layout_config'=>addslashes($layout_config[$template_path])));
 		$this->template->assign(array('skinVersion' => $this->workingMobileSkinVersion));
 		$this->template->assign(array('template_path' => $template_path));
 
@@ -2777,7 +2777,7 @@ class design extends admin_base {
 
 		/* 레이아웃 설정 assign */
 		$layout_config = layout_config_load($this->designWorkingSkin,$template_path);
-		$this->template->assign(array('layout_config'=>$layout_config[$template_path]));
+		$this->template->assign(array('layout_config'=>addslashes($layout_config[$template_path])));
 		$this->template->assign(array('skinVersion' => $this->workingMobileSkinVersion));
 		$this->template->assign(array('template_path' => $template_path));
 
@@ -2898,7 +2898,7 @@ class design extends admin_base {
 
 		/* 레이아웃 설정 assign */
 		$layout_config = layout_config_load($this->designWorkingSkin,$template_path);
-		$this->template->assign(array('layout_config'=>$layout_config[$template_path]));
+		$this->template->assign(array('layout_config'=>addslashes($layout_config[$template_path])));
 
 		$this->template->assign(array(
 			'styles'			=> $this->Boardmanager->styles
@@ -3305,7 +3305,7 @@ class design extends admin_base {
 
 		/* 레이아웃 설정 assign */
 		$layout_config = layout_config_load($this->designWorkingSkin,$template_path);
-		$this->template->assign(array('layout_config'=>$layout_config[$template_path]));
+		$this->template->assign(array('layout_config'=>addslashes($layout_config[$template_path])));
 
 		$this->template->assign(array('template_path' => $template_path));
 		$this->template->define(array('tpl'=>$this->template_path()));
@@ -3356,7 +3356,7 @@ class design extends admin_base {
 
 		/* 레이아웃 설정 assign */
 		$layout_config = layout_config_load($this->designWorkingSkin,$template_path);
-		$this->template->assign(array('layout_config'=>$layout_config[$template_path]));
+		$this->template->assign(array('layout_config'=>addslashes($layout_config[$template_path])));
 
 		$this->template->assign(array('template_path' => $template_path));
 		$this->template->define(array('tpl'=>$this->template_path()));
@@ -3654,7 +3654,7 @@ class design extends admin_base {
 
 		/* 레이아웃 설정 assign */
 		$layout_config = layout_config_load($this->designWorkingSkin,$template_path);
-		$this->template->assign(array('layout_config'=>$layout_config[$template_path]));
+		$this->template->assign(array('layout_config'=>addslashes($layout_config[$template_path])));
 
 		/* 디스플레이 상품 목록 */
 		$display_item = $this->goodsmodel->get_recommend_item($arr_data_seq);
@@ -3685,7 +3685,7 @@ class design extends admin_base {
 
 		/* 레이아웃 설정 assign */
 		$layout_config = layout_config_load($this->designWorkingSkin,$template_path);
-		$this->template->assign(array('layout_config'=>$layout_config[$template_path]));
+		$this->template->assign(array('layout_config'=>addslashes($layout_config[$template_path])));
 
 		$this->template->assign(array('template_path' => $template_path));
 		$this->template->define(array('tpl'=>$this->template_path()));

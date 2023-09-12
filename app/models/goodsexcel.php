@@ -1121,10 +1121,12 @@ class goodsExcel extends CI_Model {
 		if	($additions)foreach($additions as $l => $addition){
 			if ( $typeArr[$addition['type']] ) {
 				$addMsg	= '[' . $typeArr[$addition['type']] . ']' . '=' . $addition['contents'];
-			}elseif( strstr($addition['type'],"goodsaddinfo_") ) {//설정>상품코드 이용시
+			} elseif( strstr($addition['type'],"goodsaddinfo_") ) {//설정>상품코드 이용시
 				$addMsg	= '[상품코드]'.$addition['code_seq'].'=' .$addition['title'] . '=' . $addition['contents'] . '=' . $addition['contents_title'];
-			}else{
+			} elseif(isset($addition['title']) && isset($addition['contents'])) {
 				$addMsg	= $addition['title'] . '=' . $addition['contents'];
+			} else {
+				$addMsg = '';
 			}
 
 			if	($l > 0)	$return	.= '^' . $addMsg;

@@ -1,0 +1,113 @@
+<!-- 회원설정 : 개인정보 제공 동의 -->
+<script type="text/javascript">
+    apply_input_style();
+    // 에디터 팝업 띄우기 :: 2017-05-11 lwh
+    function view_editor_pop(){
+        var contents_top	= $("#view_editor_div").offset().top - 100;
+        $("body").css("overflow","hidden");
+        openDialog("개인정보 제3자 제공동의 - <span class='desc'>수정 시 실시간으로 저장됩니다.</span>", "view_editor_div", {"width":"98.5%","draggable":false,position: ['center', 'top'],"close":function(){$("body").css("overflow",""); window.scrollTo(0,contents_top); }});
+    }
+
+    // 3자 제공동의 로드 :: 2017-05-11 lwh
+    function third_party_reload(){
+        $.ajax({
+            'type': "POST",
+            'url': "../setting/ajax_third_party",
+            'dataType' : 'text',
+            'success': function(res){
+                $("#policy_third_party_area").html(res);
+            }
+        });
+        closeDialog('view_editor_div');
+    }
+
+    function clipBoard(name, id){
+        var clip = new ZeroClipboard.Client();
+        clip.setHandCursor( true );
+        clip.setCSSEffects( true );
+        clip.setText($("input[name='"+name+"']").val());
+        clip.addEventListener( 'complete', function(client, text) {
+            alert("클립보드에 복사되었습니다.");
+        });
+        clip.glue(id);
+    }
+
+    function replace_code_copy(tmp){
+        var code = '\{'+tmp+'\}';
+        clipboard_copy(code);
+        alert('치환코드가 복사되었습니다.\nCtrl+V로 붙여넣기 하세요.');
+    }
+</script>
+
+<!-- 상단 단계 링크 : 끝 -->
+<ul id="subTab" class="tab_02 tabEvent mt20">
+	<li><a href="javascript:void(0);" onclick="formMoveSub('agreement',1);" id="agreement">이용약관</a></li>
+	<li><a href="javascript:void(0);" onclick="formMoveSub('privacy',2);" id="privacy">개인정보처리방침</a></li>
+	<li><a href="javascript:void(0);" onclick="formMoveSub('cancellation',4);" id="cancellation">청약철회 관련방침</a></li>
+	<li><a href="javascript:void(0);" onclick="formMoveSub('policy',5);" id="policy" class="current">개인정보 제공 동의</a></li>
+</ul>
+
+<div class="contents_dvs v2">
+    <div class="item-title">
+        [주문]개인정보 제3자 제공에 대한 동의
+    </div>
+    <table class="table_basic thl">
+        <tr>
+            <th>
+                사용 여부
+            </th>
+            <td>
+                <div class="resp_radio">
+                    <label><input type="radio" name="thirdPartyYN" value="Y" {? thirdPartyYN == 'Y' || thirdPartyYN == '' || serviceLimit('H_AD') } checked="checked" { / } /> 사용</label>
+                    <label><input type="radio" name="thirdPartyYN" value="N" {? thirdPartyYN == 'N' && !serviceLimit('H_AD') } checked="checked" { / } {? serviceLimit('H_AD') } disabled="disabled" { / } /> 사용 안 함</label>
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <th>
+                수정
+            </th>
+            <td>
+                <button type="button" onclick="view_editor_pop();" class="resp_btn v2">수정</button>
+            </td>
+        </tr>
+    </table>
+    <div class="mt10">
+        <div id="policy_third_party_area" style="border:0;">{ ? serviceLimit('H_AD') }{=policy_third_party}{ : }{=policy_third_party_normal}{ / }</div>
+    </div>
+</div>
+
+<div class="contents_dvs v2">
+    <div class="item-title">
+        [주문]개인정보 취급위탁에 대한 동의
+    </div>
+    <table class="table_basic thl">
+        <tr>
+            <th>
+                사용 여부
+            </th>
+            <td>
+                <div class="resp_radio">
+                    <label><input type="radio" name="delegationYN" value="Y" {? delegationYN == 'Y' || delegationYN == '' } checked="checked" { / } /> 사용</label>
+                    <label><input type="radio" name="delegationYN" value="N" {? delegationYN == 'N' } checked="checked" { / } /> 사용 안 함</label>
+                </div>
+            </td>
+        </tr>
+    </table>
+    <div class="box_style_03 mt10">
+        <textarea rows="10" name="policy_delegation" class="daumeditor">{policy_delegation}</textarea>
+    </div>
+</div>
+
+<div class="box_style_05 mt20">
+    <div class="title">안내</div>
+    <ul class="bullet_hyphen ">
+        <li>약관 및 개인정보처리방침 치환 코드 안내 <span class="tooltip_btn" onClick="showTooltip(this, '/admin/tooltip/member', '#tip35', 480)"></span></li>
+        <li>설정한 약관 항목이 스킨에서 보이지 않는 경우 스킨 패치 여부를 확인해 주세요.</li>
+    </ul>
+</div>
+
+<div id="view_editor_div" class="hide">
+    <iframe src="./policy_third_party" style="border:0" width="99%" height="700px"></iframe>
+</div>
+

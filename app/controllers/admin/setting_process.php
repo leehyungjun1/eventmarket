@@ -3894,7 +3894,7 @@ class setting_process extends admin_base {
 		$ship_grp['refund_address_seq']			= $_POST['refund_address_seq'];
 		$ship_grp['shipping_provider_seq']		= $this->input->post('provider_seq');
 		$ship_grp['total_rel_cnt']				= $_POST['total_rel_cnt'];
-		$ship_grp['admin_memo']					= $_POST['admin_memo'];
+		$ship_grp['admin_memo']					= addslashes($_POST['admin_memo']);
 		$ship_grp['default_yn']					= ($_POST['base_grp']=='Y') ? 'Y':'N';
 		$ship_grp['provider_shipping_use']		= ($_POST['base_grp']=='Y') ? 'Y':'N';
 		$ship_grp['update_date']				= $nowDate;
@@ -4725,6 +4725,9 @@ class setting_process extends admin_base {
 	public function instagramFeedConfSave()
 	{
 		$aPostParams = $this->input->post();
+
+		// DB 디자인 스킨 값 없는 경우 값 설정
+		$this->config_system['operation_type'] = $this->config_system['operation_type'] ?? "heavy";
 
 		if ($this->config_system['operation_type'] != $aPostParams['operation_type']) {
 			$callback = 'parent.document.location.reload();';

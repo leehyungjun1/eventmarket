@@ -59,15 +59,13 @@ class common extends front_base  {
 			$result = array('auth_write'=>$auth_write, 'nonorder'=>true,'data'=>array());
 		}
 		//$where[] = " (step = '70' OR step = '75') ";//부분배송완료, 배송완료
-
-		$where[] = ' order_seq IN ( SELECT order_seq FROM fm_order_item WHERE goods_seq = ?)';
-		if ($this->userInfo['member_seq']) {//회원전용
-			$subwhere = " mem.member_seq = '" . $this->userInfo['member_seq'] . "' ";
-			$where[] = " member_seq = '" . $this->userInfo['member_seq'] . "' ";
-		} else {
+		if($this->userInfo['member_seq']) {//회원전용
+			$where[] = " mem.member_seq = '".$this->userInfo['member_seq']."' ";
+			$where[] = " ord.order_seq IN ( SELECT order_seq FROM fm_order_item WHERE goods_seq = ?)";
+		}else{
 			//$where[] = " member_seq is null ";//회원주문 검색불가
-			$subwhere = " ord.order_seq = '" . $this->session->userdata('sess_order') . "' ";
-			$where[] = " order_seq = '" . $this->session->userdata('sess_order') . "' ";
+			$where[] = " ord.order_seq IN ( SELECT order_seq FROM fm_order_item WHERE goods_seq = ?)";
+			$where[] = " ord.order_seq = '".$this->session->userdata('sess_order')."' ";
 		}
 
 		$query = "SELECT order_seq , step FROM (
@@ -79,8 +77,8 @@ class common extends front_base  {
 			fm_goods_export export
 			LEFT JOIN fm_order ord ON ord.order_seq=export.order_seq
 			LEFT JOIN fm_member mem ON mem.member_seq=ord.member_seq
-			WHERE export.status = '75' AND {$subwhere} group by order_seq
-		) t WHERE " . implode(' AND ',$where) . " ORDER BY order_seq ASC, regist_date DESC";
+			WHERE export.status = '75' AND" . implode(' AND ',$where) . " group by order_seq
+		) t ORDER BY order_seq ASC, regist_date DESC";
 
 		$bind = [
 			$this->input->post('goods_seq')

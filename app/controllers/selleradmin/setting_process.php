@@ -1203,7 +1203,7 @@ class setting_process extends selleradmin_base {
 		$ship_grp['provider_shipping_use']		= $_POST['provider_shipping_use'];
 		$ship_grp['shipping_provider_seq']		= $this->input->post('provider_seq');
 		$ship_grp['target_goods_cnt']			= ($_POST['rel_goods_seq']) ? count($_POST['rel_goods_seq']) : 0;
-		$ship_grp['admin_memo']					= $_POST['admin_memo'];
+		$ship_grp['admin_memo']					= addslashes($_POST['admin_memo']);
 		$ship_grp['default_yn']					= ($_POST['base_grp']=='Y') ? 'Y':'N';
 		$ship_grp['provider_shipping_use']		= ($_POST['base_grp']=='Y') ? 'Y':'N';
 		$ship_grp['update_date']				= $nowDate;

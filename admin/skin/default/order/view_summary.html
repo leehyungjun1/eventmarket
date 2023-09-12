@@ -101,7 +101,11 @@
 			<span class="desc" style="font-weight:normal">(본 주문은 원래 주문 <strong><a href="/admin/order/view?no={orders.orign_order_seq}" target="_blank">{orders.orign_order_seq}</a></strong>에 대한 맞교환으로 발생한 주문입니다.)</span>
 			{ / }
 			{ ? child_order_seq }
-			<span class="desc" style="font-weight:normal">(본 주문상품의 교환으로 인해 생성된 맞교환 주문은 <strong>{@child_order_seq}<a href="/admin/order/view?no={.value_}" target="_blank">{.value_}</a>{/}</strong>입니다.)</span>
+			<span class="desc" style="font-weight:normal">(본 주문상품의 교환으로 인해 생성된 맞교환 주문은
+				{@child_order_seq}
+				<strong><a href="/admin/order/view?no={.value_}" target="_blank">{.value_}</a></strong>
+				{/}
+			입니다.)</span>
 			{ / }
 		</div>
 

@@ -852,7 +852,7 @@ class ordermodel extends CI_Model
 		$this->db->select($selectedFields)
 			->from('fm_order_item oi')
 			->join ('fm_goods g', 'g.goods_seq = oi.goods_seq', 'left')
-			->join ('fm_provider p', 'p.provider_seq = g.provider_seq', 'left')
+			->join ('fm_provider p', 'p.provider_seq = oi.provider_seq', 'left')
 			->where('oi.order_seq', $order_seq)
 			->order_by("(CASE WHEN oi.goods_type =  'goods' THEN 0 ELSE 99 END)", 'ASC')
 			->order_by('oi.provider_seq', 'ASC')
@@ -5050,6 +5050,8 @@ class ordermodel extends CI_Model
 		}
 
 		foreach($result_suboption as $data_suboption){
+			// 추가옵션 price 에는 member_sale 이 적용되지 않아 추가함
+			$data_suboption['sale_price'] = $data_suboption['price'] - $data_suboption['member_sale'];
 			if( $data_suboption['sale_price'] > 0 ) {
 				$tot += get_cutting_price($data_suboption['sale_price'])* (int) $data_suboption['ea'];
 				$param[] = array(

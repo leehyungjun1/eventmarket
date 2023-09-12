@@ -314,6 +314,10 @@ var jscls_option_select	= function(){
 		// 추가옵션 변경
 		$("select[name='" + this.suboptions_selectbox_name + "']").unbind('change');
 		$("select[name='" + this.suboptions_selectbox_name + "']").bind('change', function(){
+
+			// 중복옵션 체크
+			that.viewSubOptionsApply();
+
 			if	(!that.add_action_to_button || that.suboption_layout_group == 'first'){
 				submsg	= that.apply_suboptions();
 				if	(that.suboption_layout_group == 'first'){
@@ -596,6 +600,20 @@ var jscls_option_select	= function(){
 		});
 
 		return result;
+	};
+
+	// 추가옵션 선택 처리
+	this.viewSubOptionsApply = function(){
+
+		// 중복옵션 체크
+		var chkDuplicate = this.chkSuboptionDuplicateRequired();
+
+		if (chkDuplicate === false) {
+			this.reset_suboptions();
+			this.set_bind_option();
+		}
+
+		return chkDuplicate;
 	};
 
 	// 필수옵션 선택 처리
@@ -1566,6 +1584,65 @@ var jscls_option_select	= function(){
 			this.setSelectBoxPlugin($(obj), '');
 		}catch(e){};
 	};
+
+	// 서브옵션에 대한 중복 체크
+	this.chkSuboptionDuplicateRequired = function(){
+		var result = true;
+		var that = this;
+			
+		// 중복 여부
+		var duplicated = false;
+
+		// 현재 선택 옵션 확인
+		var objSelectedSuboption = [];
+
+		$("select[name='" + this.suboptions_selectbox_name + "']").each(function(){
+			var idx = $(this).attr("requiredgroup");
+			var value = $(this).val();
+			if(typeof(idx) !== 'undefined'){
+				objSelectedSuboption[idx] = value;
+			}
+		});
+
+		// 이미 입력되어 있는 옵션 확인
+		var arrInsertedSuboption = [];
+
+		for (var i=0;i<=that.apply_option_seq;i++) {
+			arrInsertedSuboption[i] = [];
+			$("input[name^='" + this.selected_suboption_name + "\["+i+"\]']").each(function(index) {
+				var idx = $(this).attr("opt_seq");
+				var value = $(this).val();
+				arrInsertedSuboption[i][idx] = value;
+			});
+		}
+
+		// 추가옵션에 대한 중복 체크
+		if (arrInsertedSuboption.length > 0) {
+			for (var i=0;i<arrInsertedSuboption.length;i++) {
+				var compare_cnt = 0;
+				var check_cnt = objSelectedSuboption.length;
+				for (var obj_i=0;obj_i<objSelectedSuboption.length;obj_i++) {
+					if (
+						typeof(arrInsertedSuboption[i][obj_i]) !== 'undefined'
+						&& arrInsertedSuboption[i].includes( objSelectedSuboption[obj_i])
+					) {	// 값이 있을 때만 비교
+						compare_cnt++;
+					}
+				}
+				if (check_cnt == compare_cnt) {
+					duplicated = true;
+				}
+			}
+		}
+
+		if(duplicated){
+			//옵션을 선택해 주세요2
+			openDialogAlert(getAlert('gv035'), 400, 140,'');
+			result	= false;
+		}
+		return result;
+		
+	}
 
 		// 중복옵션 체크
 		// 현재 선택된 옵션 정보를 확인한 후 이미 입력되어 있는 옵션 전체와 비교하여 중복 옵션 입력을 방지한다.

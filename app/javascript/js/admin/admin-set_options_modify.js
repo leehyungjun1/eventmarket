@@ -615,7 +615,7 @@ $(function(){
                 if	(target == 'reserve_rate' || target == 'option_view'){
                     
                     if (target == 'reserve_rate') {
-                        if(value > 0){
+                        if(value >= 0){
                             $(this).val(value);
                         }
                         $("select[name='reserve_unit']").val($("select[name='reserve_unit_all']").val());

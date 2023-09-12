@@ -731,20 +731,32 @@ class front_base_original extends common_base {
 	 * 결제 실패로 처리되어 인트로 사용 중 일 때 예외처리 함수
 	 * 공사중, 인트로, 회원전용, 성인전용 공통 check 함수
 	*/
-	protected function operating_check_process($type) {
+	protected function operating_check_process($type) 
+	{
 		$check = true;
 
-		if(in_array('order',$this->uri->rsegments)) $check = false;
-		if(in_array('payment',$this->uri->rsegments)) $check = false;
-		if(in_array('lg_mobile',$this->uri->rsegments)) $check = false;
-		if(in_array('inicis_mobile',$this->uri->rsegments)) $check = false;
-		if(in_array('allat_mobile',$this->uri->rsegments)) $check = false;
-		if(in_array('kcp_mobile',$this->uri->rsegments)) $check = false;
-		if(in_array('naver_mileage',$this->uri->rsegments)) $check = false;
-		if(in_array('naverpay',$this->uri->rsegments)) $check = false;
-		if(in_array('sns',$this->uri->rsegments)) $check = false;
-		if(in_array('kakaotalk',$this->uri->rsegments)) $check = false;
-		if(in_array('link',$this->uri->rsegments)) $check = false;
+		// 인트로를 제외하고자 하는 url
+		$exclude_url = [
+			'order',
+			'payment',
+			'lg_mobile',
+			'inicis_mobile',
+			'allat_mobile',
+			'kcp_mobile',
+			'naver_mileage',
+			'naverpay',
+			'sns',
+			'kakaotalk',
+			'link',
+			'payco',
+		];
+
+		foreach ($exclude_url as $exclude_url_name) {
+			if (in_array($exclude_url_name,$this->uri->rsegments)) {
+				$check = false;
+				return $check;
+			}
+		}
 
 		if($type == "intro") {
 			if(in_array('common',$this->uri->rsegments)) $check = false;
