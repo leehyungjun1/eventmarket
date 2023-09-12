@@ -100,7 +100,10 @@ class GoodsHandlermodel extends CI_Model {
 			}
 
 			$mode		= 'regist';
-			$goodsSeq	= $this->goodsRegist($goods, $providerInfo);
+			$result	= $this->goodsRegist($goods, $providerInfo);
+			$goodsSeq	= $result['goods_seq'];
+			if($result['result_imagehosting']['contents']) $result_imagehosting['contents'] = $result['result_imagehosting']['contents']; // PC 상품설명
+			if($result['result_imagehosting']['mobile_contents']) $result_imagehosting['mobile_contents'] = $result['result_imagehosting']['mobile_contents']; // 모바일 상품설명 (반응형)
 			$this->_doRegistLink($goodsSeq, $providerInfo);	//등록 요청시 처리
 		}
 
@@ -425,6 +428,13 @@ class GoodsHandlermodel extends CI_Model {
 		else
 			$result		= $this->_doRegistOthers($goodsSeq, $goods, $providerInfo);	//등록 요청시 처리
 
+		//이미지호스팅 업로드 결과
+		if($result['result_imagehosting']['goods_image']) $result_imagehosting['goods_image'] = $result['result_imagehosting']['goods_image']; // 상품이미지
+		if($result['result_imagehosting']['common_info']) $result_imagehosting['common_info'] = $result['result_imagehosting']['common_info']; // 공용정보
+		if($result_imagehosting){
+			$this->load->library('imagehostinglibrary');
+			$imagehostingMassage = $this->imagehostinglibrary->message($result_imagehosting);
+		}
 		// 본사상품 처리
 		if ($providerInfo === false) {
 
@@ -466,7 +476,7 @@ class GoodsHandlermodel extends CI_Model {
 			$goodsService->doMarketGoodsUpdate($goodsSeq);	//Queue 로 처리
 		}
 
-		return $goodsSeq;
+		return ["goodsSeq" => $goodsSeq, "imagehosting" => $imagehostingMassage ];
 	}
 
 	//기본 상품 등록
@@ -561,10 +571,13 @@ class GoodsHandlermodel extends CI_Model {
 			$this->goodsmodel->set_mobile_contents($imgRes['contents'],$goodsSeq);//모바일용 상품설명 저장처리
 
 		if($imgRes){
-			$this->db->where('goods_seq', $goodsSeq);
-			$result = $this->db->update('fm_goods', $imgRes);
-		}
+			/* 이미지호스팅 결과 값*/
+			$result_imagehosting= $imgRes['result_imagehosting'];
+			unset($imgRes['result_imagehosting']);
 
+			$this->db->where('goods_seq', $goodsSeq);
+			$result = $this->db->update('fm_goods', $imgRes);			
+		}
 
 		if ($goodsSeq > 0 ) {
 
@@ -576,7 +589,7 @@ class GoodsHandlermodel extends CI_Model {
 				$this->db->update('fm_goods', $upParams);
 			}*/
 
-			return $goodsSeq;
+			return [ "goods_seq" => $goodsSeq, "result_imagehosting" => $result_imagehosting];
 		} else {
 			return false;
 		}
@@ -983,17 +996,35 @@ class GoodsHandlermodel extends CI_Model {
 		/* 상품 이미지 저장 :: 2016-04-21 lwh */
 		$data_used		= $this->usedmodel->used_limit_check();
 
+		/* [상품 사진] 이미지호스팅 사용 여부 및 기본 값 세팅 */
+		$this->load->library('imagehostinglibrary');
+		$imagestore_type = [];
+		$imagestore_type['imagestore_division'] = ($goods['provider_seq'] == "1") ? "goods_headquaters" : "goods_provider";
+		$imagestore_type['imagestore_item'] = "goods_image";
+		$isImagehosting = $this->imagehostinglibrary->isImagehostingUse($imagestore_type);
+
+		$params_imagehosting = [];
+		$params_imagehosting['isImagehosting'] = $isImagehosting;
+		if($isImagehosting == true){
+			$params_imagehosting['imagestore_type'] = $imagestore_type;
+		}
+
 		if ($data_used['type']) {
 			$imgType_arr		= array('large','view','list1','list2','thumbView','thumbCart','thumbScroll');
 			$this->goodsSeq		= $goodsSeq;
 
 			foreach( $imgType_arr as $imgType ){
 				// 이미지 업로드
-				$this->goodsmodel->upload_goodsImage($_POST[$imgType.'GoodsImage']);
-
+				$res = $this->goodsmodel->upload_goodsImage($_POST[$imgType.'GoodsImage'], '', $params_imagehosting);
+				$imagehosting_newPath = '';
+				foreach($res['result_imagehosting'] as $imagehosting_array){
+					$result_imagehosting['goods_image'][] = $imagehosting_array;
+					$imagehosting_newPath[] = $imagehosting_array['new_path'];
+				}
 				// 이미지 연결
-				$this->goodsmodel->insert_goodsImage($imgType.'GoodsImage',$goodsSeq);
+				$this->goodsmodel->insert_goodsImage($imgType.'GoodsImage',$goodsSeq,$imagehosting_newPath);
 			}
+
 		}else{
 			openDialogAlert($data_used['msg'],400,140,'parent','');
 		}
@@ -1003,6 +1034,19 @@ class GoodsHandlermodel extends CI_Model {
 		$_REQUEST['tx_attach_files']	= (!empty($_POST['tx_attach_files'])) ? $_POST['tx_attach_files']:'';
 
 		$common_contents				= adjustEditorImages($_POST['commonContents'], "/data/editor/");
+		/* [공용 정보] 이미지호스팅 사용 여부 및 기본 값 세팅 */
+		$imagestore_type['imagestore_item'] = "common_info";
+		$isImagehosting = $this->imagehostinglibrary->isImagehostingUse($imagestore_type);
+		$params_imagehosting = [];
+		$params_imagehosting['isImagehosting'] = $isImagehosting;
+		if($isImagehosting == true){
+			$params_imagehosting['imagestore_type'] = $imagestore_type;
+			$result_imagehosting = $this->imagehostinglibrary->uploadEditorImage(['common_info' => $common_contents], $imagestore_type);
+			$common_contents = $result_imagehosting['common_info']['contents'];
+			unset($result_imagehosting['common_info']['contents']);
+		}
+
+		$params = [];
 		$params['info_value']			= $common_contents;
 
 		$params['info_name']			= $_POST['info_name'];
@@ -1015,11 +1059,9 @@ class GoodsHandlermodel extends CI_Model {
 			$this->db->where('info_seq', $_POST['info_select_seq']);
 			$result		= $this->db->update('fm_goods_info', $data);
 		}else{						// INSERT
-
 			if($params['info_name'] && $params['info_value']){
 				$result		= $this->db->insert('fm_goods_info', $params);
 				$info_seq	= $this->db->insert_id();
-
 				$this->db->where('goods_seq', $goodsSeq);
 				$result		= $this->db->update('fm_goods', array('info_seq'=>$info_seq));
 			}
@@ -1047,7 +1089,9 @@ class GoodsHandlermodel extends CI_Model {
 		$this->db->where('goods_seq', $goodsSeq);
 		$result		= $this->db->update('fm_goods', array('keyword'=>$keyword));
 
-		return $result;
+		$return['result'] = $result;
+		$return['result_imagehosting'] = $result_imagehosting;
+		return $return;
 
 	}
 
@@ -3210,94 +3254,6 @@ class GoodsHandlermodel extends CI_Model {
 		}
 
 		return true;
-	}
-
-	protected function _imagehostingArrange($params, $goodsSeqList, $optionSeqList, &$arrangeData) {
-		$this->load->model('imagehosting');
-		$this->_set_imagehosting('batch');//접속정보체크
-
-		//이미지호스팅연결
-		$this->imagehosting->ftpconn();
-
-		if	($params['modify_list'] == 'choice') {
-
-			foreach($goodsSeqList as $goods_seq) {
-				$goods = $this->goodsmodel->get_goods($goods_seq);
-				//이미지호스팅연결
-				$newcontents = $this->imagehosting->set_contents('contents', $goods['contents'], $goods_seq);
-			}
-		}else{
-			$arrayCount		= count($goodsSeqList);
-			$maxPage		= ceil($arrayCount / $this->updateCount);
-			$endPoint		= 0;
-			$updateCnt		= $this->updateCount;
-
-			for ($i = 1; $i <= $maxPage; $i++) {
-				$startPoint	= $endPoint;
-				$endPoint	= $i * $updateCnt;
-				$endPoint	= ($endPoint > $arrayCount) ? $arrayCount : $endPoint;
-				$targetList	= array();
-
-				for ($j = $startPoint; $j < $endPoint; $j++) {
-					$nowGoodsSeq	= (int)$goodsSeqList[$j];
-					if ($goodsSeqList[$j] < 1)
-						continue;
-
-					if ((int)$goodsSeqList[$j] > 0)
-						$targetList[]	= (int)$goodsSeqList[$j];
-				}
-
-				if (count($targetList) < 1)
-					continue;
-
-				foreach($targetList as $goods_seq) {
-					$goods = $this->goodsmodel->get_goods($goods_seq);
-					//이미지호스팅연결
-					$newcontents = $this->imagehosting->set_contents('contents', $goods['contents'], $goods_seq);
-				}
-			}
-		}
-		$this->imagehosting->ftpclose();
-		//이미지호스팅연결
-
-		return true;
-	}
-
-	// 이미지 호스팅 FTP연결상태 확인
-	function _set_imagehosting($type) {
-		$hostname	= trim($_POST['hostname']).$this->imagehosting->imagehostingftp['gabiaimagehostingurl'];
-		$username	= trim($_POST['username']);
-		$password	= trim($_POST['password']);
-		if	(!($hostname) || !($username) || !($password)){
-			$msg = '이미지 호스팅 정보를 정확히 입력하십시오!';
-			if ( $type == 'batch') {
-				openDialogAlert($msg,400,140,'parent',$callback);
-				exit;
-			}
-		}
-
-		$FTP_CONNECT = @ftp_connect($hostname,$this->imagehosting->imagehostingftp['port']);
-
-		if (!$FTP_CONNECT) {
-			$msg = 'FTP서버 연결에 문제가 발생했습니다.';
-			$msg = '이미지 호스팅 정보를 정확히 입력하십시오!';
-			if ( $type == 'batch') {
-				openDialogAlert($msg,400,140,'parent',$callback);
-				exit;
-			}
-		}
-		$FTP_CRESULT = @ftp_login($FTP_CONNECT,$username,$password);
-
-		if (!$FTP_CRESULT) {
-			$msg = 'FTP서버 아이디나 패스워드가 일치하지 않습니다.';
-			if ( $type == 'batch') {
-				openDialogAlert($msg,400,140,'parent',$callback);
-				exit;
-			}
-		}
-
-		config_save('imagehosting',array('hostname'=>trim($_POST['hostname'])));
-		config_save('imagehosting',array('r_date'=>date("Y-m-d H:i:s")));
 	}
 
 	protected function _iconArrange($params, $goodsSeqList, $optionSeqList, &$arrangeData) {

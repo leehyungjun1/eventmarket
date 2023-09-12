@@ -2570,6 +2570,227 @@ class setting extends admin_base {
 		$this->template->print_("tpl");
 	}
 
+	/* 이미지호스팅 계정 설정 */
+	public function imagehosting(){
+		$this->admin_menu();
+		$this->tempate_modules();
+
+		/* 관리자 권한 체크 : 시작 */
+		$auth = $this->authmodel->manager_limit_act('setting_imagehosting_view');
+		if(!$auth){
+			$callback = "history.go(-1);";
+			$this->template->assign(array('auth_msg'=>$this->auth_msg,'callback'=>$callback));
+			$this->template->define(array('denined'=>$this->skin.'/common/denined.html'));
+			$this->template->print_("denined");
+			exit;
+		}
+		$auth_act = $this->authmodel->manager_limit_act('setting_imagehosting_act');
+		$this->template->assign(array('imagehosting_act' => $auth_act));
+		/* 관리자 권한 체크 : 끝 */
+
+		// 상단 이미지호스팅 홍보 배너: 중앙에서 배너 관리
+		$marketing_imagehosting_banner = getGabiaPannel('marketing_imagehosting_banner');
+		$this->template->assign(array(
+			'marketing_imagehosting_banner' => $marketing_imagehosting_banner	
+		));
+
+		$this->load->model("imagehosting");
+		$data = $this->imagehosting->get_imagehostingList();
+		if(isset($data)){
+			foreach($data as $idx => $row){
+				$data[$idx]['_no'] = ($idx+1);
+			}
+			$this->template->assign(array('loop' => $data));
+		}
+
+		$this->template->define(array('tpl'=>$this->template_path()));
+		$this->template->print_("tpl");
+	}
+
+	/* 이미지호스팅 계정 설정 */
+	public function imagehosting_setting(){
+		$this->tempate_modules();
+		$aGetParams = $this->input->get();
+
+		/* 관리자 권한 체크 : 시작 */
+		$auth = $this->authmodel->manager_limit_act('setting_imagehosting_act');
+		if(!$auth){
+			openDialogAlert($this->auth_msg,400,140,'parent','parent.location.reload();');
+			exit;
+		}
+		/* 관리자 권한 체크 : 끝 */
+
+		/* 수정: 이미지호스팅 계정 기존 정보 가져오기 */
+		if($aGetParams['imagehosting_seq']!=''){
+			$this->load->model("imagehosting");
+			$data = $this->imagehosting->get_imagehostingEach($aGetParams['imagehosting_seq']);
+			if(isset($data)){
+				$get_protocol = explode("://", $data['store_url']);
+				$data['store_url_protocol'] = ($get_protocol[0] == "https") ? 0: 1;
+				$data['store_url'] = $get_protocol[1];
+				
+				//비밀번호 정보 초기화
+				for($n=0; $n<10; $n++){
+					$temporary_password .= random_int(1, 9);
+				}
+				$data['store_password'] = $temporary_password; // 자리수 동일한 임시비밀번호
+				$this->template->assign($data);
+			}
+		}
+
+		$this->template->define(array('tpl'=> $this->skin.'/setting/_imagehosting_setting.html'));
+		$this->template->print_("tpl");
+	}
+
+	/* 기능별 저장소 설정 */
+	public function imagestore(){
+		$this->admin_menu();
+		$this->tempate_modules();
+
+		/* 관리자 권한 체크 : 시작 */
+		$auth = $this->authmodel->manager_limit_act('setting_imagehosting_view');
+		if(!$auth){
+			$callback = "history.go(-1);";
+			$this->template->assign(array('auth_msg'=>$this->auth_msg,'callback'=>$callback));
+			$this->template->define(array('denined'=>$this->skin.'/common/denined.html'));
+			$this->template->print_("denined");
+			exit;
+		}
+		$auth_act = $this->authmodel->manager_limit_act('setting_imagehosting_act');
+		$this->template->assign(array('imagehosting_act' => $auth_act));
+		/* 관리자 권한 체크 : 끝 */
+		
+		// 기능별 저장소 데이터 가져오기
+		$this->load->model("imagehosting");
+		$data = $this->imagehosting->get_imagestoreList();
+
+		// 이미지 호스팅 계정 정보
+		$imagehostingList = $this->imagehosting->get_imagehostingList();
+		$this->template->assign(array('imagehostingList' => $imagehostingList));
+
+		// 구분, 항목명 가져오기
+		$this->config->load('imageStoreSet');
+		$imagestore_division = $this->config->item('imagestore_division');
+		$imagestore_division_rowspan = $this->config->item('imagestore_division_rowspan');
+		$imagestore_item = $this->config->item('imagestore_item');
+		$imagestore_item_default = $this->config->item('imagestore_item_default');
+		$imagestore_directory = $this->config->item('imagestore_directory');
+
+		if(isset($data)){
+			foreach($data as $idx => $row){
+				if(in_array($row['imagestore_item'], $imagestore_item_default)){ //대분류 기준 값에만 구분명, rowspan 값 설정
+					$data[$idx]['imagestore_division_title'] = $imagestore_division[$row['imagestore_division']];
+					$data[$idx]['imagestore_division_rowspan'] = $imagestore_division_rowspan[$row['imagestore_division']];
+				}
+				$data[$idx]['imagestore_item_title'] = $imagestore_item[$row['imagestore_item']];
+				$data[$idx]['imagestore_directory'] = $imagestore_directory[$row['imagestore_item']];
+				$data[$idx]['imagehostingList'] = $imagehostingList;
+
+				// 반응형/전용 스킨에 따라 설명 가져오기
+				if(in_array($row['imagestore_item'], array('all_navigation', 'slide_banner', 'event_banner'))){
+					$data[$idx]['imagestore_directory'] = $imagestore_directory[$row['imagestore_item']."_".$this->config_system['operation_type']];
+				}
+
+				// 입점몰 여부에 따라 상품등록(입점사) 초기화
+				if (!serviceLimit('H_AD') && $row['imagestore_division']== 'goods_provider') {
+					unset($data[$idx]);
+				}
+
+				// 입점몰 여부에 따른 본사/입점사 구분 노출
+				if (serviceLimit('H_AD') && $row['imagestore_division']== 'goods_headquaters') {
+					$data[$idx]['imagestore_directory'] = str_replace("%입점사번호%", "1", $data[$idx]['imagestore_directory']);
+				}
+			}
+			$this->template->assign(array('loop' => $data));
+		}
+
+		// 기능별 저장소 로그 가져오기
+		$this->load->library('actionhistorylibrary');
+		$param['category'] = ["image_store", "image_url"];
+		$log_list = $this->actionhistorylibrary->getHistorys($param);
+		$image_store_flag = $image_url_flag = false; // 첫번째 로그인지 체크
+		foreach($log_list['historys'] as $idx => $log){
+
+			// templete: %년%-%월%-%일% %시%:%분%:%초% %관리자명%(%관리자아이디%)가 설정을 변경하였습니다.(%아이피%) - %구분% > %항목%:%변경후설정%(%저장소명%)
+			$imagestoreLog = $log['regist_date']." ".$log['mname']."(".$log['manager_id'].")가 ".$log['action']."(".$log['regist_ip'].") - ".$log['detail'];
+
+			// 저장소 설정 로그
+			if($log['category']=="image_store") {
+				if($image_store_flag) $image_store_log .="\n";
+				$image_store_log .= $imagestoreLog;
+				$image_store_flag = true;
+			}
+			// 도메인 일괄 변경 로그
+			if($log['category']=="image_url") {
+				if($image_url_flag) $image_url_log .="\n";
+				$image_url_log .= $imagestoreLog;
+				$image_url_flag = true;
+			}
+			
+		}
+		$this->template->assign(array('image_store_log' => $image_store_log));
+		$this->template->assign(array('image_url_log' => $image_url_log));
+
+		$this->template->define(array('tpl'=>$this->template_path()));
+		$this->template->print_("tpl");
+	}
+
+	/* 기능별 저장소 도메인 일괄 변경 */
+	public function imagestore_setting(){
+		$this->tempate_modules();
+		$aGetParams = $this->input->get();
+
+		/* 관리자 권한 체크 : 시작 */
+		$auth = $this->authmodel->manager_limit_act('setting_imagehosting_act');
+		if(!$auth){
+			$callback = "history.go(-1);";
+			$this->template->assign(array('auth_msg'=>$this->auth_msg,'callback'=>$callback));
+			$this->template->define(array('denined'=>$this->skin.'/common/denined.html'));
+			$this->template->print_("denined");
+			exit;
+		}
+		/* 관리자 권한 체크 : 끝 */
+
+		// 이미지 호스팅 계정 정보
+		$this->load->model("imagehosting");
+		$imagehostingList = $this->imagehosting->get_imagehostingList();
+
+		// 기능별 저장소 데이터 가져오기
+		$this->load->model("imagehosting");
+		$data = $this->imagehosting->get_imagestoreList();
+		$target_imagestore = $data[$aGetParams['imagestore_seq']-1];
+
+		// 구분, 항목명 가져오기
+		$this->config->load('imageStoreSet');
+		$imagestore_division_list = $this->config->item('imagestore_division');
+		$imagestore_division = strip_tags($imagestore_division_list[$target_imagestore['imagestore_division']]);
+		$imagestore_item_list = $this->config->item('imagestore_item');
+		$imagestore_item = $imagestore_item_list[$target_imagestore['imagestore_item']];
+
+		// 저장소 경로 가져오기
+		$imagestore_directory_list = $this->config->item('imagestore_directory');
+		$imagestore_directory = $imagestore_directory_list[$target_imagestore['imagestore_item']];
+		// 반응형/전용 스킨에 따라 설명 가져오기
+		if(in_array($target_imagestore['imagestore_item'], array('all_navigation', 'slide_banner', 'event_banner'))){
+			$imagestore_directory = $imagestore_directory_list[$target_imagestore['imagestore_item']."_".$this->config_system['operation_type']];
+		}
+		// 입점몰 여부에 따른 본사/입점사 구분 노출
+		if (serviceLimit('H_AD') && $target_imagestore['imagestore_division']== 'goods_headquaters') {
+			$imagestore_directory = str_replace("%입점사번호%", "1", $imagestore_directory);
+		}
+		foreach(explode("/", $imagestore_directory) as $dKey => $dValue){
+			if($dKey == 1)$imagehostingList[0]['store_url'] = "/". $dValue;
+			if($dKey == 2)$imagehostingList[0]['store_dir'] = $dValue;
+		}
+
+		$this->template->assign(array('imagehostingList' => $imagehostingList));
+		$this->template->assign(array('imagestore_division' => $imagestore_division));
+		$this->template->assign(array('imagestore_item' => $imagestore_item));
+		$this->template->assign(array('imagestore_seq' => $aGetParams['imagestore_seq']));
+		$this->template->define(array('tpl'=> $this->skin.'/setting/_imagestore_setting.html'));
+		$this->template->print_("tpl");
+	}
+
 	/* 캐시 설정 */
 	public function cache()
 	{

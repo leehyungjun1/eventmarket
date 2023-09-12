@@ -1,0 +1,122 @@
+<div id="tip1" class="tip_wrap" data-tip="image-hosting">
+	<h1>상품등록(본사)</h1>
+	<div class="con_wrap">
+		<ul class="tabs">
+			<li class="active">상품등록</li>
+			<li>상품페이지 조회</li>
+			<li>디자인 편집</li>
+			<li>프로모션</li>
+		</ul>
+		<div class="image">
+			<img src="/admin/skin/default/images/setting/image_hosting_01.jpg" alt="">
+		</div>
+	</div>
+</div>
+
+<div id="tip4" class="tip_wrap" data-tip="image-hosting">
+	<h1>상품등록(입점사)</h1>
+	<div class="con_wrap">
+		<ul class="tabs">
+			<li class="active">상품등록</li>
+			<li>상품페이지 조회</li>
+			<li>디자인 편집</li>
+			<li>프로모션</li>
+		</ul>
+		<div class="image">
+			<img src="/admin/skin/default/images/setting/image_hosting_01.jpg" alt="">
+		</div>
+	</div>
+</div>
+
+<div id="tip7" class="tip_wrap" data-tip="image-hosting">
+	<h1>상품페이지조회(카테고리/브랜드/지역)</h1>
+	<div class="con_wrap">
+		<ul class="tabs">
+			<li>상품등록</li>
+			<li class="active">상품페이지 조회</li>
+			<li>디자인 편집</li>
+			<li>프로모션</li>
+		</ul>
+		<div class="image">
+			<img src="/admin/skin/default/images/setting/image_hosting_02.jpg" alt="">
+		</div>
+	</div>
+</div>
+
+<div id="tip10" class="tip_wrap" data-tip="image-hosting">
+	<h1>디자인 편집</h1>
+	<div class="con_wrap">
+		<ul class="tabs">
+			<li>상품등록</li>
+			<li>상품페이지 조회</li>
+			<li class="active">디자인 편집</li>
+			<li>프로모션</li>
+		</ul>
+		<div class="image">
+			<img src="/admin/skin/default/images/setting/image_hosting_03.jpg" alt="">
+		</div>
+	</div>
+</div>
+
+<div id="tip12" class="tip_wrap" data-tip="image-hosting">
+	<h1>프로모션</h1>
+	<div class="con_wrap">
+		<ul class="tabs">
+			<li>상품등록</li>
+			<li>상품페이지 조회</li>
+			<li>디자인 편집</li>
+			<li class="active">프로모션</li>
+		</ul>
+		<div class="image">
+			<img src="/admin/skin/default/images/setting/image_hosting_04.jpg" alt="">
+		</div>
+	</div>
+</div>
+
+<div id="tip_imagehosting" class="tip_wrap" data-tip="image-hosting">
+	<h1>FTP 접속 정보</h1>
+	<div class="con_wrap">
+		<ul class="bullet_hyphen">
+			<li>이미지 호스팅 설정방법 <a href="https://www.firstmall.kr/customer/faq/21995" target="_blank" class="link_blue_01">자세히 보기</a></li>
+		</ul>	
+	</div>
+</div>
+
+<div id="tip_upload_test" class="tip_wrap" data-tip="image-hosting">
+	<h1>업로드 테스트</h1>
+	<div class="con_wrap">
+		<ul class="bullet_hyphen">
+			<li>FTP 접속 가능 여부와 저장소에 파일이 정상적으로 업로드되는지 확인합니다.</li>
+			<li>테스트를 위해 입력하신 저장 폴더에 빈 텍스트 파일이 생성됩니다.</br>(파일명: firstmall_imagehosting.txt)</li>
+			<li>저장소 내 입력하신 저장 폴더가 없는 경우 자동 생성됩니다.</li>
+			<li>업로드 테스트 실패는 저장소에 이미지가 성장적으로 업로드되지 않음을 의미합니다.</li>
+		</ul>	
+	</div>
+</div>
+
+<script>
+	const tabs = document.querySelectorAll("[data-tip='image-hosting'] .tabs");
+	tabs.forEach(tab => {
+		const tabLists = tab.querySelectorAll("li")
+		tabLists.forEach(list => {
+			const handleChangeImage = (list) => {
+				if ([...tabLists].indexOf(event.target) === list) {
+					event.target.closest(".con_wrap").querySelector("img").src = "/admin/skin/default/images/setting/image_hosting_0" + (list + 1) + ".jpg"
+				}
+			}
+			list.addEventListener("click", (event) => {
+				event.target.closest(".tabs").querySelectorAll("li").forEach(list => {
+					list.classList.remove("active");
+				})
+				event.target.classList.add("active");
+				handleChangeImage(0)
+				handleChangeImage(1)
+				handleChangeImage(2)
+				handleChangeImage(3)
+			})
+		})
+	})
+</script>
+<style>
+	.tooltip_area {width: auto !important}
+</style>

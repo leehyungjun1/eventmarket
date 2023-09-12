@@ -143,7 +143,6 @@ class goodsLibrary
 		$batch['if']['ifrelation']			= "추천상품";
 		$batch['if']['category']			= "카테고리/브랜드/지역";
 		$batch['if']['ifep_shipping']		= "입점 마케팅";
-        $batch['if']['imagehosting']		= "이미지 호스팅";
         
 		// 입점사에 사용가능여부 인 경우에만 노출 :: 2019-09-16 pjw
 		if(serviceLimit('H_AD') && $this->CI->config_system['use_membersale_update'] == 'Y'){

@@ -520,33 +520,6 @@ class goods extends selleradmin_base {
 		$this->template->print_("tpl");
 	}
 
-	//이미지호스팅 일괄업데이트시의 옵션정보보기
-	public function batch_option_view_imagehosting()
-	{
-		$no = $_GET['no'];
-		$cfg_order = config_load('order');
-
-		$file_path	= $this->template_path();
-
-		$data_goods = $this->goodsmodel->get_goods($no);
-		$data_option = $this->goodsmodel->get_goods_option($no);
-		foreach($data_option as $k=>$data){
-			$data['shipping_policy'] = $data_goods['shipping_policy'];
-			$data['unlimit_shipping_price'] = $data_goods['unlimit_shipping_price'];
-			$data['reserve_policy'] = $data_goods['reserve_policy'];
-			$field = 'reservation'.$cfg_order['ableStockStep'];
-			$data['able_stock'] = $data['stock'] - $data[$field];
-			$data_option[$k]=$data;
-		}
-		$loop = $data_option;
-		if($_GET['mode'] != 'view') $file_path = str_replace('batch_option_view_imagehosting','batch_option',$file_path);
-
-		$this->template->assign('loop',$loop);
-		$this->template->define(array('tpl'=>$file_path));
-		$this->template->print_("tpl");
-	}
-
-
 	public function batch_modify()
 	{
 		$cfg_order = config_load('order');
@@ -566,13 +539,6 @@ class goods extends selleradmin_base {
 
 		$mode = $this->input->get('mode');
 		if(!$this->input->get('mode')) $mode = "ifgoods"; // 기본값 설정
-
-		//이미지호스팅사용여부
-		if( $mode == "imagehosting" ) {
-			$this->load->model("imagehosting");
-			$this->template->assign(array('imagehostingftp'=>$this->imagehosting->imagehostingftp));
-			$this->template->define(array('openmarketimghosting' => $this->skin.'/goods/_openmarket_imagehosting.html'));
-		}
 
 		// 상품검색폼
 		$this->template->define(array('goods_search_form' => $this->skin.'/goods/goods_search_form.html'));
@@ -605,12 +571,6 @@ class goods extends selleradmin_base {
 				break;
 			case	'commoninfo'	:
 				$check_function = "chk_commoninfo";
-				break;
-			case	'imagehosting'	:
-				$check_function = "chk_hosting_info";
-				$this->load->model("imagehosting");
-				$this->template->assign(array('imagehostingftp'=>$this->imagehosting->imagehostingftp));
-				$this->template->define(array('openmarketimghosting' => $this->skin.'/goods/_openmarket_imagehosting.html'));
 				break;
 			case	'watermark'		:
 				$config_watermark = config_load('watermark');
@@ -712,10 +672,6 @@ class goods extends selleradmin_base {
 				$data['images'] = $this->goodsmodel->get_goods_image($data['goods_seq']);
 				$data['cut_count'] = count($data['images']);
 
-			}
-
-			if( $_GET['mode'] == "imagehosting" ) {
-				$this->imagehosting->get_contents_cnt($data['contents'],$data['changeimg'],$data['orgimg']);
 			}
 
 			$data['color_pick_list']= ($data['color_pick'])? explode(",",$data['color_pick']): "" ;
@@ -884,7 +840,7 @@ class goods extends selleradmin_base {
 			}
 		}
 
-		if(in_array($mode,array('shipping','icon','category','imagehosting','commoninfo'))) {
+		if(in_array($mode,array('shipping','icon','category','commoninfo'))) {
 			$this->template->assign('diff_layout', true);
 		}
 		
@@ -1028,11 +984,6 @@ class goods extends selleradmin_base {
 		// 에디터 세팅
 		$config_setting_editor = config_load('goods_contents_editor');
 		$this->template->assign(array('config_setting_editor'=>$config_setting_editor));
-
-		//이미지호스팅사용여부
-		$this->load->model("imagehosting");
-		$this->template->assign(array('imagehostingftp'=>$this->imagehosting->imagehostingftp));
-		$this->template->define(array('openmarketimghosting' => $this->skin.'/goods/_openmarket_imagehosting.html'));
 
 		$provider_seq 		= $this->providerInfo['provider_seq'];
 		$limit_stock 		= '';

@@ -807,7 +807,9 @@ class goods_process extends admin_base {
 		    unset($_POST['feed_std_postpay']);
 		}
 		
-		$result	= $this->goodsHandlermodel->goodsHandle($goodsSeq);
+		$result_goodsHandle = $this->goodsHandlermodel->goodsHandle($goodsSeq);
+		$result = $result_goodsHandle['goodsSeq'];
+
 		$this->goodsmodel->default_price($result);
 
 		if($result){
@@ -891,7 +893,6 @@ class goods_process extends admin_base {
 					$alertText		= "상품이 {$modeAlertText} 되었습니다.";
 			}
 
-
 			$openDialogAlertWitdh = 400;
 			$openDialogAlertHeight = 140;
 			// 오픈마켓 상품 여부 확인
@@ -912,6 +913,12 @@ class goods_process extends admin_base {
 				}
 			}
 
+			//이미지호스팅 결과 메세지
+			if($result_goodsHandle['imagehosting']) {
+				$alertText	.= $result_goodsHandle['imagehosting']['message'];
+				$openDialogAlertWitdh = $result_goodsHandle['imagehosting']['dialogwidth'];
+				$openDialogAlertHeight = $result_goodsHandle['imagehosting']['dialogheight'];
+			}
 			openDialogAlert($alertText, $openDialogAlertWitdh, $openDialogAlertHeight, 'parent', $callback);
 		}
 	}
@@ -938,8 +945,6 @@ class goods_process extends admin_base {
 
 	// 실시간 이미지 업로드 :: 2016-04-29 lwh
 	public function goods_img_upload(){
-		$this->load->model('goodsmodel');
-
 		$aPostParams = $this->input->post();
 		$type		= ($aPostParams['type']) ? $aPostParams['type'] : 'each';
 		$idx		= $aPostParams['idx'];
@@ -948,7 +953,21 @@ class goods_process extends admin_base {
 		$fileColor	= $aPostParams['fileColorradio'];
 		$division	= $aPostParams['division'];
 		$uploadImg	= (is_array($aPostParams['uploadImg'])) ? $aPostParams['uploadImg'] : array($aPostParams['uploadImg']);
+		$provider_seq = $aPostParams['provider_seq'];
 
+		/* 이미지호스팅 사용 여부 및 기본 값 세팅 */
+		$this->load->library('imagehostinglibrary');
+		$imagestore_type = [];
+		$imagestore_type['imagestore_division'] = ($provider_seq == "1") ? "goods_headquaters" : "goods_provider";
+		$imagestore_type['imagestore_item'] = "goods_image";
+		$isImagehosting = $this->imagehostinglibrary->isImagehostingUse($imagestore_type);
+
+		$params_imagehosting = [];
+		$params_imagehosting['isImagehosting'] = $isImagehosting;
+		if($isImagehosting == true){
+			$params_imagehosting['imagestore_type'] = $imagestore_type;
+		}
+		
 		/* 기존 저장된 이미지에서 변경한 이미지가 있는지 확인 및 삭제 */
 		if($uploadImg[0] && $type == 'each'){
 			$delImgseq = array();
@@ -1002,10 +1021,22 @@ class goods_process extends admin_base {
 			if(!$upImg[$imgType.'GoodsImage']) continue;
 
 			// 실시간 이미지 업로드
-			$res = $this->goodsmodel->upload_goodsImage($upImg[$imgType.'GoodsImage'],$delImages[$i]);
+			$res = $this->goodsmodel->upload_goodsImage($upImg[$imgType.'GoodsImage'],$delImages[$i],$params_imagehosting);
+			
+			$res_imagehosting = $res['result_imagehosting'];
+			unset($res['result_imagehosting']);
+			if($isImagehosting === true){
+				$newPath ='';
+				foreach($res_imagehosting as $imagehosting_array){
+					$result_imagehosting['goods_image'][] = $imagehosting_array;
+					$newPath[] = $imagehosting_array['new_path'];
+				}
+			}else{
+				$newPath = $res;
+			}
 
 			// 실시간 이미지 연결
-			$this->goodsmodel->insert_goodsImage($imgType.'GoodsImage',$goodsSeq,$res,$idx);
+			$this->goodsmodel->insert_goodsImage($imgType.'GoodsImage',$goodsSeq,$newPath,$idx);
 
 			// 개별컷 변경으로 경로 워터마크 이미지 경로 보정
 			$this->load->model('watermarkmodel');
@@ -1022,9 +1053,13 @@ class goods_process extends admin_base {
 					}
 				}
 			}
-
 			$i++;
-			$res_img[] = $res;
+			$res_img[] = $newPath;
+		}
+
+		if($result_imagehosting){
+			$imagehostingMassage = $this->imagehostinglibrary->message($result_imagehosting);
+			$res_img['imagehosting'] = $imagehostingMassage;	
 		}
 
 		// 라벨 및 매칭컬러 업데이트 :: 2016-05-02 lwh
@@ -1034,7 +1069,6 @@ class goods_process extends admin_base {
 			if($imglabel)	$res_img['label'] = true;
 			if($fileColor)	$res_img['color'] = true;
 		}
-
 		echo json_encode($res_img);
 	}
 
@@ -1113,7 +1147,6 @@ class goods_process extends admin_base {
 		$info_seq		= $aPostParams['info_select_seq'];
 		$mode			= $aPostParams['mode'];
 		$r_info			= $aPostParams['r_info'];
-		$provider_seq = $aPostParams['provider_seq'];
 
 		//신규 등록 시 기존 info_seq 초기화
 		if($r_info == "create_info"){ 
@@ -1148,6 +1181,7 @@ class goods_process extends admin_base {
 			$editor['contents']			= $imgRes['contents'];
 			$editor['mobile_contents']	= $imgRes['mobile_contents'];
 			$editor['common_contents']	= $imgRes['common_contents'];
+			if(!empty($imgRes['result_imagehosting'])) $result_imagehosting = $imgRes['result_imagehosting'];
 			
 			if($upcolumn == 'common_contents'){
 				// 공용정보
@@ -1207,24 +1241,33 @@ class goods_process extends admin_base {
 
 			}
 
-			if($mode == 'ftp'){
-			}else{
-				if($mode != "info_only_update"){
-					echo "<script type='text/javascript'>";
-					if($upcolumn == 'common_contents' && $info_seq){
-						echo "parent.$('#info_select_seq').val('".$info_seq."');";
-					}
-					echo "parent.$('#".$contents_type."_view').html('".addslashes($editor[$upcolumn])."');";
-					echo "parent.$('#".$contents_type."').text('".addslashes($editor[$upcolumn])."');";
-					echo "</script>";
-
-					$callback = "";
-				}else{
-					$callback	= "parent.location.reload();";
+			if($mode != "info_only_update"){
+				echo "<script type='text/javascript'>";
+				if($upcolumn == 'common_contents' && $info_seq){
+					echo "parent.$('#info_select_seq').val('".$info_seq."');";
 				}
-				openDialogAlert("저장 되었습니다",400,160,'parent',$callback);
-				exit;
+				echo "parent.$('#".$contents_type."_view').html('".addslashes($editor[$upcolumn])."');";
+				echo "parent.$('#".$contents_type."').text('".addslashes($editor[$upcolumn])."');";
+				echo "</script>";
+
+				$callback = "";
+			}else{
+				$callback	= "parent.location.reload();";
 			}
+
+			$dialogwidth = 400;
+			$dialogheight = 160;
+			$message = "";
+			if($result_imagehosting){
+				$imagehostingMassage = $this->imagehostinglibrary->message($result_imagehosting);
+				$message = $imagehostingMassage['message'];
+				$dialogwidth = $imagehostingMassage['dialogwidth'];
+				$dialogheight = $imagehostingMassage['dialogheight'];
+			}
+
+			openDialogAlert("저장 되었습니다" . $message, $dialogwidth, $dialogheight,'parent',$callback);
+			exit;
+
 		}
 	}
 
@@ -4263,148 +4306,6 @@ class goods_process extends admin_base {
 		}
 
 
-	}
-
-
-	//상품일괄업데이트 >  PC/테블릿용 상품설명 업데이트
-	public function _batch_modify_imagehosting()
-	{
-		$this->load->model('imagehosting');
-		$this->aPostParams = $this->input->post();
-
-		if($this->aPostParams['modify_list'] == 'all'){
-			$_GET = $_POST;
-			$sc = $_GET;
-			$this->goodsmodel->batch_mode = 1;
-			$query = $this->goodsmodel->admin_goods_list($sc);
-			$query = $this->db->query($query);
-			foreach($query->result_array() as $data){
-				$r_goods_seq[] = $data['goods_seq'];
-			}
-		}else{
-			$r_goods_seq = $this->aPostParams['goods_seq'];
-		}
-		
-		if(!$r_goods_seq){
-			$callback = "";
-			$msg = "수정할 상품이 없습니다!";
-			openDialogAlert($msg,400,160,'parent',$callback);
-			exit;
-		}
-
-		$this->_set_imagehosting('batch');//접속정보체크\
-		//이미지호스팅연결
-		$this->imagehosting->ftpconn();
-		foreach($r_goods_seq as $goods_seq) {
-			$goods = $this->goodsmodel->get_goods($goods_seq);
-			//이미지호스팅연결
-			if($this->config_system['operation_type'] == 'light'){
-				$newcontents = $this->imagehosting->set_contents('contents', '', $goods_seq, 'mobile_contents', $goods['mobile_contents']);
-			}else{
-				$newcontents = $this->imagehosting->set_contents('contents', $goods['contents'], $goods_seq, 'mobile_contents', $goods['mobile_contents']);
-			}
-		}
-		$this->imagehosting->ftpclose();
-		//이미지호스팅연결
-		
-		$msg = "PC/테블릿용 상품설명정보가 변경 되었습니다.";
-		$callback = "parent.location.reload();";
-		openDialogAlert($msg,400,160,'parent',$callback);
-
-	}
-
-	##개별 상품수정페이지에서 > PC/테블릿용 상품설명 일괄변경
-	##반응형일경우 모바일기준이므로 모바일컨텐츠 저장으로 수정 :: 2019-03-20 pjw
-	public function batch_modify_imagehostgin(){
-		$this->load->model('imagehosting');
-		$this->aPostParams = $this->input->post();
-
-		if( isset($this->aPostParams['no']) ){
-			$this->_set_imagehosting();//접속정보체크
-
-			$no = (int) $this->aPostParams['no'];
-			
-			// 반응형일경우 모바일 기준
-			if($this->config_system['operation_type'] == 'light'){
-				$contents_key	= 'mobile_contents';
-				$target_text	= '반응형용';
-			}else{
-				$contents_key	= 'contents';
-				$target_text	= 'PC/테블릿용';
-			}
-
-			//$contents =  rawurldecode($this->aPostParams[$contents_key]);
-			$contents =  rawurldecode($_POST['contents']);
-			$mobile_contents =  rawurldecode($_POST['mobile_contents']);
-			
-			//이미지호스팅연결
-			$this->imagehosting->ftpconn();
-			$setcontents =$this->imagehosting->set_contents('contents', $contents, $no, 'mobile_contents', $mobile_contents);
-			$this->imagehosting->ftpclose();
-			
-			if( $setcontents['totalnum'] > 0 ) {
-				$msg = '변환대상 총 '.number_format($setcontents['totalnum']).'개중에서 '.number_format($setcontents['changenum']).'개 변환완료되었습니다.';
-				$result = array('result' => true, 'msg'=>$msg, 'contents'=>$setcontents['newcontents'], 'mobile_contents'=>$setcontents['newcontents2']);
-			}else{
-				$msg = '이미지 호스팅 변환파일이 없습니다.';
-				$result = array('result' => false, 'msg'=>$msg, 'contents'=>$setcontents['newcontents'], 'mobile_contents'=>$setcontents['newcontents2']);
-			}
-			echo json_encode($result);
-			exit;
-		}
-		$msg = '잘못된 접근입니다.';
-		$result = array('result' => false, 'msg'=>$msg);
-		echo json_encode($result);
-		exit;
-	}
-
-	// 이미지 호스팅 FTP연결상태 확인
-	function _set_imagehosting($type) {
-		$hostname	= $this->imagehosting->imagehostingftp['hostname'];
-		$username	= trim($this->aPostParams['username']);
-		$password	= trim($this->aPostParams['password']);
-		if	(!($hostname) || !($username) || !($password)){
-			$msg = '이미지 호스팅 정보를 정확히 입력하십시오!';
-			if ( $type == 'batch') {
-				openDialogAlert($msg,400,160,'parent',$callback);
-				exit;
-			}else{
-				$result = array('result' => false, 'msg'=>$msg);
-				echo json_encode($result);
-				exit;
-			}
-		}
-		$callback = 'parent.$("input#imghostingusername").val(\'\');parent.$("input#imghostingpassword").val(\'\');parent.closeDialog("openmarketimghostinglay");';
-		$FTP_CONNECT = @ftp_connect($hostname, $this->imagehosting->imagehostingftp['port'], 3);
-		if (!$FTP_CONNECT) {
-			$msg = 'FTP서버 연결에 문제가 발생했습니다.';
-			$msg = '이미지 호스팅 정보를 정확히 입력하십시오!';
-			if ( $type == 'batch') {
-				openDialogAlert($msg, 400, 140, 'parent', $callback);
-				exit;
-			}else{
-				$result = array('result' => false, 'msg'=>$msg);
-				echo json_encode($result);
-				exit;
-			}
-		}
-		$FTP_CRESULT = @ftp_login($FTP_CONNECT,$username,$password);
-
-		if (!$FTP_CRESULT) {
-			$msg = 'FTP서버 아이디나 패스워드가 일치하지 않습니다.';
-			if ( $type == 'batch') {
-				openDialogAlert($msg, 400, 140, 'parent', $callback);
-				exit;
-			}else{
-				$result = array('result' => false, 'msg'=>$msg);
-				echo json_encode($result);
-				exit;
-			}
-		}
-		
-		config_save('imagehosting',array('hostname'=>trim($this->aPostParams['hostname'])));
-		config_save('imagehosting',array('imagehostingDomainType'=>trim($this->aPostParams['imagehostingDomainType'])));
-		config_save('imagehosting',array('r_date'=>date("Y-m-d H:i:s")));
 	}
 
 	function get_option_goods_status($goods_seq,$runout,$ableStockLimit,$ableStockStep) {

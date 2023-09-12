@@ -457,12 +457,6 @@ class Goodsmodel extends CI_Model {
 			$goods['option_international_shipping_status'] = $_POST['option_international_shipping_status'];
 		}
 
-		//이미지호스팅체크 변환대상갯수
-		if ( $contents ) {
-			$this->load->model("imagehosting");
-			$this->imagehosting->get_contents_cnt($goods['contents'],$goods['convert_image_cnt'],$goods['noconvert_image_cnt']);
-		}
-
 		$goods['common_contents'] 			= $common_contents;
 		$goods['mobile_contents'] 			= $mobile_contents;
 		// 구매대상제한
@@ -859,17 +853,44 @@ class Goodsmodel extends CI_Model {
 		@chmod($dir,0777);
 		$dir = str_replace(ROOTPATH,"",$dir);
 
+		/* 이미지호스팅 기본 값 세팅 */
+		$this->load->library('imagehostinglibrary');
+		$imagestore_type = [];
+		$imagestore_type['imagestore_division'] = ($pseq == "1") ? "goods_headquaters" : "goods_provider";
+
 		// 해당 Editor 만 작업진행 :: 2016-05-09 lwh
 		if($aPostParams['contents']){
 			$res['contents'] = adjustEditorImages($aPostParams['contents'], '/'.$dir.'/',$seq);
+			$imagestore_type['imagestore_item'] = "contents";
 		}
 		if($aPostParams['common_contents']){
-			$res['common_contents'] = adjustEditorImages($aPostParams['common_contents'], '/'.$dir.'/',$seq);
+			$res['common_info'] = adjustEditorImages($aPostParams['common_contents'], '/'.$dir.'/',$seq);
+			$imagestore_type['imagestore_item'] = "common_info";
 		}
 		if($aPostParams['mobile_contents']){
 			$mobile_contents = adjustEditorImages($aPostParams['mobile_contents'], '/'.$dir.'/',$seq);
 			// 컨텐츠에 포함된 이미지태그를 찾아서 일정 사이즈로 분할 (모바일용)
 			$res['mobile_contents']	= $this->split_images($mobile_contents);
+			$imagestore_type['imagestore_item'] = "contents";
+		}
+
+		/* 이미지호스팅 사용 여부 체크 및 업로드 */
+		$isImagehosting = $this->imagehostinglibrary->isImagehostingUse($imagestore_type);
+		if($isImagehosting == true){
+			$result_imagehosting = $this->imagehostinglibrary->uploadEditorImage($res, $imagestore_type);
+			if($aPostParams['contents']){
+				$res['contents'] = $result_imagehosting['contents']['contents'];
+				unset($result_imagehosting['contents']['contents']);
+			}
+			if($aPostParams['common_contents']){
+				$res['common_contents'] = $result_imagehosting['common_info']['contents'];
+				unset($result_imagehosting['common_info']['contents']);
+			}
+			if($aPostParams['mobile_contents']){
+				$res['mobile_contents'] = $result_imagehosting['mobile_contents']['contents'];
+				unset($result_imagehosting['mobile_contents']['contents']);
+			}
+			$res['result_imagehosting'] = $result_imagehosting;
 		}
 
 		return $res;
@@ -951,7 +972,9 @@ class Goodsmodel extends CI_Model {
 		return $target;
 	}
 
-	public function upload_goodsImage($arr,$oldImg=''){
+	public function upload_goodsImage($arr,$oldImg='',$imagehosting = [])
+	{
+		$isImagehosting = ($imagehosting['isImagehosting']) ?? false; //이미지호스팅 사용 여부
 
 		foreach( $arr as $i => $file ){
 
@@ -968,20 +991,29 @@ class Goodsmodel extends CI_Model {
 				$tmpExe = explode(".", $file);
 				$exe = end($tmpExe);
 
-				if(extension_loaded('imagick') && ($exe == "jpg" || $exe == "jpeg")){
-					$img = new Imagick();
-					$img->readImage(ROOTPATH.''.substr($file,1));
-					$img->setImageCompression(Imagick::COMPRESSION_JPEG);
-					$img->setImageCompressionQuality(90);
-					$img->stripImage();
-					$img->writeImage(ROOTPATH.''.substr($target,1));
-					unset($img);
+				// 이미지호스팅 사용
+				if ($isImagehosting == true) {
+					$params_imagehosting = [];
+					$params_imagehosting['imagestore_type'] = $imagehosting['imagestore_type'];
+					$params_imagehosting['current_path_images'] = $file;
+					$params_imagehosting['new_path_images'] = $target;
+					$res['result_imagehosting'][] = $this->imagehostinglibrary->uploadImage($params_imagehosting);
 				} else {
-					rename('.'.$file,'.'.$target);
+					if(extension_loaded('imagick') && ($exe == "jpg" || $exe == "jpeg")){
+						$img = new Imagick();
+						$img->readImage(ROOTPATH.''.substr($file,1));
+						$img->setImageCompression(Imagick::COMPRESSION_JPEG);
+						$img->setImageCompressionQuality(90);
+						$img->stripImage();
+						$img->writeImage(ROOTPATH.''.substr($target,1));
+						unset($img);
+					} else {
+						rename('.'.$file,'.'.$target);
+					}
+	
+					@chmod('.'.$target,0777);
 				}
-
-				@chmod('.'.$target,0777);
-
+				
 				$res[] = $target;
 			}
 		}
@@ -1040,7 +1072,7 @@ class Goodsmodel extends CI_Model {
 	}
 
 	// 이미지 연결 :: 2016-04-29 lwh
-	public function insert_goodsImage($key,$goodsSeq,$file='',$cut_num=''){
+	public function insert_goodsImage($key,$goodsSeq,$file='',$cut_num=''){ 
 
 		if($file)	$img_arr = $file;
 		else		$img_arr = $_POST[$key];
@@ -1758,7 +1790,11 @@ class Goodsmodel extends CI_Model {
 				$data['image']	= $this->goodslist->adultImg;
 			}
 
-			list($imageWidth, $imageHeight) = getimagesize(ROOTPATH.$data['image']);
+			$image_directory = $data['image'];
+			if(substr($data['image'], 0,4) != 'http'){ // 로컬경로인 경우
+				$image_directory = ROOTPATH.$data['image'];
+			}
+			list($imageWidth, $imageHeight) = getimagesize($image_directory);
 
 			$data['imageWidth'] = $imageWidth > 0 ? $imageWidth : 0;
 			$data['imageHeight'] = $imageHeight > 0 ? $imageHeight : 0;
@@ -11769,6 +11805,14 @@ class Goodsmodel extends CI_Model {
 		$query = 'select * from (('.implode(') union (',$r_query).')) t order by t.start_date desc';
 		$query = $this->db->query($query);
 		$assignData['event_banner'] = $query->result_array();
+		
+		// 이미지호스팅 사용 유무에 따른 디렉토리 경로 재정의
+		foreach($assignData['event_banner'] as $idx => $event_banner){
+			$assignData['event_banner'][$idx]['banner_filename_src'] = $event_banner['banner_filename'];
+			if($event_banner['banner_filename'] && substr($event_banner['banner_filename'],0,4) != 'http'){
+				$assignData['event_banner'][$idx]['banner_filename_src'] = '/data/event/' . $event_banner['banner_filename'];
+			}
+		}
 
 		// 빅데이터 추가 무료몰 제외 추가 2017-06-01
 		if (! $no_bigdata && $this->isplusfreenot) {
@@ -14086,7 +14130,8 @@ class Goodsmodel extends CI_Model {
 			$insertGoods['goods_name']			= $goods['goods_name'];
 			$insertGoods['goods_code']			= $goods['goods_code'];
 			$insertGoods['option_use']			= ($goods['option_use'] == 'Y' )?'1':'0';
-			$goods_seq		= $this->goodsHandlermodel->goodsRegist($insertGoods, $providerInfo);
+			$result_goodsregist		= $this->goodsHandlermodel->goodsRegist($insertGoods, $providerInfo);
+			$goods_seq	= $result_goodsregist['goods_seq'];
 			/**
 			 * 빠른 상품 등록시 배송그룹 실물상품 개수 재계산
 			 * 2019-06-20

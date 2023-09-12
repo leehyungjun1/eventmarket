@@ -1,0 +1,536 @@
+{#layout_header_popup}
+
+<link rel="stylesheet" type="text/css" href="/app/javascript/plugin/slick/slick.css"><!-- 반응형 슬라이드 -->
+<link rel="stylesheet" type="text/css" href="/app/javascript/plugin/jquploadify/uploadify.css" />
+<script src="/app/javascript/plugin/slick/slick.min.js?v={=date('YmdHis')}"></script><!-- slick slider( 반응형 ) -->
+<script type="text/javascript" src="/app/javascript/jquery/jquery.ajax.form.js"></script>
+<script type="text/javascript" src="/app/javascript/js/ajaxFileUpload.js"></script>
+<style type="text/css">
+	.onlynumber {text-align:right;}
+	.sample_banner {margin:auto;}
+	.sample_banner_area {margin:auto;}
+	.banner-item-plus {cursor:pointer;}
+	.banner-item-minus {cursor:pointer;display:none;}
+	.uploadifyQueue {display:none;}
+	object {vertical-align:middle;}
+	.banner-item-row th{cursor:move;}
+	.small a, .small input, .small button, .small label{border-right: 0 !important;}
+</style>
+<script type="text/javascript">
+	var now_style = null;
+	var uploadify_idx = 0;
+	var design_working_skin = "{designWorkingSkin}";
+	var banner_setting_load_ing = false;
+	var slide_is_sample	= false;
+
+	$(function(){
+
+		<!--{ ? !_GET.popup }-->
+			{?template_path && banner_seq}
+			parent.DM_window_title_set("left","<a href=\"javascript:;\" onmouseup=\"DM_window_sourceeditor('{template_path}','\{=showDesignBanner({banner_seq})\}')\">◀ 슬라이드 배너 영역의 HTML소스보기</a>");
+			parent.DM_window_title_set("title","슬라이드 배너 변경");
+			<!--{ : }-->
+			parent.DM_window_title_set("title","슬라이드 배너 만들기");
+			<!--{ / }-->
+			parent.DM_window_title_set("center","");
+		<!--{ / }-->
+
+		// 이미지 입력폼 추가 이벤트
+		$(".banner-item-plus").live('click',function(){
+			banner_item_add();
+			sample_view();
+		});
+
+		// 이미지 입력폼 삭제 이벤트
+		$(".banner-item-minus").live('click',function(){
+			var i = $(".banner-item-row").index($(this).closest(".banner-item-row"));
+			$(this).closest(".banner-item-row").remove();
+
+			$(".banner-navigation-item-row").eq(i).remove();
+
+			$(".banner-item-row-num").each(function(i){$(this).html(i+1)});
+			$(".banner-navigation-item-row-num").each(function(i){$(this).html(i+1)});
+			sample_view();
+		});
+
+		// 적용
+		$("form[name='bannerForm']").live('change',function(){
+			if(!banner_setting_load_ing){
+				sample_view();
+			}
+		});
+
+		// 생성시 기본 이미지입력폼
+		<!--{ ? banner_seq }-->
+		banner_setting_load(false,'{banner_seq}');
+		<!--{ : }-->
+		banner_item_add();
+		banner_setting_load(true,'light_style_1');
+		<!--{ / }-->
+
+		// 스타일 변경
+		now_style = $("select[name='style']").val();
+		$("select[name='style']").change(function(){
+			{? banner_seq }
+				alert('스타일은 변경이 불가능합니다.\n해당 영역을 삭제 후 새로 등록해주세요.');
+				$("select[name='style']").val(now_style);
+				return false;
+			{:}
+			if(confirm("스타일을 변경하시면 샘플이미지로 세팅됩니다.\n변경하시겠습니까?")){
+				now_style = $("select[name='style']").val();
+				banner_setting_load(true, now_style);
+				return true;
+			}else{
+				$("select[name='style']").val(now_style);
+				return false;
+			}
+			{/}
+			
+		});
+
+		$("form[name='bannerForm']").submit(function(){
+			if($(".banner-item-row-num").length<2){
+				openDialogAlert("이미지를 최소 2개 이상 등록하셔야합니다.",400,140,function(){
+					$(".banner-item-plus").trigger('click');
+				});
+				return false;
+			}
+
+			if(slide_is_sample){
+				openDialogAlert('현재 등록된 이미지는 샘플이미지 입니다.<br/>새로운 이미지를 등록해주세요.','400','180',function(){ $(".banner-item-plus").eq(0).focus(); });
+				return false;
+			}
+		});
+
+		$('.image_sort table tbody').sortable({stop : sample_view});
+	});
+
+	// 배너 설정 로딩 ajax
+	function banner_setting_load(is_sample,val){
+		banner_setting_load_ing = true;
+		if(is_sample){
+			slide_is_sample = is_sample;
+			var data = {'style':val};
+		}else{
+			var data = {'banner_seq':val};
+		}
+
+		$.ajax({
+			'url' : 'banner_setting_load',
+			'data' : data,
+			'dataType' : 'json',
+			'success' : function(res){
+				if(res){
+
+					now_style = res.style;
+
+					$("input[name='skin']").val(res.skin);
+					$("input[name='platform']").val(res.platform);
+					$("input[name='name']").val(res.name);
+					$("select[name='style']").val(res.style);
+					$("input[name='image_width']").val(res.image_width);
+					$("input[name='image_height']").val(res.image_height);
+
+					$(".banner-item-row-wrap").empty();
+					if(res.images && res.images.length>0){
+						for(var i=0;i<res.images.length;i++){
+							banner_item_add();
+							var obj = $(".banner-item-row").last();
+							obj.find("input[name='link[]']").val(res.images[i].link);
+							obj.find("select[name='target[]']").val(res.images[i].target);
+							if(is_sample){
+								obj.find("img.webftpFormItemPreview").attr('src',res.images[i].image).show();
+								obj.find("input[name='image[]']").val(res.images[i].image);
+							}else{
+								var tmpimage = '/data/skin/'+design_working_skin+'/'+res.images[i].image;
+								if(is_url_path(res.images[i].image)){
+									tmpimage = res.images[i].image;
+								}
+								obj.find("img.webftpFormItemPreview").attr("src",tmpimage +'?'+Math.floor(Math.random()*1000000000)).show();
+								obj.find("input[name='image[]']").val(tmpimage);
+							}
+
+							if(res.images[i].image_width && res.images[i].image_height){
+								obj.find(".webftpFormItemPreviewSize").html(res.images[i].image_width+" x "+res.images[i].image_height);
+							}
+
+							if(res.images[i].tag_ctrl){
+								obj.find("textarea[name='tag_ctrl[]']").val(res.images[i].tag_ctrl);
+							}
+
+						}
+					}else{ // 이미지 없을때 기본 등록창 추가
+						banner_item_add();
+					}
+
+					// 스타일별 설정값
+					if(now_style == 'light_style_2'){
+						$(".tag_ctrl").show();
+						$(".style2WarningText").show();
+					}else{
+						$(".tag_ctrl").hide();
+						$(".style2WarningText").hide();
+					}
+				}
+				banner_setting_load_ing = false;
+				sample_view();
+			}
+		});
+	}
+
+	// 이미지호스팅 사용 유무 체크
+	function is_url_path(path) {
+		if(path.substr(0, 4) == 'http') {
+			return true;
+		}
+		return false;
+	}
+
+	// 이미지 추가
+	function banner_item_add(){
+		$(".banner-item-row-wrap").append(banner_item_html());
+
+		var new_id = 'banner_item_image_'+(uploadify_idx++);
+		$(".banner-item-row").last().find("input.upload_btn").attr('id',new_id);
+
+		$(".banner-item-plus:gt(0)").hide();
+		$(".banner-item-minus:gt(0)").show();
+
+		setDefaultText();
+		banner_upload_event();
+
+		$(".banner-item-row-num").each(function(i){$(this).html(i+1)});
+	}
+	// 슬라이드 이미지 추가 후 이벤트 설정
+	function banner_upload_event(){
+		var opt			= {};
+		var callback	= function(res){
+			var that		= this;
+			var img_width	= $("#image_width").val();
+			var img_height	= $("#image_height").val();
+			var total_cnt	= $(".webftpFormItemPreview").length;
+
+			var result	= eval(res);
+			if(result.status){
+				if((result.fileInfo.image_width == img_width && result.fileInfo.image_height == img_height) || (!img_width && !img_height) || (total_cnt == 1) || slide_is_sample){
+					$(that).closest('.webftpFormItem').find('.webftpFormItemPreview').attr('src', result.filePath + result.fileInfo.file_name).show();
+					$(that).closest('.webftpFormItem').find('.webftpFormItemInput').val(result.filePath + result.fileInfo.file_name);
+					$(that).closest('.webftpFormItem').find('.webftpFormItemPreviewSize').text(result.fileInfo.image_width + ' x ' + result.fileInfo.image_height);
+
+					$("#image_width").val(result.fileInfo.image_width);
+					$("#image_height").val(result.fileInfo.image_height);
+					slide_is_sample = false;
+					sample_view();
+				}else{
+					alert('동일한 사이즈의 이미지만 등록 가능합니다. (' + img_width + ' x ' + img_height + ')');
+				}
+			}else{ // 업로드 실패
+				alert('[' + result.desc + '] ' + result.msg);
+				return false;
+			}
+		};
+
+		$('.ajaxSliderImage').each(function(){
+			$(this).createAjaxFileUpload(opt, callback);
+		});
+	}
+
+	// 이미지 등록 버튼
+	function image_insert(obj, type){
+		$(obj).closest('.webftpFormItem').find('.' + type).click();
+	}
+
+
+	// 이미지 추가 HTML
+	function banner_item_html(){
+		var html		= '';
+		var add_html	= '';
+		var area_class	= 'hide';
+		var link_class	= 'hide';
+		if(now_style == 'light_style_2'){
+			link_class	= 'hide';
+			area_class	= '';
+			add_html	+= '<li class="text1">GET UP TO <strong class="st1">60%</strong> OFF</li>\n';
+			add_html	+= '<li class="text2">SUMMER SALE</li>\n';
+			add_html	+= '<li class="text3">Limited items available at this price.</li>\n';
+			add_html	+= '<li class="sbtns1"><a class="sbtn sbtn1" href="#">GOTO SHOP</a></li>';
+		}else{
+			link_class	= '';
+			area_class	= 'hide';
+		}
+		html += '<tr class="banner-item-row">';
+		html += '	<th class="dsts-th">';
+		html += '	<img src="/admin/skin/default/images/common/icon_move.gif">';
+		html += '	이미지 (<span class="banner-item-row-num"></span>)';
+		html += '	</th>';
+		html += '	<td class="dsts-td center">';
+		html += '		<span class="banner-item-plus"><img src="../images/design/icon_design_plus.gif" /></span>';
+		html += '		<span class="banner-item-minus"><img src="../images/design/icon_design_minus.gif" /></span>';
+		html += '	</td>';
+		html += '	<td class="dsts-td left webftpFormItem" style="border-left:0; padding-left:0;">';
+		html += '		<select class="sel_target ' + link_class + '" name="target[]">';
+		html += '			<option value="_self">현재창</option>';
+		html += '			<option value="_blank">새창</option>';
+		html += '		</select>';
+		html += '		<input type="text" class="input_link ' + link_class + '" name="link[]" value="" size="30" maxlength="200" title="링크주소" />';
+		html += '		<img src="" class="webftpFormItemPreview hide hand" style="width:20px;height:20px;vertical-align:middle;" onclick="window.open(this.src)">';
+		html += '		<input type="hidden" class="webftpFormItemInput" name="image[]" value="" size="30" maxlength="200" />';
+		html += '		<span class="btn small lightblue"><button type="button" class="btnSliderUpload" onclick="image_insert(this,\'ajaxSliderImage\');">이미지 등록</button></span>';
+		html += '		<input type="file" name="tmp_image" value="" class="ajaxSliderImage hide" />';
+		html += '		<span class="orange" style="display:inline-block; vertical-align:middle;">등록 이미지 (<span class="webftpFormItemPreviewSize"></span>)</span>';
+		html += '	</td>';
+		html += '	<td class="dsts-td tag_ctrl center ' + area_class + '" style="padding:7px">';
+		html += '		<textarea name="tag_ctrl[]" cols="75" rows="5" style="width:100%; box-sizing:border-box;" title="원하시는 태그를 입력하여 사용해주세요.">' + add_html + '</textarea>';
+		html += '	</td>';
+		html += '</tr>';
+
+		return html;
+	}
+
+	// 미리보기
+	function sample_view(){
+		var tmp_html	= '';
+		var link = img = target = tag_ctrl = '';
+		reset_slick(); // slick 초기화
+		$('.webftpFormItemInput').each(function(idx){
+			if($(this).val()){
+				img		= $(this).val()+"?{=date('YmdHis')}";
+				if(now_style == 'light_style_2'){
+					tag_ctrl = $("textarea[name='tag_ctrl[]']").eq(idx).val(); 
+					tmp_html	= '<div class="sslide">';
+					tmp_html	+= '	<img class="simg" src="' + img + '" />';
+					tmp_html	+= '	<div class="slide_contents">';
+					tmp_html	+= '		<div class="wrap1">';
+					tmp_html	+= '			<div class="wrap2">';
+					tmp_html	+= '				<ul class="text_wrap">';
+					tmp_html	+= '					' + tag_ctrl;
+					tmp_html	+= '				</ul>';
+					tmp_html	+= '			</div>';
+					tmp_html	+= '		</div>';
+					tmp_html	+= '	</div>';
+					tmp_html	+= '</div>';
+				}else{
+					target		= $("select[name='target[]']").eq(idx).val();
+					link		= $("input[name='link[]']").eq(idx).val();
+					tmp_html	= '<div class="sslide"><a class="slink" href="' + link + '" target="_blank"><img class="simg" src="' + img + '" /></a></div>';
+				}
+				$('.'+now_style).slick('slickAdd',tmp_html);
+			}
+		});
+
+		// 하단 으로 이동
+		 $(document).scrollTop($(document).height());
+	}
+
+	// slick 초기화
+	function reset_slick(){
+		$('.light_style_1').slick('unslick');
+		$('.light_style_2').slick('unslick');
+		$('.light_style_1').empty();
+		$('.light_style_2').empty();
+		if(now_style == 'light_style_1'){
+			$('.light_style_1').slick({dots:true, autoplay:true, speed:1000, fade:true, autoplaySpeed:3000});
+		}else{
+			$('.light_style_2').slick({dots:true, autoplay:true, pauseOnHover:false, speed:1000, fade:true, autoplaySpeed:3000});
+		}
+	}
+
+	function default_img(obj){
+		idx = obj.idx.split('_');
+		that = $('.'+obj.selector).find('table').eq(idx[0]).find('tr').eq(idx[1]);
+
+		var img_width	= $("#image_width").val();
+		var img_height	= $("#image_height").val();
+		var total_cnt	= $(".webftpFormItemPreview").length;
+
+		if((obj.width == img_width && obj.height == img_height) || (!img_width && !img_height) || (total_cnt == 1) || slide_is_sample){
+			that.find('.webftpFormItemPreview').prop('src','/'+obj.tmpFile).show();
+			that.find('.webftpFormItemInput').val('/'+obj.tmpFile);
+			that.find('.webftpFormItemPreviewSize').text(obj.width +' x '+obj.height);
+
+			$("#image_width").val(obj.width);
+			$("#image_height").val(obj.height);
+			slide_is_sample = false;
+			sample_view();
+		}else{
+			alert('동일한 사이즈의 이미지만 등록 가능합니다. (' + img_width + ' x ' + img_height + ')');
+		}
+	}
+
+	function image_popup(division,selector,e){
+		idx = $(e).closest('table').index()+'_'+$(e).closest('tr').index();
+		window.open('image_upload?division='+division+'&selector='+selector+'&idx='+idx,'image_popup','width=500,height=250');
+	}
+</script>
+
+<form name="bannerForm" method="post" action="../design_process/banner_edit" target="actionFrame">
+<input type="hidden" name="skin" value="" />
+<input type="hidden" name="page_type" value="{page_type}" />
+<input type="hidden" name="tab" value="{tab}" />
+<input type="hidden" name="banner_seq" value="{banner_seq}" />
+<input type="hidden" name="template_path" value="{template_path}" />
+<input type="hidden" name="platform" value="responsive" />
+<input type="hidden" name="direct" value="{_GET.direct}" />
+
+<div class="pd15">
+	<div class="item-title" style="margin:0px">기본정보</div>
+	<table class="design-simple-table-style" width="100%" align="center">
+		{ ? banner_seq }
+		<col width="120" /><col width="20%" />
+		{ / }
+		<col width="120" /><col width="" />
+		<col width="120" /><col width="20%" />
+		<tr>
+			<!--{ ? banner_seq }-->
+			<th class="dsts-th">
+				번호
+			</th>
+			<td class="dsts-td left">
+				{banner_seq}
+			</td>
+			<!--{ / }-->
+			<th class="dsts-th">
+				배너명
+			</th>
+			<td class="dsts-td left">
+				<input type="text" name="name" size="30" maxlength="20" />
+			</td>
+			<th class="dsts-th">
+				스타일
+			</th>
+			<td class="dsts-td left">
+				<select name="style" {?banner_seq}onmousedown="alert('스타일은 변경이 불가능합니다.\n해당 영역을 삭제 후 새로 등록해주세요.');" style="background-color:#b7b7b7;"{/}>
+					<!--{ @ banner_styles }-->
+					<option value="{.key_}" platform="{.platform}">{.name}</option>
+					<!--{ / }-->
+				</select>
+			</td>
+		</tr>
+	</table>
+
+	<input type="hidden" name="image_width" id="image_width" value="" />
+	<input type="hidden" name="image_height" id="image_height" value="" />
+	<div class="item-title">미리보기</div>
+	<div class="sample_banner_area mt10 mb20">
+		<div class="sample_banner">
+			<!-- sliderA( 이미지 링크형 ) :: START -->
+			<div class="custom_slider sliderA">
+				<div class="light_style_1">
+				</div>
+			</div>
+			<!-- sliderA( 이미지 링크형 ) :: END -->
+			<!-- sliderB( 이미지 + 텍스트/버튼 조합형 ) -->
+			<div class="custom_slider sliderB">
+				<div class="light_style_2">
+				</div>
+			</div>
+			<!-- sliderB( 이미지 + 텍스트/버튼 조합형 ) :: END -->
+		</div>
+	</div>
+	<script>
+		$(function() {
+			$('.light_style_1').slick({
+				dots: true,
+				autoplay: true,
+				speed: 1000,
+				fade: true,
+				autoplaySpeed: 8000
+			});
+		});
+		$(function() {
+			$('.light_style_2').slick({
+				dots: true,
+				autoplay: true,
+				pauseOnHover: false,
+				speed: 1000,
+				fade: true,
+				autoplaySpeed: 8000
+			});
+		});
+	</script>
+
+	<div class="item-title">이미지 &nbsp; <span class="red" style="font-size:12px; font-weight:normal;">(등록 이미지의 크기는 모두 동일해야 합니다)</span></div>
+
+	<div class="image_sort">
+		<table width="100%" align="center" class="design-simple-table-style">
+			<col width="120" />
+			<col width="40" />
+			<col width="" />
+			<col width="" />
+			<tbody class="banner-item-row-wrap">
+			</tbody>
+		</table>
+	</div>
+	
+	<!-- STYLE2 텍스트 변경 시 주의사항 안내 -->
+	<div class="style2WarningText" style="margin-top:10px; border:1px #767676 solid; padding:10px; line-height:1.5; display:none;">
+		<p style="font-size:14px; font-weight:bold; color:#f00;">STYLE2 텍스트 변경 시 주의사항</p>
+		<div style="padding-top:5px; color:#666;">
+			샘플 예제에서 사용된 &lt;li&gt;, &lt;strong&gt;, &lt;a&gt; 등의 '태그(Tag)'는 '시작 태크(Start Tag)'와 '종료 태크(End Tag)'의 한쌍으로 구성되어야 합니다.<br />
+			<span class="red">만약 그렇지 않을 경우 오류가 발생되니 주의하시기 바랍니다.</span>
+			<span class="btn small black"><button type="button" onclick="openDialog('배너 텍스트 변경 시 주의사항', '#style2WarningLayer', {'width':'640', 'height':'720', 'show':'fade', 'hide':'fade'});">배너 텍스트 변경 시 주의사항 &gt;</button></span><br />
+			배너 텍스트 변경 후 계속해서 오류가 발생할 경우 <span class="btn small black"><button type="button" onclick="openDialog('STYLE2 소스 샘플 예제', '#style2SourceSample', {'width':'600', 'height':'160', 'show':'fade', 'hide':'fade'});">여기</button></span> 에서 샘플 예제를 복사(Ctrl+C)하여 위에 붙여넣기(Ctrl+V)로 입력 후 저장하십시오.<br />
+		</div>
+	</div>
+
+	<div class="mt15 center">
+		<span class="btn large cyanblue submit_button"><input type="submit" value="적용" /></span>
+		<!--{ ? template_path }-->
+			<span class="btn large"><input type="button" value="목록" onclick="parent.DM_window_banner_insert('{template_path}')"/></span>
+		<!--{ / }-->
+
+	</div>
+	<div style="height:30px"></div>
+</div>
+</form>
+
+<!-- 배너 텍스트 변경 시 주의사항 --> 
+<div id="style2WarningLayer" class="hide pd10" style="line-height:1.5;">
+	아래와 같이 간략하게 HTML을 설명 드린 후 배너 텍스트 변경 시 주의사항을 안내 드립니다.<br /><br />
+
+	<p style="padding-bottom:3px; font-weight:bold;">1. HTML 설명</p>
+	HTML이란? 웹페이지를 만들기 위한 언어입니다.<br />
+	즉, 사람이 언어(한국어, 중국어, 영어 등)로 의사를 표현하는 것과 마찬가지로<br />
+	웹페이지는 HTML이란 언어로 텍스트, 이미지, 음성, 영상 등을 화면에 표현합니다.<br /><br />
+
+	한글이 자음와 모음으로 이뤄지듯이<br />
+	HTML은 '태그(Tag)'라는 요소로 구성됩니다.<br />
+	'태그(Tag)'는 꺾쇠 괄호(&lt;&gt;)에 둘러싸인 이름입니다.<br />
+	'태그(Tag)'의 이름마다 정의된 역할(표현)이 있습니다.<br />
+	'태그(Tag)'는 '시작 태크(Start Tag)'와 '종료 태크(End Tag)'의 한쌍으로 작성합니다.<br />
+	'종료 태크(End Tag)'의 이름은 슬래시 문자("/")로 시작합니다.<br />
+	<span style="color:#999;">예) &lt;strong&gt; ... &lt;/strong&gt; : ...을 굵은 글씨로 만듦</span><br />
+	<span style="color:#999;">예) &lt;br&gt; ... &lt;/br&gt; : ...을 줄바꾸기</span><br /><br />
+
+	'태그(Tag)'에 따라 '종료 태크(End Tag)'가 없는 '태크(Tag)'도 있습니다.<br />
+	<span style="color:#999;">예) &lt;img&gt; : 이미지를 표현하는 '태그(Tag)'인 &lt;img&gt; 태그는 '종료 태크(End Tag)'가 없습니다.</span><br /><br /><br />
+
+
+	<p style="padding-bottom:3px; font-weight:bold;">2. 배너 텍스트 변경 시 주의사항</p>
+	배너 위에 텍스트를 표현하기 위해 웹페이지 언어인 HTML이 사용되었습니다.<br />
+	샘플 예제에서 사용된 '태그(Tag)'는 &lt;li&gt;, &lt;strong&gt;, &lt;a&gt;와 같으며<br />
+	<span class="red">
+		해당 '태그(Tag)'는  '시작 태크(Start Tag)'와 '종료 태크(End Tag)'의 한쌍으로 작성되어야 합니다.<br />
+		즉, '시작 태크(Start Tag)'가 있으면 '종료 태크(End Tag)'가 있어야 하며<br />
+		반대로 '종료 태크(End Tag)' 가 있으면 '시작 태크(Start Tag)'가 있어야 합니다.<br />
+		만약 그렇지 않을 경우 웹페이지에서 오류가 발생되니 주의하시기 바랍니다.<br />
+	</span>
+	<span style="color:#999;">예) &lt;/strong&gt; '종료 태크(End Tag)'가 없을 경우 오류</span><br />
+	<span style="color:#999;">&lt;li class=＂text1＂&gt;GET UP TO &lt;strong class=＂st1＂&gt;60% OFF&lt;/li&gt;</span><br /><br />
+
+	<span style="color:#999;">예) &lt;li&gt; '시작 태크(Start Tag)'가 없을 경우 오류</span><br />
+	<span style="color:#999;">&lt;a class="sbtn sbtn1" href="#"&gt;GOTO SHOP&lt;/a&gt;&lt;/li&gt;</span><br /><br />
+
+	<span style="color:#999;">예) &lt;/a&gt;&lt;/li&gt; '종료 태크(End Tag)'가 없을 경우 오류</span><br />
+	<span style="color:#999;">&lt;li class="sbtns1"&gt;&lt;a class="sbtn sbtn1" href="#"&gt;GOTO SHOP</span><br />
+</div>
+
+<!-- STYLE2 소스 샘플 예제 --> 
+<div id="style2SourceSample" class="hide pd10" style="line-height:1.5; color:#999;">
+	<span class="blue">&lt;li class="text1"&gt;</span>GET UP TO <span class="orange">&lt;strong class="st1"&gt;</span>60%<span class="orange">&lt;/strong&gt;</span> OFF<span class="blue">&lt;/li&gt;</span><br />
+	<span class="blue">&lt;li class="text2"&gt;</span>SUMMER SALE<span class="blue">&lt;/li&gt;</span><br />
+	<span class="blue">&lt;li class="text3"&gt;</span>Limited items available at this price.<span class="blue">&lt;/li&gt;</span><br />
+	<span class="blue">&lt;li class="sbtns1"&gt;</span><span class="orange">&lt;a class="sbtn sbtn1" href="#"&gt;</span>GOTO SHOP<span class="orange">&lt;/a&gt;</span><span class="blue">&lt;/li&gt;</span><br />
+</div>
+
+{#layout_footer_popup}

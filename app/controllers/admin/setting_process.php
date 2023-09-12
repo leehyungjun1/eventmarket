@@ -5,6 +5,7 @@ class setting_process extends admin_base {
 	public function __construct() {
 		parent::__construct();
 		$this->load->library('validation');
+		$this->load->library('imagehostinglibrary');
 		$this->load->model('admin/setting');
 		$this->load->model('managermodel');
 	}
@@ -12,7 +13,6 @@ class setting_process extends admin_base {
 	/* 판매환경 설정 */
 	public function config()
 	{
-
 		$callback = "parent.document.location.reload();";
 
 		#### AUTH
@@ -1156,6 +1156,198 @@ class setting_process extends admin_base {
 		openDialogAlert("설정이 저장 되었습니다.",400,140,'parent',$callback);
 	}
 
+	/* 이미지호스팅 저장소 계정 설정 업로드테스트 or 저장 */
+	public function imagehosting_setting(){
+		$aPostParams = $this->input->post();
+
+		#### AUTH
+		$auth = $this->authmodel->manager_limit_act('setting_imagehosting_act');
+		if(!$auth){
+			$callback = "parent.history.go(-1);";
+			openDialogAlert($this->auth_msg,400,150,'parent',$callback);
+			exit;
+		}
+
+		// FTP 아이디/비밀번호 xss_clean : input->post() 는 이미 변환이 되어 original POST GET 이용해야함
+		$this->load->helper('Security');
+		$this->load->helper('xssfilter');
+		xss_clean_basic($_POST['store_username']);
+		xss_clean_basic($_POST['store_password']);
+
+		//유효성 검사
+		$this->validation->set_rules('store_name', '저장소 이름', 'trim|alpha_numeric_hangeul|max_length[10]|required|xss_clean');
+		$this->validation->set_rules('store_url_protocol', 'URL protocol', 'trim|required|max_length[8]|xss_clean');
+		$this->validation->set_rules('store_url', 'URL', 'trim|required|valid_url|max_length[30]|xss_clean');
+		$this->validation->set_rules('store_dir', '저장폴더', 'trim|required|max_length[20]|xss_clean'); // 제일 앞, 제일 뒤 / 제거하고 저장
+
+		$this->validation->set_rules('store_host', '호스트', 'trim|max_length[30]|required|xss_clean');
+		$this->validation->set_rules('store_username', '사용자명', 'trim|alpha_numeric|max_length[20]|required|xss_clean');
+		if($aPostParams['imagehosting_seq'] == "" || ($aPostParams['imagehosting_seq'] != "" && $aPostParams['passwd_chg'] == "Y")){ // 이미지호스팅 계정 정보 INSERT OR 비밀번호 변경 체크한 경우
+			$this->validation->set_rules('store_password', '비밀번호', 'trim|required|min_length[4]|max_length[30]|xss_clean');
+		}
+		$this->validation->set_rules('store_port', '포트', 'trim|numeric|max_length[5]|required|xss_clean');
+		$this->validation->set_rules('connection_type', '접속타입', 'trim|alpha|max_length[20]|required|xss_clean');
+
+		if ($this->validation->exec() === false) {
+			$err = $this->validation->error_array;
+			$callback = "if(parent.document.getElementsByName('{$err['key']}')[0]) parent.document.getElementsByName('{$err['key']}')[0].focus();";
+			openDialogAlert($err['value'], 400, 150, 'parent', $callback);
+			exit;
+		}
+
+		# 데이터 가공
+		// 저장폴더 앞 뒤 /는 제거하고 저장
+		if (substr($aPostParams['store_dir'], 0, 1) == '/') {
+			$aPostParams['store_dir'] = substr($aPostParams['store_dir'], 1);
+		}
+		if (substr($aPostParams['store_dir'], -1) == '/') {
+			$aPostParams['store_dir'] = substr($aPostParams['store_dir'], 0, -1);
+		}
+		
+		//port 값 없는 경우, 접속타입(ftp/sftp)에 따라 기본 값 설정
+		if (!aPostParams['store_port']) {
+			$aPostParams['store_port'] = ($aPostParams['connection_type'] == 'ftp') ? '21' : '22' ;
+		}
+
+		// URL 프로토콜 합치기
+		$aPostParams['store_url_protocol'] = ($aPostParams['store_url_protocol'] == 0) ? 'https://' : 'http://';
+		$aPostParams['store_url'] = $aPostParams['store_url_protocol'] . str_replace("/","", $aPostParams['store_url']); // url '/' 제거하고 저장
+
+		// 비밀번호 변경 X 업데이트인 경우, 저장된 비밀번호 정보 가져오기
+		if ($aPostParams['imagehosting_seq'] != '' && $aPostParams['passwd_chg'] == '') {
+			$result_imagehosting = $this->imagehostinglibrary->getImagehostingDecode($aPostParams['imagehosting_seq']); // DB에 저장된 이미지호스팅 설정
+			$aPostParams['store_password'] = $result_imagehosting['store_password'];
+		}
+
+		$callback = "";
+		# mode 값에 따라 저장 or 업로드 테스트 분기 처리
+		if($aPostParams['mode'] == 'save'){ //저장
+			$result = $this->imagehostinglibrary->saveImagehosting($aPostParams);
+
+			if($result['code'] == "000"){
+				$callback = "parent.document.location.reload();";
+			}
+		}else if($aPostParams['mode'] == 'test'){ //업로드 테스트
+			$result = $this->imagehostinglibrary->checkImagehostingConnection($aPostParams);
+		}
+
+		openDialogAlert($result['message'],400,200, 'parent', $callback);
+	}
+
+	public function delete_imagehosting(){
+		$aPostParams = $this->input->post();
+		
+		#### AUTH
+		$auth = $this->authmodel->manager_limit_act('setting_imagehosting_act');
+		if(!$auth){
+			$return = $auth;
+			echo json_encode(['auth'=>'100']);
+			exit;
+		}
+
+		$return = $this->imagehostinglibrary->deleteImagehosting($aPostParams);
+		echo json_encode($return);
+	}
+
+	/* 이미지 저장소 설정 */
+	public function save_imagestore(){
+		$aPostParams = $this->input->post();
+
+		#### AUTH
+		$auth = $this->authmodel->manager_limit_act('setting_imagehosting_act');
+		if(!$auth){
+			$callback = "parent.history.go(-1);";
+			openDialogAlert($this->auth_msg,400,150,'parent',$callback);
+			exit;
+		}
+
+		// 이미지 저장소 설정 저장
+		$result = $this->imagehostinglibrary->saveImagestore($aPostParams);
+
+		// 로그 저장하기
+		$this->load->library('actionhistorylibrary');
+		foreach($result['update_store_log'] as $store_log){
+			$arr = [];
+			$arr['category'] = 'image_store';
+			$arr['action'] = "설정을 변경하였습니다.";
+			$arr['detail'] = $store_log;
+			$this->actionhistorylibrary->recordHistory($arr);
+		}
+		
+		// 안내매세지
+		if($result['update_store_log'] || $result['count'] == 0){
+			$resultText = "설정 저장에 성공했습니다.";
+		}else{
+			// 성공한 log가 없는 경우 실패 안내
+			$resultText = "설정 저장에 실패했습니다.";
+		}
+		$callback = "parent.document.location.reload();";
+		openDialogAlert($resultText,400,150, 'parent', $callback);
+	}
+
+	/* 이미지 URL 일괄 변경 */
+	public function batch_change_imageurl(){
+		$aPostParams = $this->input->post();
+		
+
+		#### AUTH
+		$auth = $this->authmodel->manager_limit_act('setting_imagehosting_act');
+		if(!$auth){
+			$callback = "parent.history.go(-1);";
+			openDialogAlert($this->auth_msg,400,150,'parent',$callback);
+			exit;
+		}
+
+		### Validation
+		if($aPostParams['imagestore_origin'] == "direct"){
+			$this->validation->set_rules('store_url_origin', '변경 전 도메인', 'trim|required|valid_url|max_length[100]|xss_clean');
+		}else{
+			$this->validation->set_rules('store_url_origin', '변경 전 도메인', 'trim|required|max_length[100]|xss_clean');
+		}
+		if($aPostParams['imagestore_change'] == "direct"){
+			$this->validation->set_rules('store_url_change', '변경 후 도메인', 'trim|required|valid_url|max_length[100]|xss_clean');
+		}else{
+			$this->validation->set_rules('store_url_change', '변경 후 도메인', 'trim|required|max_length[100]|xss_clean');
+		}
+
+		if($this->validation->exec()===false){
+			$err = $this->validation->error_array;
+			$callback = "if(parent.document.getElementsByName('{$err['key']}')[0]) parent.document.getElementsByName('{$err['key']}')[0].focus();";
+			openDialogAlert($err['value'],400,130,'parent',$callback);
+			exit;
+		}
+
+		// 변경 전 도메인 = 변경 후 도메인인 경우, 실행하지 않음
+		if($aPostParams['store_url_origin'] == $aPostParams['store_url_change']){
+			openDialogAlert("변경 전 도메인과 변경 후 도메인이 동일합니다.",400,150, 'parent');
+			exit;
+		}
+
+		// 반응형 or 전용 스킨 구분
+		$aPostParams['operation_type'] = $this->config_system['operation_type'];
+
+		try{
+			// 이미지 저장소 설정 저장
+			$result = $this->imagehostinglibrary->changeImageurl($aPostParams);
+			
+			if($result['change_url_error']) throw new Exception($result['change_url_error']);
+
+			// 로그 저장하기
+			if($result['change_url_log']){
+				$this->load->library('actionhistorylibrary');
+				$arr = [];
+				$arr['category'] = 'image_url';
+				$arr['action'] = "도메인 일괄 변경하였습니다.";
+				$arr['detail'] = $result['change_url_log'];
+				$this->actionhistorylibrary->recordHistory($arr);
+				$callback = "parent.document.location.reload();";
+				openDialogAlert("설정이 저장 되었습니다.",400,150, 'parent', $callback);
+			}
+
+		}catch (Exception $e) {
+			openDialogAlert($e->getMessage(),400,150, 'parent');
+		}
+	}
 
 	/* 관리자 등록 */
 	public function manager_reg(){

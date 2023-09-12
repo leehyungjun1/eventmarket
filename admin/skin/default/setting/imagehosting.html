@@ -1,0 +1,87 @@
+{ #layout_header }
+
+<script type="text/javascript" src="/app/javascript/js/admin/imagehosting.js?mm={=date('YmdH')}"></script>
+<script>var imagehosting_act = '{imagehosting_act}'; </script>
+<!-- 페이지 타이틀 바 : 시작 -->
+<div id="page-title-bar-area">
+	<div id="page-title-bar">
+		{#require_info}
+
+		<!-- 타이틀 -->
+		<div class="page-title">
+			<h2>이미지호스팅 계정 설정</h2>
+		</div>
+
+	</div>
+</div>
+<!-- 페이지 타이틀 바 : 끝 -->
+
+<!-- 서브 레이아웃 영역 : 시작 -->
+<div class="top_banner mt25 mb20" style="background-color:#4c4de6">
+	{marketing_imagehosting_banner}
+</div>
+<!-- 서브메뉴 바디 : 시작-->
+<div class="contents_dvs v3">
+	<div class="list_info_container">
+		<div class="dvs_right">
+			<button type="button" id="imagehosting_regist_btn" onclick="popup_imagehosting();"
+				class="resp_btn active">계정 추가</button>
+		</div>
+	</div>
+
+	<table width="100%" class="table_row_basic v2">
+		<col width="5%" />
+		<col width="15%" />
+		<col width="50%" />
+		<col width="15%" />
+		<col width="15%" />
+		<thead>
+			<tr>
+				<th>번호</th>
+				<th>저장소 이름</th>
+				<th>URL/저장폴더</th>
+				<th>FTP아이디</th>
+				<th>관리</th>
+			</tr>
+		</thead>
+		{ @ loop }
+		<tr>
+			<td class="center">{._no}</td>
+			<td class="center">{.store_name}</td>
+			<td class="center">
+				{? .imagehosting_seq == 1 }
+				/data/
+				{:}
+				{.store_url}/{.store_dir}
+				{/}
+			</td>
+			<td class="center">{.store_username}</td>
+			<td class=" center">
+				{? .imagehosting_seq != 1 }
+				<!--기본 값(로컬저장소)는 수정/삭제 불가-->
+				<button id="imagehosting_modify_btn" onclick="popup_imagehosting('{.imagehosting_seq}');"
+					class="resp_btn v2">수정</button>
+				<button id="imagehosting_delete_btn" onclick="delete_imagehosting('{.imagehosting_seq}');"
+					class="resp_btn v3">삭제</button>
+				{/}
+			</td>
+		</tr>
+		{ / }
+	</table>
+
+</div>
+
+<div class="box_style_05 mt10">
+	<div class="title">안내</div>
+
+	<ul class="bullet_circle ">
+		<li>이미지호스팅이란? 11번가, G마켓 등 대형 오픈마켓에 입점하여 상품을 판매할 때 상품 이미지를 빠르게 보여주는 링크 전용 호스팅 서비스입니다.</li>
+		<li>웹서버와 분리되어 대형 트래픽 발생 시 서버 운영의 효율성을 높이기 위해서도 사용됩니다.</li>
+		<li>이미지호스팅 계정이 없으신 경우 서비스 신청 후 이용 가능합니다. <a href="https://www.firstmall.kr/buildservice/imagehosting"
+				class="link_blue_01" target="_blank">신청하기</a></li>
+	</ul>
+</div>
+
+{ #layout_footer }
+
+<div id="imagehostinglay" class="hide">{ #imagehosting_setting }</div>

@@ -1083,6 +1083,13 @@ class design_process extends admin_base {
 		$imageLabel			= isset($_REQUEST['imageLabel']) ? $_REQUEST['imageLabel'] : null;
 		$removeDesignImageArea	= isset($_REQUEST['removeDesignImageArea']) ? true : false;
 
+		/* 이미지호스팅 사용 여부 및 기본 값 세팅 */
+		$this->load->library('imagehostinglibrary');
+		$imagestore_type = [];
+		$imagestore_type['imagestore_division'] = "design";
+		$imagestore_type['imagestore_item'] = "image";
+		$isImagehosting = $this->imagehostinglibrary->isImagehostingUse($imagestore_type);
+
 		$tpl_path			= ROOTPATH."data/skin/".$designTplPath;
 
 		/* data 폴더가 아니면 차단 */
@@ -1101,18 +1108,28 @@ class design_process extends admin_base {
 			$tmpExe = explode(".", $_POST['newDesignImgPath']);
 			$exe = end($tmpExe);
 
-			if(extension_loaded('imagick') && ($exe == "jpg" || $exe == "jpeg")){
-				$img = new Imagick();
-				$img->readImage($_POST['newDesignImgPath']);
-				$img->setImageCompression(Imagick::COMPRESSION_JPEG);
-				$img->setImageCompressionQuality(90);
-				$img->stripImage();
-				$img->writeImage($_POST['designImgPath']);
-				unset($img);
-			} else {
-				if(!copy($_POST['newDesignImgPath'],$_POST['designImgPath'])){
-					openDialogAlert("파일 카피 실패",400,140,'parent');
-					exit;
+			/* 이미지호스팅 업로드 */
+			if ($isImagehosting == true) {
+				$params_imagehosting = [];
+				$params_imagehosting['imagestore_type'] = $imagestore_type;
+				$params_imagehosting['current_path_images'] = $_POST['newDesignImgPath'];
+				$params_imagehosting['new_path_images'] = "data/skin/".$this->designWorkingSkin.str_replace("data/tmp/","/images/",$_POST['newDesignImgPath']);
+				$result_imagehosting = $this->imagehostinglibrary->uploadImage($params_imagehosting);
+				$imagehosting_path = $result_imagehosting['new_path'];
+			}else{
+				if(extension_loaded('imagick') && ($exe == "jpg" || $exe == "jpeg")){
+					$img = new Imagick();
+					$img->readImage($_POST['newDesignImgPath']);
+					$img->setImageCompression(Imagick::COMPRESSION_JPEG);
+					$img->setImageCompressionQuality(90);
+					$img->stripImage();
+					$img->writeImage($_POST['designImgPath']);
+					unset($img);
+				} else {
+					if(!copy($_POST['newDesignImgPath'],$_POST['designImgPath'])){
+						openDialogAlert("파일 카피 실패",400,140,'parent');
+						exit;
+					}
 				}
 			}
 		}
@@ -1183,6 +1200,13 @@ class design_process extends admin_base {
 				// title태그가 없으면 추가
 				$source = preg_replace_callback("/(<img[^>]*src=[\'|\"]".$designImgSrcOriForReg."[\'|\"])([^>]*>)/i",create_function('$matches','return "{$matches[1]} title=\\"'.$imageLabel.'\\"{$matches[2]}";'), $source);
 			}
+
+			/* 이미지호스팅 사용하는 경우, img src 치환 */
+			if ($isImagehosting == true){
+				preg_match("/<img[^>]*src=[\"']?(".$designImgSrcOriForReg.")[\"']?[^>]*>/i", $source, $matches);
+				$imagehosting_replace = str_replace($matches[1], $imagehosting_path, $matches[0]);
+				$source = str_replace($matches[0],$imagehosting_replace, $source);
+			}
 		}
 
 		if(!write_file($tpl_path,$source)){
@@ -1190,7 +1214,18 @@ class design_process extends admin_base {
 			exit;
 		}
 
-		openDialogAlert("적용되었습니다.",400,140,'parent','parent.parent.document.location.reload()');
+		/* 이미지호스팅 업로드 결과 메세지 */
+		$dialogwidth = 400;
+		$dialogheight = 140;
+		$message = "";
+		if($result_imagehosting){
+			$imagehostingMassage = $this->imagehostinglibrary->message($result_imagehosting);
+			$message = $imagehostingMassage['message'];
+			$dialogwidth = $imagehostingMassage['dialogwidth'];
+			$dialogheight = $imagehostingMassage['dialogheight'];
+		}
+
+		openDialogAlert("적용되었습니다.".$message,$dialogwidth,$dialogheight,'parent','parent.parent.document.location.reload()');
 	}
 
 	/* 이미지 넣기 처리 */
@@ -1226,6 +1261,14 @@ class design_process extends admin_base {
 			openDialogAlert($err['value'],400,140,'parent',$callback);
 			exit;
 		}
+
+		/* 이미지호스팅 사용 여부 및 기본 값 세팅 */
+		$this->load->library('imagehostinglibrary');
+		$imagestore_type = [];
+		$imagestore_type['imagestore_division'] = "design";
+		$imagestore_type['imagestore_item'] = "image";
+		$isImagehosting = $this->imagehostinglibrary->isImagehostingUse($imagestore_type);
+
 		// 파일 확장자
 		$tmpExe = explode(".", $newDesignImgPath);
 		$exe = end($tmpExe);
@@ -1250,27 +1293,37 @@ class design_process extends admin_base {
 
 		/* 파일이 있으면 */
 		if($newDesignImgPath && $newDesignImgPath!=$uploadFilePath){
-			if(extension_loaded('imagick') && ($exe == "jpg" || $exe == "jpeg")){
-				$img = new Imagick();
-				$img->readImage($newDesignImgPath);
-				$img->setImageCompression(Imagick::COMPRESSION_JPEG);
-				$img->setImageCompressionQuality(90);
-				$img->stripImage();
-				$img->writeImage($uploadFilePath);
-				unset($img);
-			} else {
-				if(!copy($newDesignImgPath, $uploadFilePath)){
-					openDialogAlert("적용에 실패했습니다.",400,140,'parent');
-					exit;
+			/* 이미지호스팅 업로드 */
+			if ($isImagehosting == true) {
+				$params_imagehosting = [];
+				$params_imagehosting['imagestore_type'] = $imagestore_type;
+				$params_imagehosting['current_path_images'] = $newDesignImgPath;
+				$params_imagehosting['new_path_images'] = $uploadFilePath;
+				$result_imagehosting = $this->imagehostinglibrary->uploadImage($params_imagehosting);
+				$imagehosting_path = $result_imagehosting['new_path'];
+			}else{
+				if(extension_loaded('imagick') && ($exe == "jpg" || $exe == "jpeg")){
+					$img = new Imagick();
+					$img->readImage($newDesignImgPath);
+					$img->setImageCompression(Imagick::COMPRESSION_JPEG);
+					$img->setImageCompressionQuality(90);
+					$img->stripImage();
+					$img->writeImage($uploadFilePath);
+					unset($img);
+				} else {
+					if(!copy($newDesignImgPath, $uploadFilePath)){
+						openDialogAlert("적용에 실패했습니다.",400,140,'parent');
+						exit;
+					}
 				}
-			}
-
-			@chmod($uploadFilePath,0777);
+				@chmod($uploadFilePath,0777);
+			}			
 		}
 
 		/* src 보정 */
 		$relPath = str_repeat('../',count(explode('/',dirname($_REQUEST['tplPath']))));
 		$uploadFilePathForReg = addslashes(str_replace("data/skin/".$this->designWorkingSkin."/",$relPath,$uploadFilePath));
+		if ($isImagehosting == true) $uploadFilePathForReg = $imagehosting_path; //이미지호스팅 파일업로드 경로
 
 		/* 추가소스 */
 		$addSource = "<img src=\"{$uploadFilePathForReg}\" alt=\"{$imageLabel}\" title=\"{$imageLabel}\">";
@@ -1291,16 +1344,27 @@ class design_process extends admin_base {
 			$source = $source . "\n" . $addSource;
 		}
 
+		/* 이미지호스팅 업로드 결과 메세지 */
+		$dialogwidth = 400;
+		$dialogheight = 140;
+		$message = "";
+		if($result_imagehosting){
+			$imagehostingMassage = $this->imagehostinglibrary->message($result_imagehosting);
+			$message = $imagehostingMassage['message'];
+			$dialogwidth = $imagehostingMassage['dialogwidth'];
+			$dialogheight = $imagehostingMassage['dialogheight'];
+		}
+
 		if(!write_file($tpl_path,$source)){
 			openDialogAlert("적용에 실패했습니다.",400,140,'parent');
 			exit;
 		}
 
 		if(preg_match("/^layout_/",$_REQUEST['tplPath']) || preg_match("/^board/",$_REQUEST['tplPath']) || preg_match("/^goods/",$_REQUEST['tplPath']) || preg_match("/^joincheck/",$_REQUEST['tplPath'])){
-			openDialogAlert("적용되었습니다.",400,140,'parent',"parent.parent.document.location.reload();document.location.href='about:blank';");
+			openDialogAlert("적용되었습니다.".$message,$dialogwidth,$dialogheight,'parent',"parent.parent.document.location.reload();document.location.href='about:blank';");
 		}else{
 			$locationUrl = $this->layout->get_tpl_path_url($this->designWorkingSkin,$_REQUEST['tplPath']);
-			openDialogAlert("적용되었습니다.",400,140,'parent',"parent.parent.document.location.href='{$locationUrl}';");
+			openDialogAlert("적용되었습니다.".$message,$dialogwidth,$dialogheight,'parent',"parent.parent.document.location.href='{$locationUrl}';");
 		}
 
 	}
@@ -4445,9 +4509,21 @@ $(function() {\n\r
 
 		$this->db->delete('fm_design_banner_item', array("skin"=>$this->designWorkingSkin,"banner_seq"=>$banner_seq));
 
+		// 이미지호스팅 사용 여부(저장소 연결/이미지호스팅 설정/이미지호스팅 접속 체크)
+		$this->load->library('imagehostinglibrary');
+		$imagestore_type = array();
+		$imagestore_type['imagestore_division'] = "design";
+		$imagestore_type['imagestore_item'] = "slide_banner";		
+		$isImagehosting = $this->imagehostinglibrary->isImagehostingUse($imagestore_type);
+		/* 이미지호스팅 이미지 업로드 */
+		if($isImagehosting == true){
+			$params_imagehosting = [];
+			$params_imagehosting['imagestore_type'] = $imagestore_type;
+		}
+
 		// 순서에 맞게 이미지명 저장하기 위하여 기존에 있던 이미지들은 임시파일로 저장
-		foreach($params['image'] as $k=>$image){
-			$image = preg_replace('/^\//','',$image);
+		foreach($params['image'] as $k=>$image) {
+			$image = preg_replace('/^\//','',$image);			
 			if(
 			    !(preg_match("/^data\/tmp/i",$image) || preg_match("/^\/admin\//i",$image) )
 			    &&
@@ -4455,11 +4531,16 @@ $(function() {\n\r
 		    ) {
 		        $image = "data/skin/{$this->designWorkingSkin}/".$image;
 		    }
-			if(!(preg_match("/^data\/tmp/i",$image))) {
+			if(!(preg_match("/^data\/tmp/i",$image))) { //tmp 경로에 없는 경우, 임시파일 저장
 				$ext = explode(".",$image);
 				$ext = $ext[count($ext)-1];
 				$new_path = "data/tmp/temp_".time().rand(0,9999).".{$ext}";
-				copy(ROOTPATH.$image,ROOTPATH.$new_path);
+				
+				if(preg_match("/^http/i",$image)){ // 이미지호스팅 이미지인 경우
+					copy($image,ROOTPATH.$new_path);
+				}else{
+					copy(ROOTPATH.$image,ROOTPATH.$new_path);
+				}
 				chmod(ROOTPATH.$new_path,0777);
 			}
 			$params['image'][$k] = preg_match("/^data\/tmp/i",$image) ? $image : $new_path;
@@ -4513,17 +4594,33 @@ $(function() {\n\r
 					$img->setImageCompression(Imagick::COMPRESSION_JPEG);
 					$img->setImageCompressionQuality(90);
 					$img->stripImage();
-					$img->writeImage(ROOTPATH.$new_path);
+					if($isImagehosting == true ){ // 이미지호스팅 사용
+						$params_imagehosting['current_path_images'] = $data['image'];
+						$params_imagehosting['new_path_images'] = $new_path;
+						$result_imagehosting[$imagestore_type['imagestore_item']][$k] = $this->imagehostinglibrary->uploadImage($params_imagehosting);
+						$data['image'] = $result_imagehosting[$imagestore_type['imagestore_item']][$k]['new_path'];
+					}else{
+						$img->writeImage(ROOTPATH.$new_path);
+						$data['image'] = $save_path;
+					}
 					unset($img);
 				} else {
 					if(file_exists(ROOTPATH.$new_path) === true) {
-				        unlink(ROOTPATH.$new_path);
-				    }
-					copy(ROOTPATH.$data['image'],ROOTPATH.$new_path);
+						unlink(ROOTPATH.$new_path);
+					}
+					if($isImagehosting == true ){ // 이미지호스팅 사용
+						$params_imagehosting['current_path_images'] = $data['image'];
+						$params_imagehosting['new_path_images'] = $new_path;
+						$result_imagehosting[$imagestore_type['imagestore_item']][$k] = $this->imagehostinglibrary->uploadImage($params_imagehosting);
+						$data['image'] = $result_imagehosting[$imagestore_type['imagestore_item']][$k]['new_path'];
+					}else{
+						copy(ROOTPATH.$data['image'],ROOTPATH.$new_path);
+						$data['image'] = $save_path;
+					}
 				}
-
-				chmod(ROOTPATH.$new_path,0777);
-				$data['image'] = $save_path;
+				if($isImagehosting !== true ){
+					chmod(ROOTPATH.$new_path,0777);
+				}
 			}
 
 			// 페이징이 커스텀일때 이미지업로드
@@ -4548,11 +4645,15 @@ $(function() {\n\r
 				}
 			}
 
-			$this->db->insert('fm_design_banner_item', $data);
-		}
+			if ($data['image']) {
+				$this->db->insert('fm_design_banner_item', $data);
+			}
 
+		}
+		
+		$resultMsg = "";
 		if($params['banner_seq']){
-			$resultMsg = "배너가 변경되었습니다.";
+			$resultMsg = "배너가 변경되었습니다.";                         
 			if($params['direct']){
 				$resultCallback = "top.document.location.reload();document.location.href='about:blank';";
 			}else{
@@ -4572,9 +4673,18 @@ $(function() {\n\r
 		if(!empty($params['popup'])){
 			$resultCallback = "parent.window.close();";
 		}
-
-		openDialogAlert($resultMsg,400,140,'parent',$resultCallback);
 		
+		// 이미지호스팅 업로드 결과
+		$dialogwidth = 400;
+		$dialogheight = 150;
+		if($result_imagehosting){
+			$resultMessage = $this->imagehostinglibrary->message($result_imagehosting);
+			$resultMsg .= $resultMessage['message'];
+			$dialogwidth = $resultMessage['dialogwidth'];
+			$dialogheight = $resultMessage['dialogheight'];
+		}
+		openDialogAlert($resultMsg,$dialogwidth,$dialogheight,'parent',$resultCallback);
+				
 		// design cache clean
 		cache_clean('design');
 	}

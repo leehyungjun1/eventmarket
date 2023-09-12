@@ -864,6 +864,14 @@ class promotion extends front_base {
 			$paging[$i]	= $i;
 		}
 
+		// 이미지호스팅 사용 유무에 따른 디렉토리 경로 재정의
+		foreach($data['list'] as $idx => $event_data){
+			$data['list'][$idx]['event_banner_src'] = $event_data['event_banner'];
+			if($event_data['event_banner'] && substr($event_data['event_banner'],0,4) != 'http'){
+				$data['list'][$idx]['event_banner_src'] = '/data/event/' . $event_data['event_banner'];
+			}
+		}
+
 		$assign_list['record']	= $data['list'];
 		$assign_list['sc']		= $sc;
 
@@ -922,6 +930,14 @@ class promotion extends front_base {
 		$target = "";
 		for($i = 1; $i <= $sc['max_page']; $i++){
 			$paging[$i]	= $i;
+		}
+
+		// 이미지호스팅 사용 유무에 따른 디렉토리 경로 재정의
+		foreach($data['list'] as $idx => $event_data){
+			$data['list'][$idx]['event_banner_src'] = $event_data['event_banner'];
+			if($event_data['event_banner'] && substr($event_data['event_banner'],0,4) != 'http'){
+				$data['list'][$idx]['event_banner_src'] = '/data/event/' . $event_data['event_banner'];
+			}
 		}
 
 		$assign_list['record'] = $data['list'];
@@ -1280,6 +1296,12 @@ class promotion extends front_base {
 		$event_list		= array();
 
 		foreach((array)$data['list'] as $key => $val){
+			// 이미지호스팅 사용 유무에 따른 디렉토리 경로 재정의
+			$val['m_event_banner_src'] = $val['m_event_banner'];
+			if($val['m_event_banner_src'] && substr($val['m_event_banner'],0,4) != 'http'){
+				$val['m_event_banner_src'] = '/data/event/' . $val['m_event_banner'];
+			}
+
 			$event_list[]	= $val;
 		}
 

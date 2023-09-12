@@ -1,0 +1,61 @@
+<div class="content">
+	<form name="imageUrlSettingForm" id="imageUrlSettingForm" method="post" enctype="multipart/form-data"
+		action="../setting_process/batch_change_imageurl" target="actionFrame">
+		<input type="hidden" name="imagestore_seq" id="imagestore_seq" value="{imagestore_seq}" />
+		<table class="table_basic">
+			<colgroup>
+				<col width="30%">
+				<col width="70%">
+			</colgroup>
+			<tr>
+				<th>구분</th>
+				<th>내용</th>
+			</tr>
+			<tr>
+				<th>변경 위치</th>
+				<td>
+					{imagestore_division} > {imagestore_item}
+				</td>
+			</tr>
+			<tr>
+				<th>변경 전 도메인</th>
+				<td>
+					<select name="imagestore_origin" id="imagestore_origin" onchange="input_domain('origin');">
+						{ @ imagehostingList }
+						<option value="{.store_url}/{.store_dir}">{.store_name}</option>
+						{ / }
+						<option value="direct">직접입력</option>
+					</select>
+					<input type="text" name="store_url_origin" id="store_url_origin" size="32" readonly />
+				</td>
+			</tr>
+			<tr>
+				<th>변경 후 도메인</th>
+				<td>
+					<select name="imagestore_change" id="imagestore_change" onchange="input_domain('change');">
+						{ @ imagehostingList }
+						<option value="{.store_url}/{.store_dir}">{.store_name}</option>
+						{ / }
+						<option value="direct">직접입력</option>
+					</select>
+					<input type="text" name="store_url_change" id="store_url_change" size="32" readonly />
+				</td>
+			</tr>
+		</table>
+
+		<div class="center mt10">
+			<button type="button" id="imageUrlChange" onClick="change_imageurl()"
+			class="resp_btn active size_XL">일괄변경</button>
+			<button type="button" onClick="closeDialog('imagestorelay')" class="resp_btn v3 size_XL">닫기</button>
+		</div>
+
+		<div class="box_style_05 mt10">
+			<div class="title">안내</div>
+			<ul class="bullet_circle">
+				<li>컨텐츠 내에 이미지 경로의 도메인을 일괄 변경합니다.</li>
+				<li>로컬저장소 선택 시 지정된 저장소 경로로 일괄 변경됩니다.</li>
+				<li>수동으로 도메인을 입력한 경우 직접 입력을 통해 입력 가능합니다.</li>
+				<li>일괄 변경 시 파일이 업로드되지 않으며 컨텐츠 내에 이미지 경로만 수정됩니다.</li>
+			</ul>
+		</div>
+	</form>

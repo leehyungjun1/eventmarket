@@ -1,0 +1,110 @@
+<script>
+	var gl_connection_type = '{connection_type}';
+	var gl_store_password = '{store_password}';
+</script>
+
+<div class="content">
+	<form name="imagehostingSettingForm" id="imagehostingSettingForm" method="post" enctype="multipart/form-data"
+		action="../setting_process/imagehosting_setting" target="actionFrame">
+		<input type="hidden" name="imagehosting_seq" id="imagehosting_seq" value="{imagehosting_seq}" />
+		<input type="hidden" name="mode" id="mode" value="save" />
+		<div class="item-title">저장소 정보</div>
+		<table class="table_basic thl">
+			<colgroup>
+				<col width="30%">
+				<col width="70%">
+			</colgroup>
+			<tr>
+				<th>* 저장소 이름</th>
+				<td>
+					<input type="text" name="store_name" id="store_name" value="{store_name}" size="40" />
+				</td>
+			</tr>
+			<tr>
+				<th>* URL</th>
+				<td>
+					<select name="store_url_protocol" id="store_url_protocol" onchange="change_domain();">
+						<option value="0" {? store_url_protocol=='0' } selected {/}>https://</option>
+						<option value="1" {? store_url_protocol=='1' } selected {/}>http://</option>
+					</select>
+					<input type="text" name="store_url" id="store_url" value="{store_url}" onkeyup="change_domain();"
+						size="25" />
+				</td>
+			</tr>
+			<tr>
+				<th>* 저장폴더</th>
+				<td>
+					<input type="text" name="store_dir" id="store_dir" value="{store_dir}" onkeyup="change_domain();"
+						size="40" />
+				</td>
+			</tr>
+			<tr>
+				<th>이미지경로</th>
+				<td>
+					<span id="url_information"></span></br>
+					- 위의 경로에 이미지가 업로드됩니다.
+				</td>
+			</tr>
+		</table>
+
+		<div class="title_dvs">
+			<div class="item-title">
+				FTP 접속 정보 <span class="tooltip_btn" onClick="showTooltip(this, '/admin/tooltip/imagestore', '#tip_imagehosting')"></span>
+			</div>
+			<button type="button" id="imagehostingTest" onClick="check_imagehosting({imagehosting_seq})" class="resp_btn v2">업로드 테스트</button>
+		</div>
+		<table class="table_basic thl">
+			<colgroup>
+				<col width="30%">
+				<col width="70%">
+			</colgroup>
+			<tr>
+				<th>* 호스트</th>
+				<td>
+					<input type="text" name="store_host" id="store_host" value="{store_host}" size="40" />
+				</td>
+			</tr>
+			<tr>
+				<th>* 사용자명</th>
+				<td>
+					<input type="text" name="store_username" id="store_username" value="{store_username}" size="40" />
+				</td>
+			</tr>
+			<tr>
+				<th>* 비밀번호</th>
+				<td>
+					<input type="password" name="store_password" id="store_password" value="{store_password}" {?store_password} disabled="disabled" {/} />
+					<label class="resp_checkbox store_password_change"><input type="checkbox" name="passwd_chg" value="Y" /> 변경</label>
+				</td>
+			</tr>
+			<tr>
+				<th>* 접속타입</th>
+				<td>
+					<div class="resp_radio">
+						<label><input type="radio" name="connection_type" onchange="check_connection_type('ftp')" value="ftp" checked> FTP</label>
+						<label><input type="radio" name="connection_type" onchange="check_connection_type('sftp')" value="sftp"> SFTP</label>
+					</div>
+				</td>
+			</tr>
+			<tr>
+				<th>* 포트</th>
+				<td>
+					<input type="text" name="store_port" id="store_port" {? store_port} value="{store_port}" {:} value="21"{/} size="40" />
+				</td>
+			</tr>
+		</table>
+
+		<div class="box_style_05 mt10">
+			<div class="title">안내</div>
+			<ul class="bullet_circle">
+				<li>이미지호스팅 계정이 없으신 경우 서비스 신청 후 이용 가능합니다. <a href="https://www.firstmall.kr/buildservice/imagehosting" target="_blank" class="link_blue_01">신청하기</a></li>
+				<li>업로드 테스트를 통해 이미지 업로드에 문제가 없는지 확인 가능합니다. <span class="tooltip_btn" onClick="showTooltip(this, '/admin/tooltip/imagestore', '#tip_upload_test')"></span> </li>
+			</ul>
+		</div>
+	</form>
+</div>
+<div class="footer">
+	<button type="button" id="imagehostingSave" onClick="save_imagehosting()"
+		class="resp_btn active size_XL">저장</button>
+	<button type="button" onClick="closeDialog('imagehostinglay')" class="resp_btn v3 size_XL">취소</button>
+</div>

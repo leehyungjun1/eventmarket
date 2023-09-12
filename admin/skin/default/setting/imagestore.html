@@ -1,0 +1,188 @@
+{ #layout_header }
+
+<script type="text/javascript" src="/app/javascript/js/admin/imagehosting.js?mm={=date('YmdH')}"></script>
+<script>var imagehosting_act = '{imagehosting_act}'; </script>
+
+<!-- 페이지 타이틀 바 : 시작 -->
+<div id="page-title-bar-area">
+	<div id="page-title-bar">
+		{#require_info}
+
+		<!-- 타이틀 -->
+		<div class="page-title">
+			<h2>기능별 저장소 설정</h2>
+		</div>
+
+		<!-- 우측 버튼 -->
+		<div class="page-buttons-right imagestore_save_btn">
+			<button type="button" class="resp_btn active size_L" onclick="save_imagestores()">저장</button>
+		</div>
+
+	</div>
+</div>
+<!-- 페이지 타이틀 바 : 끝 -->
+
+<!-- 서브 레이아웃 영역 : 시작 -->
+<ul class="tab_02 tabEvent">
+	<li id="save_imagestores_show"><a href="#store_setting" data-showcontent="store_setting">저장소 설정</a></li>
+	<li id="save_imagestores_hide"><a href="#batch_domain_change" data-showcontent="batch_domain_change">도메인 일괄
+			변경</a></li>
+</ul>
+
+<!-- 기능별 저장소 설정 : 시작-->
+<div id="store_setting" class="hide">
+
+	<div class="box_style_05 mt10">
+		<div class="title">안내</div>
+		<ul class="bullet_circle ">
+			<li>이미지호스팅 저장소 설정 시 원본은 로컬 저장소에도 업로드됩니다.</li>
+			<li>설정 변경 시 기존 업로드된 파일이 설정된 저장소로 일괄 업로드되지 않습니다.</br>
+				필요한 경우 저장소에 FTP 등을 이용하여 파일을 업로드한 후 “도메인 일괄 변경” 기능을 이용해 주세요. <a
+					href="https://www.firstmall.kr/customer/faq/11" class="link_blue_01" target="_blank">자세히보기</a>
+			</li>
+		</ul>
+	</div>
+
+	<form name="imagestoreSettingForm" id="imagestoreSettingForm" method="post" enctype="multipart/form-data"
+		action="../setting_process/save_imagestore" target="actionFrame">
+		<div class="contents_dvs v2">
+			<table width="100%" class="table_row_basic v2">
+				<colgroup>
+					<col width="15%">
+					<col width="15%">
+					<col width="45%">
+					<col width="15%">
+				</colgroup>
+				<thead>
+					<tr>
+						<th>구분</th>
+						<th>항목</th>
+						<th>저장소 경로</th>
+						<th>
+							저장소 설정
+							<div>
+								<select name="imagehosting_all" id="imagehosting_all">
+									{ @ imagehostingList }
+									<option value="{.imagehosting_seq}">{.store_name}</option>
+									{ / }
+								</select>
+								<span class="btn small gray"><button type="button" class="save_all resp_btn v2 arrow"
+										id="store_all" onclick="setting_all_store()">▼</button></span>
+							</div>
+						</th>
+					</tr>
+				</thead>
+				{ @ loop }
+				<tr>
+					{?.imagestore_division_rowspan}
+					<td class="center" rowspan="{.imagestore_division_rowspan}">
+						{.imagestore_division_title}
+						<span class="tooltip_btn"
+							onClick="showTooltip(this, '/admin/tooltip/imagestore', '#tip{.imagestore_seq}')"></span>
+						<input type="hidden" name="imagestore_division_title[{.imagestore_seq}]}"
+							value="{.imagestore_division_title}" />
+					</td>{/}
+					<td class="center">
+						{.imagestore_item_title}
+						<input type="hidden" name="imagestore_item_title[{.imagestore_seq}]"
+							value="{.imagestore_item_title}" />
+					</td>
+					<td class="left">{.imagestore_directory}</td>
+					<td class="center">
+						<select name="imagehosting_each[{.imagestore_seq}]" class="imagehosting_each">
+							{ @ .imagehostingList }
+							<option value="{..imagehosting_seq}" {? .imagehosting_seq==..imagehosting_seq } selected
+								{/}>
+								{..store_name}</option>
+							{ / }
+						</select>
+					</td>
+				</tr>
+				{ / }
+			</table>
+		</div>
+	</form>
+
+	<!-- 로그 : 시작-->
+	<div class="contents_dvs v2" style="background:#fff;">
+		<div class="item-title">
+			로그
+		</div>
+		<textarea name="storeLog" rows="5" class="resp_textarea" readonly
+			style="width:100% !important;padding:10px; box-sizing: border-box;">{image_store_log}</textarea>
+	</div>
+	<!-- 로그 : 끝-->
+
+</div>
+<!-- 기능별 저장소 설정 : 끝-->
+
+<!-- 도메인 일괄 변경 : 시작-->
+<div id="batch_domain_change" class="hide">
+
+	<div class="box_style_05 mt10">
+		<div class="title">안내</div>
+		<ul class="bullet_circle ">
+			<li>도메인 일괄 변경 기능은 파일이 업로드되지 않으며 컨텐츠 내에 이미지 경로만 수정됩니다.</li>
+			<li>디자인 편집 > 이미지 넣기는 스킨에 이미지가 추가되는 방식으로 도메인 일괄 변경이 불가능합니다.</li>
+		</ul>
+	</div>
+
+	<div class="contents_dvs v2">
+		<table width="100%" class="table_row_basic v2">
+			<colgroup>
+				<col width="15%">
+				<col width="15%">
+				<col width="45%">
+
+				<col width="10%">
+			</colgroup>
+			<thead>
+				<tr>
+					<th>구분</th>
+					<th>항목</th>
+					<th>저장소 경로</th>
+					<th>도메인 일괄 변경</th>
+				</tr>
+			</thead>
+			{ @ loop }
+			<tr>
+				{?.imagestore_division_rowspan}
+				<td class="center" rowspan="{.imagestore_division_rowspan}">
+					{.imagestore_division_title}
+					<span class="tooltip_btn"
+						onClick="showTooltip(this, '/admin/tooltip/imagestore', '#tip{.imagestore_seq}')"></span>
+				</td>{/}
+				<td class="center">
+					{.imagestore_item_title}
+				</td>
+				<td class="left">{.imagestore_directory}</td>
+				<td class=" center">
+					<button type="button" onclick="popup_imagestore('{.imagestore_seq}');"
+						class="resp_btn active">변경</button>
+					<input type="hidden" name="imagestore_division_title[{.imagestore_seq}]}"
+						value="{.imagestore_division_title}" />
+					<input type="hidden" name="imagestore_item_title[{.imagestore_seq}]"
+						value="{.imagestore_item_title}" />
+				</td>
+			</tr>
+			{ / }
+		</table>
+	</div>
+
+	<!-- 로그 : 시작-->
+	<div class="contents_dvs v2" style="background:#fff;">
+		<div class="item-title">
+			로그
+		</div>
+		<textarea name="storeLog" rows="5" class="resp_textarea" readonly
+			style="width:100% !important;padding:10px; box-sizing: border-box;">{image_url_log}</textarea>
+	</div>
+	<!-- 로그 : 끝-->
+
+</div>
+<!-- 도메인 일괄 변경 : 끝-->
+<!-- 서브 레이아웃 영역 : 끝 -->
+
+{ #layout_footer }
+
+<div id="imagestorelay" class="hide">{ #imagestore_setting }</div>

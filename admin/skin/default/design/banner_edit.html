@@ -1,0 +1,831 @@
+{#layout_header_popup}
+
+<link rel="stylesheet" type="text/css" href="/app/javascript/plugin/anibanner/anibanner.css" />
+<script type="text/javascript" src="/app/javascript/plugin/jquery.colorpicker.min.js"></script>
+<script type="text/javascript" src="/app/javascript/plugin/custom-color-picker.js"></script>
+<script type="text/javascript" src="/app/javascript/jquery/jquery.ajax.form.js"></script>
+<script type="text/javascript" src="/app/javascript/js/ajaxFileUpload.js"></script>
+<script type="text/javascript" src="/app/javascript/plugin/anibanner/jquery.anibanner.js"></script>
+<style>
+	.onlynumber {text-align:right;}
+	.sample_banner {margin:auto;}
+	.sample_banner_area {margin:auto;}
+	.banner-item-plus {cursor:pointer;}
+	.banner-item-minus {cursor:pointer;display:none;}
+	.uploadifyQueue {display:none;}
+	object {vertical-align:middle;}
+	.banner-item-row th{cursor:move;}
+	.small a, .small input, .small button, .small label{border-right: 0 !important;}
+</style>
+<script>
+	var now_style = null;
+	var uploadify_idx = 0;
+	var design_working_skin = "{designWorkingSkin}";
+	var banner_setting_load_ing = false;
+
+	$(function(){
+
+		{?!_GET.popup}
+			{?template_path && banner_seq}
+			parent.DM_window_title_set("left","<a href=\"javascript:;\" onmouseup=\"DM_window_sourceeditor('{template_path}','\{=showDesignBanner({banner_seq})\}')\">◀ 슬라이드 배너 영역의 HTML소스보기</a>");
+			parent.DM_window_title_set("title","슬라이드 배너 변경");
+			{:}
+			parent.DM_window_title_set("title","슬라이드 배너 만들기");
+			{/}
+			parent.DM_window_title_set("center","");
+		{/}
+
+		// 컬러피커 세팅
+		$(".colorpicker").customColorPicker({'hide':true});
+
+		// 배경이미지 버튼
+		/* 파일업로드버튼 ajax upload 적용 */
+		setAjaxUpload('#backgroundImageUploadButton');
+
+		// 이미지 입력폼 추가 이벤트
+		$(".banner-item-plus").live('click',function(){
+			banner_item_add();
+			//if(now_style=='pc_style_4' || now_style=='pc_style_5')
+			{
+				banner_navigation_item_add();
+			}
+			sample_view();
+		});
+
+		// 이미지 입력폼 삭제 이벤트
+		$(".banner-item-minus").live('click',function(){
+			var i = $(".banner-item-row").index($(this).closest(".banner-item-row"));
+			$(this).closest(".banner-item-row").remove();
+
+			$(".banner-navigation-item-row").eq(i).remove();
+
+			$(".banner-item-row-num").each(function(i){$(this).html(i+1)});
+			$(".banner-navigation-item-row-num").each(function(i){$(this).html(i+1)});
+			sample_view();
+		});
+
+		// 네비게이션 선택창 세팅
+		$('#navigation_btn_dialog').dialog({'title':'좌우 네비게이션 선택','width':450,'autoOpen':false});
+		$('#navigation_paging_dialog').dialog({'title':'아래 네비게이션 선택','width':450,'autoOpen':false});
+		$("#navigation_btn_dialog").closest(".ui-dialog").appendTo($("form[name='bannerForm']"));
+		$("#navigation_paging_dialog").closest(".ui-dialog").appendTo($("form[name='bannerForm']"));
+
+		// 적용
+		$("form[name='bannerForm']").live('change',function(){
+			if(!banner_setting_load_ing){
+				sample_view();
+			}
+		});
+
+		$("input[name='navigation_btn_style']").live('change',function(){
+			if($(this).is(":checked") && $(this).val()==''){
+				$("span.navigation_btn_prn").hide();
+				$("span.navigation_btn_visible_prn").hide();
+			}else{
+				$("span.navigation_btn_prn").show();
+				$("span.navigation_btn_visible_prn").show();
+
+				$("span.navigation_btn_prn").html("<span class='anibanner_navigation_"+$(this).val()+"_prev_off'></span> <span class='anibanner_navigation_"+$(this).val()+"_next_off'></span> <span class='anibanner_navigation_"+$(this).val()+"_prev_on'></span> <span class='anibanner_navigation_"+$(this).val()+"_next_on'></span>");
+			}
+		});
+		$("input[name='navigation_paging_style']").live('change',function(){
+			if($(this).is(":checked") && $(this).val()==''){
+				$("span.navigation_paging_prn").hide();
+				$("span.navigation_paging_style_prn").hide();
+			}else{
+				$("span.navigation_paging_prn").show();
+				$("span.navigation_paging_style_prn").show();
+			}
+
+			if($(this).is(":checked")){
+				if($(this).val()!='custom'){
+					var clone = $(".navigation_paging_style_select .anibanner_navigation_"+$(this).val()).clone();
+					$("span.navigation_paging_prn").empty().append(clone);
+				}
+			}
+
+		});
+
+		$("select[name='navigation_btn_visible']").live('change',function(){
+			$("span.navigation_btn_visible_prn").html($("select[name='navigation_btn_visible'] option[value='"+$(this).val()+"']").text());
+		});
+		$("select[name='navigation_paging_align']").live('change',function(){
+			$("span.navigation_paging_align_prn").html($("select[name='navigation_paging_align'] option[value='"+$(this).val()+"']").text());
+		});
+		$("select[name='navigation_paging_position']").live('change',function(){
+			$("span.navigation_paging_position_prn").html($("select[name='navigation_paging_position'] option[value='"+$(this).val()+"']").text());
+		});
+		$("input[name='navigation_paging_margin']").live('change',function(){
+			$("span.navigation_paging_margin_prn").html($(this).val()+'px');
+		});
+
+
+		// 생성시 기본 이미지입력폼
+		{?!banner_seq}
+		banner_item_add();
+			{?mobileMode || storemobileMode}
+				banner_setting_load(true,'mobile_style_1');
+			{:}
+				banner_setting_load(true,'pc_style_1');
+			{/}
+		{/}
+
+		{?banner_seq}
+		banner_setting_load(false,'{banner_seq}');
+		{/}
+
+		// 스타일 변경
+		now_style = $("select[name='style']").val();
+		$("select[name='style']").live('change',function(){
+			if(confirm("스타일을 변경하시면 샘플이미지로 세팅됩니다.\n변경하시겠습니까?")){
+				now_style = $("select[name='style']").val();
+				banner_setting_load(true,now_style);
+				return true;
+			}else{
+				$("select[name='style']").val(now_style);
+				return false;
+			}
+		});
+
+		$("form[name='bannerForm']").submit(function(){
+			if($(".banner-item-row-num").length<2){
+				openDialogAlert("이미지를 최소 2개 이상 등록하셔야합니다.",400,140,function(){
+					$(".banner-item-plus").trigger('click');
+				});
+				return false;
+			}
+		});
+
+		$('.image_sort table tbody').sortable({stop : sample_view});
+	});
+
+	/* 파일업로드버튼 ajax upload 적용 */
+	function setAjaxUpload(selector){
+		var opt			= {};
+		var callback	= function(res){
+			var that		= this;
+			var result		= eval(res);
+
+			if(result.status){
+				$(that).closest('.webftpFormItem').find('.webftpFormItemPreview').attr('src', result.filePath + result.fileInfo.file_name);
+				$(that).closest('.webftpFormItem').find('.webftpFormItemPreview').show();
+				$(that).closest('.webftpFormItem').find('.webftpFormItemInput').val( 'data/tmp/' + result.fileInfo.file_name);
+			}else{
+				alert(result.msg);
+			}
+		};
+
+		// ajax 이미지 업로드 이벤트 바인딩
+		$(selector).createAjaxFileUpload(opt, callback);
+	}
+	
+
+	// 배너 설정 로딩 ajax
+	function banner_setting_load(is_sample,val){
+		banner_setting_load_ing = true;
+		if(is_sample){
+			var data = {'style':val};
+		}else{
+			var data = {'banner_seq':val};
+		}
+
+		$.ajax({
+			'url' : 'banner_setting_load',
+			'data' : data,
+			'dataType' : 'json',
+			'success' : function(res){
+				if(res){
+
+					now_style = res.style;
+
+					$("input[name='skin']").val(res.skin);
+					$("input[name='platform']").val(res.platform);
+					$("input[name='name']").val(res.name);
+					$("select[name='style']").val(res.style);
+					$("select[name='style'] option").each(function(){
+						{?mobileMode || storemobileMode}
+							if($(this).attr('platform')=='mobile' || res.style==$(this).val()){
+								$(this).removeAttr('disabled');
+							}else{
+								$(this).attr('disabled',true);
+							}
+						{:}
+							if($(this).attr('platform')=='pc' || res.style==$(this).val()){
+								$(this).removeAttr('disabled');
+							}else{
+								$(this).attr('disabled',true);
+							}
+						{/}
+					});
+
+					$("input[name='height']").val(res.height);
+					$("input[name='background_color']").val(res.background_color).change();
+					$("input[name='background_image']").val(res.background_image);
+					if(is_sample){
+						if(res.background_image) $("input[name='background_image']").parent().find("img.webftpFormItemPreview").attr("src",res.background_image).show();
+					}else{
+						if(res.background_image) $("input[name='background_image']").parent().find("img.webftpFormItemPreview").attr("src","/data/skin/"+design_working_skin+"/"+res.background_image+"?"+Math.floor(Math.random()*1000000000)).show();
+					}
+					$("select[name='background_repeat']").val(res.background_repeat);
+					$("select[name='background_position']").val(res.background_position);
+					if(res.image_border_use=='y') $("input[name='image_border_use']").attr('checked',true);
+					if(res.image_border_use!='y') $("input[name='image_border_use']").removeAttr('checked');
+					$("input[name='image_border_width']").val(res.image_border_width);
+					$("input[name='image_border_color']").val(res.image_border_color).change();
+					if(res.image_opacity_use=='y') $("input[name='image_opacity_use']").attr('checked',true);
+					if(res.image_opacity_use!='y') $("input[name='image_opacity_use']").removeAttr('checked');
+					$("input[name='image_opacity_percent']").val(res.image_opacity_percent);
+					$("input[name='image_top_margin']").val(res.image_top_margin);
+					$("input[name='image_side_margin']").val(res.image_side_margin);
+					$("input[name='image_width']").val(res.image_width);
+					$("input[name='image_height']").val(res.image_height);
+					$("input[name='navigation_btn_style'][value='"+res.navigation_btn_style+"']").attr('checked',true);
+					$("select[name='navigation_btn_visible']").val(res.navigation_btn_visible).trigger('change');
+					$("input[name='navigation_paging_style'][value='"+res.navigation_paging_style+"']").attr('checked',true);
+					$("select[name='navigation_paging_align']").val(res.navigation_paging_align).trigger('change');	
+					$("select[name='navigation_paging_position']").val(res.navigation_paging_position).trigger('change');
+					$("input[name='navigation_paging_margin']").val(res.navigation_paging_margin).trigger('change');
+					$("input[name='navigation_paging_spacing']").val(res.navigation_paging_spacing);
+					$("select[name='slide_event']").val(res.slide_event);
+
+					$(".banner-item-row-wrap").empty();
+					$(".navigation_paging_style_custom").empty();
+					if(res.images && res.images.length>0){
+						for(var i=0;i<res.images.length;i++){
+							banner_item_add();
+							var obj = $(".banner-item-row").last();
+							obj.find("input[name='link[]']").val(res.images[i].link);
+							obj.find("select[name='target[]']").val(res.images[i].target);
+							obj.find("input[name='image[]']").val(res.images[i].image);
+							if(is_sample){
+								obj.find("img.webftpFormItemPreview").attr("src",res.images[i].image).show();
+							}else{
+								var tmpimage = "/data/skin/"+design_working_skin+"/"+res.images[i].image;
+								if(is_url_path(res.images[i].image)){
+									tmpimage = res.images[i].image;
+								}
+								obj.find("img.webftpFormItemPreview").attr("src",tmpimage +"?"+Math.floor(Math.random()*1000000000)).show();
+							}
+
+							if(res.images[i].image_width && res.images[i].image_height){
+								obj.find(".webftpFormItemPreviewSize").html(res.images[i].image_width+" x "+res.images[i].image_height);
+							}
+							
+						}
+					}else{
+						banner_item_add();
+						banner_navigation_item_add();
+					}
+
+					// 스타일별 설정값
+					if(res.use_image_size==true){$(".use_image_size_area").show();}else{$(".use_image_size_area").hide();$(".use_image_size_area").find("input,select").val('');}
+					if(res.use_image_margin==true){$(".use_image_margin_area").show();}else{$(".use_image_margin_area").hide();$(".use_image_margin_area").find("input,select").val('');}
+					if(res.use_background==true){$(".use_background_area").show();}else{$(".use_background_area").hide();$(".use_background_area").find("input,select").val('');}
+					if(res.use_navigation_paging==true){$(".use_navigation_paging_area").show();}else{$(".use_navigation_paging_area").hide();$(".use_navigation_paging_area").find("input,select").val('');}
+					if(res.use_navigation_paging_custom==true){
+						if(res.images){
+							for(var i=0;i<res.images.length;i++){
+								banner_navigation_item_add();
+								
+								var obj = $("input[name='navigation_image_active[]']").last().closest('.webftpFormItem');
+								if(is_sample){
+									$("input[name='navigation_image_active[]']").last().val("/admin/skin/default/images/design/banner/"+res.style+"/"+res.images[i].tab_image_active);
+									obj.find("img.webftpFormItemPreview").attr("src","/admin/skin/default/images/design/banner/"+res.style+"/"+res.images[i].tab_image_active+"?"+Math.floor(Math.random()*1000000000)).show();
+								}else{
+									$("input[name='navigation_image_active[]']").last().val("/data/skin/"+design_working_skin+"/images/banner/"+val+"/"+res.images[i].tab_image_active);
+									obj.find("img.webftpFormItemPreview").attr("src","/data/skin/"+design_working_skin+"/images/banner/"+val+"/"+res.images[i].tab_image_active+"?"+Math.floor(Math.random()*1000000000)).show();
+								}
+								
+								var obj = $("input[name='navigation_image_inactive[]']").last().closest('.webftpFormItem');
+								if(is_sample){
+									$("input[name='navigation_image_inactive[]']").last().val("/admin/skin/default/images/design/banner/"+res.style+"/"+res.images[i].tab_image_inactive);
+									obj.find("img.webftpFormItemPreview").attr("src","/admin/skin/default/images/design/banner/"+res.style+"/"+res.images[i].tab_image_inactive+"?"+Math.floor(Math.random()*1000000000)).show();
+								}else{
+									$("input[name='navigation_image_inactive[]']").last().val("/data/skin/"+design_working_skin+"/images/banner/"+val+"/"+res.images[i].tab_image_inactive);
+									obj.find("img.webftpFormItemPreview").attr("src","/data/skin/"+design_working_skin+"/images/banner/"+val+"/"+res.images[i].tab_image_inactive+"?"+Math.floor(Math.random()*1000000000)).show();
+								}
+								
+								
+							}
+						}
+						$(".navigation_paging_style_custom").show();
+						$(".navigation_paging_spacing_area").show();
+						$(".navigation_paging_style_none").hide();
+						$(".navigation_paging_style_select").hide();
+					}else{
+						$(".navigation_paging_style_select").show();
+						$(".navigation_paging_style_none").show();
+						$(".navigation_paging_style_custom").hide();
+						$(".navigation_paging_spacing_area").hide();
+					}
+
+					$('.navigation_paging_style_custom').sortable({stop : sample_view});
+
+					$("input[name='navigation_btn_style'][value='"+res.navigation_btn_style+"']").trigger('change');
+					$("input[name='navigation_paging_style'][value='"+res.navigation_paging_style+"']").trigger('change');
+
+				}
+				banner_setting_load_ing = false;
+				sample_view();
+			}
+		});
+	}
+
+	// 이미지호스팅 사용 유무 체크
+	function is_url_path(path) {
+		if(path.substr(0, 4) == 'http') {
+			return true;
+		}
+		return false;
+	}
+
+	// 이미지 추가
+	function banner_item_add(){
+		$(".banner-item-row-wrap").append(banner_item_html());
+
+		var new_id = 'banner_item_image_'+(uploadify_idx++);
+		$(".banner-item-row").last().find("input.upload_btn").attr('id',new_id);
+
+		$(".banner-item-plus:gt(0)").hide();
+		$(".banner-item-minus:gt(0)").show();
+	
+		setAjaxUpload(new_id);
+		setDefaultText();
+
+		$(".banner-item-row-num").each(function(i){$(this).html(i+1)});
+	}
+
+	// 이미지 추가 HTML
+	function banner_item_html(){
+		var html = '';
+		html += '<tr class="banner-item-row">';
+		html += '	<th class="dsts-th">';
+		html += '	<img src="/admin/skin/default/images/common/icon_move.gif">';
+		html += '	이미지 (<span class="banner-item-row-num"></span>)';
+		html += '	</th>';
+		html += '	<td class="dsts-td left webftpFormItem">';
+		html += '		<select name="target[]">';
+		html += '			<option value="_self">현재창</option>';
+		html += '			<option value="_blank">새창</option>';
+		html += '		</select>';
+		html += '		<input type="text" name="link[]" value="" size="30" maxlength="200" title="링크주소" />';
+		html += '		<img src="" class="webftpFormItemPreview hide hand valign_middle" style="width:20px;height:20px;" onclick="window.open(this.src)">';
+		html += '		<input type="hidden" class="webftpFormItemInput" name="image[]" value="" size="30" maxlength="200" />';
+		html += '		<span class="btn small lightblue"><button onclick="image_popup(\'slide_img\',\'image_sort\',this);" type="button">이미지등록</button></span>';
+		html += '		<span class="orange">등록 이미지 (<span class="webftpFormItemPreviewSize"></span>)</span>';
+		html += '		<div class="fr">';
+		html += '			<span class="banner-item-plus"><img src="../images/design/icon_design_plus.gif" /></span>';
+		html += '			<span class="banner-item-minus"><img src="../images/design/icon_design_minus.gif" /></span>';
+		html += '		</div>';
+		html += '	</td>';
+		html += '</tr>';
+		return html;
+	}
+
+	// 네이게이션 이미지 추가
+	function banner_navigation_item_add(){
+		$(".navigation_paging_style_custom").append(banner_navigation_item_html());
+
+		var new_id = 'banner_navigation_item_image_'+(uploadify_idx++);
+		$(".banner-navigation-item-row").last().find("input.upload_btn_1").attr('id',new_id);
+		setAjaxUpload(new_id);
+
+		var new_id = 'banner_navigation_item_image_'+(uploadify_idx++);
+		$(".banner-navigation-item-row").last().find("input.upload_btn_2").attr('id',new_id);
+		setAjaxUpload(new_id);
+
+		setDefaultText();
+		$(".banner-navigation-item-row-num").each(function(i){$(this).html(i+1)});
+	}
+
+	// 이미지 추가 HTML
+	function banner_navigation_item_html(){
+		var html = '';
+		html += '<table class="banner-navigation-item-row move" cellspacing="3">';
+		html += '<tr class="webftpFormItem ">';
+		html += '	<td><span class="banner-navigation-item-row-num"></span>. 활성</td>';
+		html += '	<td>';
+		html += '		<img src="" class="webftpFormItemPreview hide" style="width:20px;height:20px;">';
+		html += '		<input type="hidden" class="webftpFormItemInput" name="navigation_image_active[]" value="" size="30" maxlength="200" />';
+		html += '		<span class="btn small lightblue"><button onclick="image_popup(\'navi_img\',\'navigation_paging_style_custom\',this);" type="button">이미지등록</button></span>';
+		html += '	</td>';
+		html += '</tr>';
+		html += '<tr class="webftpFormItem">';
+		html += '	<td>&nbsp;&nbsp;&nbsp;비활성</td>';
+		html += '	<td>';
+		html += '		<img src="" class="webftpFormItemPreview hide" style="width:20px;height:20px;">';
+		html += '		<input type="hidden" class="webftpFormItemInput" name="navigation_image_inactive[]" value="" size="30" maxlength="200" />';
+		html += '		<span class="btn small lightblue"><button onclick="image_popup(\'navi_img\',\'navigation_paging_style_custom\',this);" type="button">이미지등록</button></span>';
+		html += '	</td>';
+		html += '</tr>';
+		html += '</table>';
+		return html;
+	}
+
+	function sample_view(){
+
+		var background_image_src = $("input[name='background_image']").closest(".webftpFormItem").find("img.webftpFormItemPreview").attr('src');
+		if(background_image_src.indexOf('?')!=-1){
+			background_image_src = background_image_src.substring(0,background_image_src.indexOf('?'));
+		}
+
+		var settings = {
+			'platform' : $("input[name='platform']").val(),
+			'modtime' : Math.floor(Math.random()*1000000000),
+			'style' : $("select[name='style']").val(),
+			'height' : $("input[name='height']").val(),
+			'background_color' : $("input[name='background_color']").val(),
+			'background_image' : $("input[name='background_image']").val()!='' ? background_image_src : '',
+			'background_repeat' : $("select[name='background_repeat']").val(),
+			'background_position' : $("select[name='background_position']").val(),
+			'image_border_use' : $("input[name='image_border_use']").is(":checked") ? 'y' : 'n',
+			'image_border_width' : $("input[name='image_border_width']").val(),
+			'image_border_color' : $("input[name='image_border_color']").val(),
+			'image_opacity_use' : $("input[name='image_opacity_use']").is(":checked") ? 'y' : 'n',
+			'image_opacity_percent' : $("input[name='image_opacity_percent']").val(),
+			'image_top_margin' : $("input[name='image_top_margin']").val(),
+			'image_side_margin' : $("input[name='image_side_margin']").val(),
+			'image_width' : $("input[name='image_width']").val(),
+			'image_height' : $("input[name='image_height']").val(),
+			'navigation_btn_style' : $("input[name='navigation_btn_style']:checked").val(),
+			'navigation_btn_visible' : $("select[name='navigation_btn_visible']").val(),
+			'navigation_paging_style' : $("input[name='navigation_paging_style']:checked").val(),
+			'navigation_paging_align' : $("select[name='navigation_paging_align']").val(),
+			'navigation_paging_position' : $("select[name='navigation_paging_position']").val(),
+			'navigation_paging_margin' : $("input[name='navigation_paging_margin']").val(),
+			'navigation_paging_spacing' : $("input[name='navigation_paging_spacing']").val(),
+			'slide_event' : $("select[name='slide_event']").val(),
+			'images' : [],
+			'navigation_paging_custom_images' : []
+		};
+		$("input[name='image[]']").each(function(i){
+			var src = $(this).closest(".webftpFormItem").find("img.webftpFormItemPreview").attr('src');
+			if(src.indexOf('?')!=-1){
+				src = src.substring(0,src.indexOf('?'));
+			}
+			settings['images'][settings['images'].length] = {"link":$("input[name='link[]']").eq(i).val(),"target":$("select[name='target[]']").eq(i).val(),"image":src};
+		});
+
+		if(settings.navigation_paging_style=='custom'){
+			var pagingObj = $('<ul class="anibanner_navigation_paging anibanner_navigation_custom"></ul>');
+			$(".banner-navigation-item-row").each(function(i){
+				var activeImg = $("input[name='navigation_image_active[]']").eq(i).val();
+				var inactiveImg = $("input[name='navigation_image_inactive[]']").eq(i).val();
+
+				activeImg = activeImg.substring(0,1)=='/'?activeImg:'/'+activeImg;
+				inactiveImg = inactiveImg.substring(0,1)=='/'?inactiveImg:'/'+inactiveImg;
+
+				settings['navigation_paging_custom_images'][settings['navigation_paging_custom_images'].length] = {
+					"active":activeImg,
+					"inactive":inactiveImg,
+				};
+
+				pagingObj.append("<li><img src='"+inactiveImg+"' class='inactiveImg' /><img src='"+activeImg+"' class='activeImg' /></li>");
+			});
+			pagingObj.children().first().addClass('current');
+			$("span.navigation_paging_prn").empty().append(pagingObj);
+		}
+
+		if(settings['platform']=='pc'){
+			$(".sample_banner_area").css({'width':'auto'});
+		}else{
+			$(".sample_banner_area").css({'width':'320px'});
+		}
+
+		$(".sample_banner").empty().anibanner(settings);
+	}
+
+	function image_popup(division,selector,e){
+		idx = $(e).closest('table').index()+'_'+$(e).closest('tr').index();
+		window.open('image_upload?division='+division+'&selector='+selector+'&idx='+idx,'image_popup','width=500,height=250');
+	}
+
+	function default_img(obj){
+		idx = obj.idx.split('_');
+		that = $('.'+obj.selector).find('table').eq(idx[0]).find('tr').eq(idx[1]);
+
+		if(obj.division == 'slide_img'){
+			that.find('.webftpFormItemPreview').prop('src','/'+obj.tmpFile).show();
+			that.find('.webftpFormItemInput').val(obj.tmpFile);
+			that.find('.webftpFormItemPreviewSize').text(obj.width+' x '+obj.height);
+		}else{
+			that.find('.webftpFormItemPreview').prop('src','/'+obj.tmpFile).show();
+			that.find('.webftpFormItemInput').val(obj.tmpFile);
+		}
+		sample_view();
+	}
+</script>
+
+<form name="bannerForm" method="post" action="../design_process/banner_edit" target="actionFrame">
+<input type="hidden" name="skin" value="" />
+<input type="hidden" name="page_type" value="{page_type}" />
+<input type="hidden" name="banner_seq" value="{banner_seq}" />
+<input type="hidden" name="template_path" value="{template_path}" />
+<input type="hidden" name="platform" value="" />
+<input type="hidden" name="direct" value="{_GET.direct}" />
+
+<div class="pd15">
+	<div class="item-title" style="margin:0px">기본정보</div>
+	<table class="design-simple-table-style" width="100%" align="center">
+		{?banner_seq}
+		<col width="120" /><col width="20%" />
+		{/}
+		<col width="120" /><col width="" />
+		<col width="120" /><col width="20%" />
+		<tr>
+			{?banner_seq}
+			<th class="dsts-th">
+				번호
+			</th>
+			<td class="dsts-td left">
+				{banner_seq}
+			</td>
+			{/}
+			<th class="dsts-th">
+				배너명
+			</th>
+			<td class="dsts-td left">
+				<input type="text" name="name" size="30" maxlength="20" />
+			</td>
+			<th class="dsts-th">
+				스타일
+			</th>
+			<td class="dsts-td left">
+				<select name="style">
+				{@banner_styles}
+				<option value="{.key_}" platform="{.platform}">{.name}</option>
+				{/}
+				</select>
+			</td>
+		</tr>
+	</table>
+
+	<div class="item-title">미리보기</div>
+	<div class="sample_banner_area mt10 mb20">
+		<div class="sample_banner">
+		</div>
+	</div>
+
+	<div class="use_background_area">
+		<div class="item-title">배경</div>
+		<table class="design-simple-table-style" width="100%" align="center">
+		<col width="120" />
+		<col />
+		<tr>
+			<th class="dsts-th">
+				배경크기 및 색상
+			</th>
+			<td class="dsts-td left">
+				<span class="use_image_size_area">높이 <input type="text" name="height" value="" size="4" maxlength="4" class="onlynumber" /> px
+				&nbsp;&nbsp;&nbsp;</span>
+				색상선택 <input type="text" name="background_color" value="#ffffff" size="7" maxlength="7" class="colorpicker" />
+			</td>
+		</tr>
+		<tr>
+			<th class="dsts-th">
+				배경이미지
+			</th>
+			<td class="dsts-td left webftpFormItem">
+				<select name="background_repeat">
+					<option value="none">사용안함</option>
+					<option value="repeat">바둑판</option>
+					<option value="repeat-x">수평반복</option>
+					<option value="repeat-y">수직반복</option>
+					<option value="no-repeat">원본 그대로</option>
+				</select>
+				<select name="background_position">
+					<option value="left top">좌측상단</option>
+					<option value="left center">좌측중단</option>
+					<option value="left bottom">좌측하단</option>
+					<option value="center top">중앙상단</option>
+					<option value="center center">중앙중단</option>
+					<option value="center bottom">중앙하단</option>
+					<option value="right top">우측상단</option>
+					<option value="right center">우측중단</option>
+					<option value="right bottom">우측하단</option>
+				</select>
+				<img src="{?event.event_banner}/data/event/{= event.event_banner}?{=time()}{:}{/}" class="webftpFormItemPreview hand " onerror="$(this).hide()" style="width:20px; height:20px;" onclick="window.open(this.src)" />
+				<input type="hidden" class="webftpFormItemInput" name="background_image" size="30" maxlength="255" />
+				<input id="backgroundImageUploadButton" type="file" value="" class="uploadify" />
+			</td>
+		</tr>
+		</table>
+	</div>
+
+	<div class="item-title">이미지</div>
+	<table class="design-simple-table-style" width="100%" align="center">
+		<col width="120" />
+		<col />
+		<tr class="use_image_margin_area">
+			<th class="dsts-th">
+				이미지 여백
+			</th>
+			<td class="dsts-td left">
+				위에서 <input type="text" name="image_top_margin" value="" size="3" maxlength="3" class="onlynumber" /> px
+				&nbsp;&nbsp;/&nbsp;&nbsp;
+				좌우 <input type="text" name="image_side_margin" value="" size="3" maxlength="3" class="onlynumber" /> px
+			</td>
+		</tr>
+		<tr>
+			<th class="dsts-th">
+				이미지 효과
+			</th>
+			<td class="dsts-td left">
+				마우스 오버 시 →
+				<label><input type="checkbox" name="image_border_use" value="y" /> 테두리</label> 색상선택 <input type="text" name="image_border_color" class="colorpicker" value="#000000" size="3" maxlength="4" /> <input type="text" name="image_border_width" value="" size="3" maxlength="3" class="onlynumber" /> px
+				&nbsp;&nbsp;&nbsp;&nbsp;
+				<label><input type="checkbox" name="image_opacity_use" value="y" /> 투명도</label> <input type="text" name="image_opacity_percent" value="0" size="3" maxlength="3" class="onlynumber" /> % <span class="desc">(0% 투명도 없음)</span>
+			</td>
+		</tr>
+		<tr class="use_image_size_area">
+			<th class="dsts-th">
+				이미지 1개 영역
+			</th>
+			<td class="dsts-td left">
+				<input type="text" name="image_width" value="" size="4" maxlength="4" class="onlynumber" />
+				&nbsp;X&nbsp;
+				<input type="text" name="image_height" value="" size="4" maxlength="4" class="onlynumber" />
+				<span class="desc">반드시 좌측에 정의된 사이즈(가로x세로)로 ↓아래의 이미지를 등록하십시오.</span>
+			</td>
+		</tr>
+	</table>
+	<div style="height:10px"></div>
+	<div class="image_sort">
+		<table width="100%" align="center" class="design-simple-table-style">
+			<col width="120" />
+			<col />
+			<tbody class="banner-item-row-wrap">
+			</tbody>
+		</table>
+	</div>
+
+	<div class="item-title">네비게이션</div>
+	<table class="design-simple-table-style" width="100%" align="center">
+		<col width="120" /><col width="45%" /><col />
+		<tr>
+			<th class="dsts-th">
+				좌우 <span class="btn small cyanblue"><button type="button" onclick="$('#navigation_btn_dialog').dialog('open');">선택</button></span>
+			</th>
+			<td class="dsts-td left">
+				<span class="navigation_btn_prn"></span>
+			</td>
+			<td class="dsts-td left">
+				<span class="navigation_btn_visible_prn"></span>
+			</td>
+		</tr>
+		<tr class="use_navigation_paging_area">
+			<th class="dsts-th">
+				아래 <span class="btn small cyanblue"><button type="button" onclick="$('#navigation_paging_dialog').dialog('open')">선택</button></span>
+			</th>
+			<td class="dsts-td left">
+				<span class="navigation_paging_prn"></span>
+			</td>
+			<td class="dsts-td left">
+				<span class="navigation_paging_style_prn">
+					<span class="navigation_paging_align_prn"></span>,
+					<span class="navigation_paging_position_prn"></span>,
+					<span class="navigation_paging_margin_prn"></span>
+				</span>
+			</td>
+		</tr>
+	</table>
+
+	<div class="item-title">애니메이션</div>
+	<table class="design-simple-table-style" width="100%" align="center">
+		<col width="120" />
+		<col />
+		<tr>
+			<th class="dsts-th">
+				동작
+			</th>
+			<td class="dsts-td left">
+				<select name="slide_event">
+					<option value="click">로딩 시 정지상태이며 네비게이션 클릭시 움직임</option>
+					<option value="mouseover">로딩 시 정지상태이며 네비게이션 마우스 오버 시 움직임</option>
+					<option value="auto">로딩 시 움직이며 마우스 오버 시 정지되며 마우스 아웃 또는 네비게이션 클릭 시 다시 움직임</option>
+				</select>
+			</td>
+		</tr>
+	</table>
+
+	{? template_path && _GET.banner_seq }
+	<div class="mt15 center">
+		<label><input type="checkbox" name="removeDesignBannerArea" value="Y" /> 이 페이지에서 이 슬라이드 배너 영역을 없앰 (설정 정보는 삭제되지 않음)</label>
+	</div>
+	{/}
+
+	<div class="center mt15">
+		<span class="btn large cyanblue"><input type="submit" value="적용" /></span>
+		{?template_path}
+			<span class="btn large"><input type="button" value="목록" onclick="parent.DM_window_banner_insert('{template_path}')"/></span>
+		{/}
+	</div>
+	<div style="height:30px"></div>
+</div>
+
+<!-- 좌우 네비게이션 선택 -->
+<div id="navigation_btn_dialog" class="hide">
+	<div><label><input type="radio" name="navigation_btn_style" value="" /> 없음</label></div>
+	<select name="navigation_btn_visible" class="mt10">
+		<option value="fixed">고정으로 보임</option>
+		<option value="mouseover">마우스 오버 시 나타남</option>
+	</select>
+	<div class="mt10"><label><input type="radio" name="navigation_btn_style" value="btn_style_1" /> <span class="anibanner_navigation_btn_style_1_prev_off"></span> <span class="anibanner_navigation_btn_style_1_next_off"></span> <span class="anibanner_navigation_btn_style_1_prev_on"></span> <span class="anibanner_navigation_btn_style_1_next_on"></span></label></div>
+	<div class="mt10"><label><input type="radio" name="navigation_btn_style" value="btn_style_2" /> <span class="anibanner_navigation_btn_style_2_prev_off"></span> <span class="anibanner_navigation_btn_style_2_next_off"></span> <span class="anibanner_navigation_btn_style_2_prev_on"></span> <span class="anibanner_navigation_btn_style_2_next_on"></span></label></div>
+	<div class="mt10"><label><input type="radio" name="navigation_btn_style" value="btn_style_3" /> <span class="anibanner_navigation_btn_style_3_prev_off"></span> <span class="anibanner_navigation_btn_style_3_next_off"></span> <span class="anibanner_navigation_btn_style_3_prev_on"></span> <span class="anibanner_navigation_btn_style_3_next_on"></span></label></div>
+	<div class="mt10"><label><input type="radio" name="navigation_btn_style" value="btn_style_4" /> <span class="anibanner_navigation_btn_style_4_prev_off"></span> <span class="anibanner_navigation_btn_style_4_next_off"></span> <span class="anibanner_navigation_btn_style_4_prev_on"></span> <span class="anibanner_navigation_btn_style_4_next_on"></span></label></div>
+
+	<div class="mt30 mb10 center">
+		<span class="btn medium gray"><button type="button" onclick="closeDialog('navigation_btn_dialog')">닫기</button></span>
+	</div>
+</div>
+
+<!-- 아래 네비게이션 선택 -->
+<div id="navigation_paging_dialog" class="hide">
+	<input type="radio" name="navigation_paging_style" value="custom" class="hide" />
+	<div class="navigation_paging_style_none"><label><input type="radio" name="navigation_paging_style" value="" /> 없음</label></div>
+	<div class="mt10">
+		<select name="navigation_paging_align">
+			<option value="center">가운데 정렬</option>
+			<option value="left">좌측 정렬</option>
+			<option value="right">우측 정렬</option>
+		</select>
+		<select name="navigation_paging_position">
+			<option value="bottom">이미지 아래에 위치</option>
+			<option value="over">이미지 위에 위치</option>		
+		</select>
+		<input type="text" name="navigation_paging_margin" value="" size="3" maxlength="4" class="onlynumber" /> px 떨어짐
+		<div class="navigation_paging_spacing_area mt10">
+			탭 사이 간격 <input type="text" name="navigation_paging_spacing" value="0" size="3" maxlength="4" class="onlynumber" /> px
+		</div>
+	</div>
+	<div class="navigation_paging_style_custom mt10">
+	</div>
+	<div class="navigation_paging_style_select mt10">
+		<div class="mt10">
+			<label>
+				<input type="radio" name="navigation_paging_style" value="paging_style_1" />
+				<ul class="anibanner_navigation_paging_style_1">
+					<li class="current">1</li>
+					<li>2</li>
+					<li>3</li>
+					<li>4</li>
+					<li>5</li>
+				</ul>
+			</label>
+		</div>
+		<div class="mt10">
+			<label>
+				<input type="radio" name="navigation_paging_style" value="paging_style_2" />
+				<ul class="anibanner_navigation_paging_style_2">
+					<li class="current">1</li>
+					<li>2</li>
+					<li>3</li>
+					<li>4</li>
+					<li>5</li>
+				</ul>
+			</label>
+		</div>
+		<div class="mt10">
+			<label>
+				<input type="radio" name="navigation_paging_style" value="paging_style_3" />
+				<ul class="anibanner_navigation_paging_style_3">
+					<li class="current">1</li>
+					<li>2</li>
+					<li>3</li>
+					<li>4</li>
+					<li>5</li>
+					<li>6</li>
+					<li>7</li>
+				</ul>
+			</label>
+		</div>
+		<div class="mt10">
+			<label>
+				<input type="radio" name="navigation_paging_style" value="paging_style_4" />
+				<ul class="anibanner_navigation_paging_style_4">
+					<li class="paging_btn_prev"></li>
+					<li class="paging_btn_body"><span class="paging_btn_num_now">2</span>/<span class="paging_btn_num_max">8</span></li>
+					<li class="paging_btn_next"></li>
+				</ul>
+			</label>
+		</div>
+		<div class="mt10">
+			<label>
+				<input type="radio" name="navigation_paging_style" value="paging_style_5" />
+				<ul class="anibanner_navigation_paging_style_5">
+					<li class="paging_btn_prev"></li>
+					<li class="paging_btn_body"><span class="paging_btn_num_now">2</span>/<span class="paging_btn_num_max">8</span></li>
+					<li class="paging_btn_next"></li>
+				</ul>
+			</label>
+		</div>
+	</div>
+
+	<div class="center pd20">
+		<span class="btn medium gray"><button type="button" onclick="closeDialog('navigation_paging_dialog')">닫기</button></span>
+	</div>
+</div>
+</form>
+
+{#layout_footer_popup}

@@ -1449,3 +1449,11 @@ table.order-view-table th.dark{ background-color: #f6f6f6 !important;}
 
 .skinListTab li:first-child a {border-left: 1px solid #c5c5c7;}
 .skinListTab li.active a {border: 1px solid #64a0ec !important; background: #64a0ec; color: #FFF; z-index: 10; font-weight: 600;}
+
+/* 이미지 호스팅 */
+.top_banner {display: flex; justify-content: center;}
+[data-tip="image-hosting"] .tabs {position: sticky; top: 0; background-color: white; display: flex; width: 100%; border-bottom: 1px solid #ddd}
+[data-tip="image-hosting"] .tabs li {flex: 1 1 auto; position: relative; height: 36px; font-size: 17px; display: flex; justify-content: center; font-weight: bold; cursor: pointer;}
+[data-tip="image-hosting"] .tabs li.active::after {content: ""; position: absolute; bottom: 0; height: 2px; width: 100%; background-color: #0B74E1; display: block;}
+[data-tip="image-hosting"] .image {overflow: hidden}
+[data-tip="image-hosting"] img {margin-top: -51px}

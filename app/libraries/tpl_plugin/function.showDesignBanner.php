@@ -41,9 +41,16 @@ function showDesignBanner($banner_seq, $return = false)
 			$html .= '<!-- 슬라이드 배너 데이터 영역 :: START -->';
 			$html .= '	<div class="' . $banner_slider_key . ' designBanner" designElement="banner" templatePath="'.$template_path.'" bannerSeq="'.$banner_seq.'">';
 			foreach ($banner_item as $k=>$item) {
+				// 이미지 호스팅 사용 여부에 따른 이미지 경로 구분 :: 2022-10-27 @nsg
+				if(substr($item['image'], 0,4) == "http"){
+					$image = $item['image'];
+				}else{
+					$image = '/data/skin/' . $skin . '/' . $item['image'];
+				}
+
 				if ($banner['style'] == 'light_style_2') {
 					$html .= '<div class="sslide">';
-					$html .= '	<img class="simg" src="/data/skin/' . $skin . '/' . $item['image'] . '" />';
+					$html .= '	<img class="simg" src="' . $image . '" />';
 					$html .= '	<div class="slide_contents">';
 					$html .= '		<div class="wrap1">';
 					$html .= '			<div class="wrap2">';
@@ -55,7 +62,7 @@ function showDesignBanner($banner_seq, $return = false)
 					$html .= '	</div>';
 					$html .= '</div>';
 				} else {
-					$html .= '<div class="sslide"><a class="slink" href="' . $item['link'] . '" target="' . $item['target'] . '"><img class="simg" src="/data/skin/' . $skin . '/' . $item['image'] . '" /></a></div>';
+					$html .= '<div class="sslide"><a class="slink" href="' . $item['link'] . '" target="' . $item['target'] . '"><img class="simg" src="' . $image . '" /></a></div>';
 				}
 			}
 			$html .= '	</div>';
@@ -77,6 +84,13 @@ function showDesignBanner($banner_seq, $return = false)
 				$html .= '</script>';
 			}
 		} else {
+			// 이미지 호스팅 사용 여부에 따른 이미지 경로 구분 :: 2022-10-27 @nsg
+			if(substr($banner_item[0]['image'], 0,4) == "http"){
+				$image = $banner_item[0]['image'];
+			}else{
+				$image = '/data/skin/' . $skin . '/' . $banner_item[0]['image'];
+			}
+
 			// Heavy 형 슬라이드 배너
 			$html = "";
 			$html .= "<script type='text/javascript' src='/app/javascript/jquery/jquery.ui.touch-punch.min.js'></script>";
@@ -104,24 +118,24 @@ function showDesignBanner($banner_seq, $return = false)
 					$imgHTML	= '<div style="width:100%;height:100%;background-color:' . $banner['background_color'] . '"></div>';
 				break;
 				case 'pc_style_2':
-					$imgHTML	= '<img src="/data/skin/' . $skin . '/' . $banner_item[0]['image'] . '" width="100%" height="' . $banner['image_height'] . '" />';
+					$imgHTML	= '<img src="' .$image. '" width="100%" height="' . $banner['image_height'] . '" />';
 				break;
 				case 'pc_style_3':
 					$tmpPadding		= 'padding-bottom:0;';
 					if	($banner['navigation_paging_position'] == 'bottom' && $banner['bottom_paging_area_size'] > 0){
 						$tmpPadding		= 'padding-bottom:' . $banner['bottom_paging_area_size'] . 'px;';
 					}
-					$imgHTML		= '<div style="height:' . $banner['image_height'] . 'px;' . $tmpPadding . '"><div style="width:' . $banner['image_width'] . 'px;height:' . $banner['image_height'] . 'px;background-color:' . $banner['background_color'] . ';padding:' . $banner['image_top_margin'] . 'px ' . $banner['image_side_margin'] . 'px;"><img src="/data/skin/' . $skin . '/' . $banner_item[0]['image'] . '" width="' . $banner['image_width'] . '" height="' . $banner['image_height'] . '" /></div></div>';
+					$imgHTML		= '<div style="height:' . $banner['image_height'] . 'px;' . $tmpPadding . '"><div style="width:' . $banner['image_width'] . 'px;height:' . $banner['image_height'] . 'px;background-color:' . $banner['background_color'] . ';padding:' . $banner['image_top_margin'] . 'px ' . $banner['image_side_margin'] . 'px;"><img src="' .$image. '" width="' . $banner['image_width'] . '" height="' . $banner['image_height'] . '" /></div></div>';
 				break;
 				case 'pc_style_4':
-					$imgHTML	= '<div style="width:100%;position:relative;"><img src="/data/skin/' . $skin . '/' . $banner_item[0]['image'] . '" width="' . $banner['image_width'] . '" height="' . $banner['image_height'] . '" style="position:absolute;top:0;left:0;" /></div>';
+					$imgHTML	= '<div style="width:100%;position:relative;"><img src="' .$image. '" width="' . $banner['image_width'] . '" height="' . $banner['image_height'] . '" style="position:absolute;top:0;left:0;" /></div>';
 				break;
 				case 'pc_style_5':
 					$tmpPadding		= 'padding-bottom:0;';
 					if	($banner['navigation_paging_position'] == 'bottom' && $banner['bottom_paging_area_size'] > 0){
 						$tmpPadding		= 'padding-bottom:' . $banner['bottom_paging_area_size'] . 'px;';
 					}
-					$imgHTML		= '<div style="height:' . $banner['image_height'] . 'px;' . $tmpPadding . '"><div style="width:' . $banner['image_width'] . 'px;height:' . $banner['image_height'] . 'px;background-color:' . $banner['background_color'] . ';padding:' . $banner['image_top_margin'] . 'px ' . $banner['image_side_margin'] . 'px;"><img src="/data/skin/' . $skin . '/' . $banner_item[0]['image'] . '" width="' . $banner['image_width'] . '" height="' . $banner['image_height'] . '" /></div></div>';
+					$imgHTML		= '<div style="height:' . $banner['image_height'] . 'px;' . $tmpPadding . '"><div style="width:' . $banner['image_width'] . 'px;height:' . $banner['image_height'] . 'px;background-color:' . $banner['background_color'] . ';padding:' . $banner['image_top_margin'] . 'px ' . $banner['image_side_margin'] . 'px;"><img src="' .$image. '" width="' . $banner['image_width'] . '" height="' . $banner['image_height'] . '" /></div></div>';
 				break;
 				default:
 					$imgHTML	= '';
@@ -163,8 +177,14 @@ function showDesignBanner($banner_seq, $return = false)
 			$html .= "'slide_event' : '{$banner['slide_event']}',";
 			$html .= "'images' : [";
 			foreach ($banner_item as $k=>$item) {
+				// 이미지 호스팅 사용 여부에 따른 이미지 경로 구분 :: 2022-10-27 @nsg
+				if(substr($item['image'], 0,4) == "http"){
+					$image = $item['image'];
+				}else{
+					$image = '/data/skin/' . $skin . '/' . $item['image'];
+				}
 				if($k) $html .= ",";
-				$html .= "{'link':'{$item['link']}','target':'{$item['target']}','image':'/data/skin/{$skin}/{$item['image']}'}";
+				$html .= "{'link':'{$item['link']}','target':'{$item['target']}','image':'{$image}'}";
 			}
 			$html .= "],";
 			$html .= "'navigation_paging_custom_images' : [";

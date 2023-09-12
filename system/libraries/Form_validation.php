@@ -1363,6 +1363,19 @@ class CI_Form_validation {
 	}
 
 	// --------------------------------------------------------------------
+	
+	/**
+	 * Alpha-numeric-hangeul \s
+	 *
+	 * @param	string
+	 * @return	bool
+	 */
+	public function alpha_numeric_hangeul($str)
+	{
+		return (bool) preg_match('/^[\x80-\xFF0-9a-z\s]+$/i', $str);
+	}
+
+	// --------------------------------------------------------------------
 
 	/**
 	 * Alpha-numeric with underscores and dashes

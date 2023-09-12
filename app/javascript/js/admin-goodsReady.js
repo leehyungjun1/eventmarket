@@ -1975,12 +1975,6 @@ $(document).ready(function() {
 		});
 	});
 	
-
-	/* 이미지 호스팅 일괄 업데이트 팝업*/
-	$("#openmarketimghostingftp").on("click",function(){
-		openDialog("이미지 호스팅 설정", "openmarketimghostinglay", {"width":550,"height":560});
-	});
-
 	//원본이미지 삭제여부
 	$("#imagedelete").on("click",function(){
 		if ($("#imagedelete").is(':checked')) {
@@ -2009,95 +2003,6 @@ $(document).ready(function() {
 	if(goodsObj.mobile_contents_copy){
 		$("input[name='mobile_contents_copy'][value='"+goodsObj.mobile_contents_copy+"']").prop("checked",true).trigger("click",[goodsObj.mobile_contents_copy]);
 	}
-	
-
-	/* 이미지 호스팅 일괄업데이트 */
-	// 반응형 조건 추가 :: 2019-03-20
-	$("#imagehostinggoodssave").on("click",function(){
-		var hostname = $("#imghostinghostname").val();
-		var username	= $("#imghostingusername").val();
-		var password	= $("#imghostingpassword").val();
-		var hostinguse	= $("#imghostinguse").val();
-		var imagehostingDomainType	= $("input[name='imagehostingDomainType']:checked").val();
-		var targettxt	= typeof gl_operation_type != 'undefined' && gl_operation_type == 'light' ? '반응형 전용' : 'PC/테블릿용';
-
-		if (!hostname || !username || !password) {
-			alert("이미지 호스팅 FTP 정보를 정확히 입력해 주세요!");
-			return;
-		}
-
-
-		openDialogConfirm(targettxt + ' 상품설명정보를 변경하겠습니까?<br/>변경된 데이터는 복구 되지 않습니다!',500,160,function(){
-			
-			$("#imghostingsavegoods_seq").val(gl_goods_seq);
-			$("#imghostingsavemode").val('onlyone');
-			contentObj		= typeof gl_operation_type != 'undefined' && gl_operation_type == 'light' ? $("#mobile_contents") : $("#goodscontents");
-			contentPrmName	= typeof gl_operation_type != 'undefined' && gl_operation_type == 'light' ? 'mobile_contents' : 'contents';
-
-
-			var initializedId = $(contentObj).data('initializedId');
-			Editor.switchEditor(initializedId);
-			//var goodscontents = Editor.getContent(); // 에디터미사용 :: 2016-05-04 lwh
-			var goodscontents = $(contentObj).val();
-			var mobile_contents	= $("#mobile_contents").val();
-			if(!goodscontents || goodscontents.toLowerCase() == "<p>&nbsp;</p>"  || goodscontents.toLowerCase() == "<p><br></p>" ){
-				alert(targettxt + ' 설명을 입력해 주세요.');
-				$(contentObj).focus();
-				return false;
-			}
-
-			$.ajax({
-				type: "post",
-				'dataType' : 'json',
-				url: "../goods_process/batch_modify_imagehostgin",
-				data: "no="+gl_goods_seq+"&hostname=" + hostname + "&username=" + username + "&password=" + password + "&imagehostingDomainType=" + imagehostingDomainType + "&mobile_contents=" + encodeURIComponent(mobile_contents)+"&contents=" + encodeURIComponent(goodscontents),
-				success: function(result) {
-					if( result.result ) {
-						var goodsSeq		= gl_goods_seq;
-						if(typeof gl_operation_type != 'undefined' && gl_operation_type == 'light'){
-							var goodscontents	= result.mobile_contents;
-							if(goodscontents){
-								$("#mobile_contents_view").html(goodscontents);
-								$(contentObj).val(goodscontents);
-							}
-							
-							// 바로 저장 또는 임시저장
-							if(goodsSeq){
-								$("input[name='goodsSeq']").val(goodsSeq);
-								$("input[name='contents_type']").val('mobile_contents');
-								var newContant = '<input type="hidden" name="mode" val="ftp"/><textarea name="view_textarea" id="view_textarea" class="daumeditor" style="width:100%;height:500px;" contentHeight="500px">'+goodscontents+'</textarea>';
-								$(".view_contents_area").html(newContant);
-							}
-						}else{
-							var goodscontents	= result.contents;
-							if(goodscontents){
-								$("#goodscontents_view").html(goodscontents);
-								$(contentObj).val(goodscontents);
-							}
-							
-							// 바로 저장 또는 임시저장
-							if(goodsSeq){
-								$("input[name='goodsSeq']").val(goodsSeq);
-								$("input[name='contents_type']").val('goodscontents');
-								var newContant = '<input type="hidden" name="mode" val="ftp"/><textarea name="view_textarea" id="view_textarea" class="daumeditor" style="width:100%;height:500px;" contentHeight="500px">'+goodscontents+'</textarea>';
-								$(".view_contents_area").html(newContant);
-								if( $("input[name='mobile_contents_copy']:checked").val() == 'N' && result.mobile_contents ){
-									$("#mobile_contents").html(result.mobile_contents);
-									$("#mobile_contents_view").html(result.mobile_contents);
-									$("#mobile_contents_view").show();
-									//$("#mobile_contents_desc").hide();
-								}
-							}
-						}
-					}
-					alert(result.msg);
-					$("form#goodsImagehostingForm")[0].reset();
-					closeDialog("openmarketimghostinglay");
-				}
-			});
-		},function(){
-		});
-	});
 
 	$("button.px_infomation").on("click", function(){
 		$.ajax({

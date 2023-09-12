@@ -1,0 +1,144 @@
+{ #layout_header }
+<script type="text/javascript" src="/app/javascript/plugin/custom-color-picker.js?dummy={=date('Ymd')}"></script>
+<script type="text/javascript">
+	// 변경이 불가능한 Object(필요시 Property 생성)
+	var freezeObj			= {};
+	freezeObj.queryString	= "{=str_replace('&amp;','&',page.querystring)}";
+	Object.freeze(freezeObj);
+
+	var mode				= "{=mode}";
+	var gl_goods_config	 	= '{=arr_gl_gooda_config}';
+	var get_search_field	= new Array();
+	var batchModify			= true;
+	var gl_provider_seq 	= true;
+	var gl_goods_seq		= true;
+	var goodsObj			= {"additionCount":"0"};
+	var gl_operation_type	= '{config_system.operation_type}';
+	var jsbatchmodify		= '{=jsbatchmodify}';
+	var gl_common_info_cfg  = gl_common_info_goods = '';
+	var socialcpuse_flag	= gl_goods_config.socialcpuse_flag;
+</script>
+
+<script type="text/javascript" src="/app/javascript/js/admin-batchModify.js?dummy={=date('Ymd')}"></script>
+<!--{? in_array(mode,array('ifaddinfo','icon','ifpay','multidiscount','ifrelation','relation'))}-->
+<script type="text/javascript" src="/app/javascript/js/admin-goodsReady.js?dummy={=date('Ymd')}"></script>
+<script type="text/javascript" src="/app/javascript/js/admin-goodsRegist.js?dummy={=date('Ymd')}"></script>
+<!--{ / }-->
+
+<!--{? mode == 'icon'}-->
+<script type="text/javascript" src="/app/javascript/jquery/jquery.ajax.form.js?dummy={=date('Ymd')}"></script>
+<script type="text/javascript" src="/app/javascript/js/ajaxFileUpload.js?dummy={=date('Ymd')}"></script>
+<script type="text/javascript" src="/app/javascript/plugin/jquploadify/swfobject.js?dummy={=date('Ymd')}"></script>
+<script type="text/javascript" src="/app/javascript/plugin/jquploadify/jquery.uploadify.v2.1.4.js?dummy={=date('Ymd')}"></script> 
+<!--{/}-->
+<script type="text/javascript" src="/app/javascript/jquery/jquery.tablednd.js"></script>
+<style>
+/* 백그라운드 색상*/
+td.bgcolorgray {background-color: #f2f2f2 !important;}
+.table_row_basic > thead > tr > th {padding-left:0px;padding-right:0px;}
+.table_row_basic > tbody > tr > td, .table_row_basic > thead > tr > td {padding:5px;}
+.table_row_basic > tbody > tr {height:60px;}
+.contents_container .datepicker {width:70px;}
+</style>
+
+<!-- 페이지 타이틀 바 : 시작 -->
+<div id="page-title-bar-area">
+	<div id="page-title-bar">
+
+		<!-- 타이틀 -->
+		<div class="page-title">
+			<h2>상품 데이터 일괄 업데이트</h2>
+		</div>
+
+		<!-- 좌측 버튼 -->
+		<ul class="page-buttons-left">
+		<!--
+			<li><span class="btn large icon"><button><span class="arrowleft"></span>상품리스트</button></span></li>
+			-->
+		</ul>
+
+		<!-- 우측 버튼 -->
+		<ul class="page-buttons-right">
+			<li><button type="button" class="resp_btn active size_L" check_function="{=check_function}" id="update_goods">업데이트</button></li>
+		</ul>
+
+	</div>
+</div>
+<!-- 페이지 타이틀 바 : 끝 -->
+
+<!-- 상품 검색폼 : 시작 -->
+{ #goods_search_form }
+<!-- 상품 검색폼 : 끝 -->
+
+<div class="clearbox"></div>
+<form name="goodsBatchUpdateForm" id="goodsBatchUpdateForm" enctype="multipart/form-data">
+<div class="contents_dvs v2">
+	{#batch_modify_selector}
+	{#list_contents}
+</div>
+</form>
+
+<div class="paging_navigation" style="margin:auto;">{page.html}</div>
+
+
+<!--### 역마진 방지 승인팝업-->
+<!--<div id="goods_permit_lay" class="hide"></div>-->
+
+<!-- 공용정보설정 팝업 -->
+{? mode == "commoninfo"}
+<div id="view_editor_div" class="hide">
+	<form name="tmpContentsFrm" id="tmpContentsFrm" method="post" enctype="multipart/form-data" action="../goods_process/goods_info_update" target="actionFrame">
+	<input type="hidden" name="contents_type" value="" />
+	<input type="hidden" name="mode" value="info_only_update">
+	<div class="contents_view hide" id="commonContents_view"></div>
+	<div>
+		<div id="view_common_info">
+			<input type="text" name="info_name" title="공용정보명을 입력하세요" size="20">
+			<select name="info_select" class="line">
+				<option value="">← 좌측에 공용정보명을 입력하여 새로운 공용정보를 만드시거나 또는 ↓아래에서 이미 만들어진 공용정보를 불러오세요</option>
+				{@ info_loop }
+				{? .info_name!='== 선택하세요 ==' && .info_name!='== ←좌측에 공용정보명을 입력하여 새로운 공용정보를 만드시거나 또는 ↓아래에서 이미 만들어진 공용정보를 불러오세요 ==' }
+				<option value="{.info_seq}">{.info_name} &nbsp;[고유번호 : {.info_seq}] 고유번호는 엑셀로 상품등록/수정할 때 공용정보 셀에 입력하는 번호입니다.</option>
+				{/}
+				{/}
+			</select>
+			<span class="btn small gray"><input type="button" onclick="goods_info_del();" value="삭제"></span>
+		</div>
+		<div class="view_contents_area"></div>
+		<div class="contents_saveBtn center pdt10"><span class="btn large cyanblue"><button type="button" onclick="view_editor_save()" style="width:100px;">저장</button></span></div>
+	</div>
+	</form>
+</div>
+{ / }
+
+
+
+<div id="dialog_confirm" class="hide">
+	<div class="center" id="dialog_confirm_msg"></div>
+	<div class="ui-dialog-buttonset">
+		<button class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" aria-disabled="false" type="button" id="btn_normal_gname" mode="ifstatus"><span class="ui-button-text">품절⇒정상<br/>변경 상품</span></button>
+		<button class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" aria-disabled="false" type="button" id="btn_runout_gname" mode="ifstatus"><span class="ui-button-text">정상⇒품절<br/>변경 상품</span></button>
+		<br /><br />
+		<button class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" aria-disabled="false" type="button" id="btn_pop_close"><span class="ui-button-text">닫기</span></button>
+	</div>
+</div>
+
+<div id="dialog_confirm_normal" class="hide">
+	<div class="left" id="dialog_normal_table">아래 상품은 ‘품절’에서 ‘정상’으로 변경된 상품입니다.<br /><br /></div>
+	<br /><br />
+	<div class="ui-dialog-buttonset">
+		<button class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" aria-disabled="false" type="button" id="btn_pop_normal_close"><span class="ui-button-text">닫기</span></button>
+	</div>
+</div>
+
+<div id="dialog_confirm_runout" class="hide">
+	<div class="left" id="dialog_runout_table">아래 상품은 ‘정상’에서 ‘품절’로 변경된 상품입니다.<br /><br /></div>
+	<br /><br />
+	<div class="ui-dialog-buttonset">
+		<button class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" aria-disabled="false" type="button" id="btn_pop_runout_close"><span class="ui-button-text">닫기</span></button>
+	</div>
+</div>
+
+{#_regist_popup_guide}
+
+{ #layout_footer }
