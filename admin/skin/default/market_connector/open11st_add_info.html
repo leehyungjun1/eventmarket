@@ -1,0 +1,886 @@
+<!--{? displayMmode == 'popup'}-->
+{ #layout_header_popup}
+<link rel="stylesheet" type="text/css" href="/admin/skin/default/css/market_connector.css?dummy={=date('Ymd')}" />
+<!--{ / }-->
+
+<script type="text/javascript" src="/app/javascript/js/admin-addInfoRegist.js"></script>
+
+<script>
+	var	mode		= '{mode}';
+	var	modeText	= (mode == 'renew' || mode == 'marketRenew') ? '수정' : '등록';
+	var seller_id	= '{seller_id}';
+	var market		= '{market}';
+	var addInfo		= {addInfo};
+
+	//객체동결(변경금지)
+	Object.freeze(addInfo);
+
+	var reloaded = false;
+
+	$(document).ready(function() {
+
+		if (reloaded === true)
+			return;
+
+		reloaded 	= true;
+		market		= '{market}';
+
+		// 필수정보 기본셋팅
+		setAddInfoRegist();
+
+		$('#selPrdClfCd').change(function(){ variableCheck(this, '0:100'); });
+		$('#dlvCstInstBasiCd').change(function(){setDeliveryLay(); });
+
+		if(mode == 'renew' || mode == 'marketRenew') {
+			$('#selPrdClfCd').trigger('change');
+
+			if($('#dlvCstInstBasiCd').val() == '04') {
+				if (addInfo.hasOwnProperty("dlvCnt1") == true)
+					$('#dlvCstInstBasiCd > option[value="04"]').eq(0).attr('selected',true);
+				else
+					$('#dlvCstInstBasiCd > option[value="04"]').eq(1).attr('selected',true);
+
+			}
+
+			$('._selMnbdNckNm').html(addInfo.selMnbdNckNm);
+			$('._add_info_title').html(addInfo.add_info_title);
+			
+			setDeliveryLay();
+		}
+	
+	});
+
+	function setDeliveryLay() {
+		var $nowOption		= $('#dlvCstInstBasiCd > option:selected');
+		var targetClases	= $nowOption.attr('targetClases').split('|');
+		var bndlDlvCnYn		= $nowOption.attr('bndlDlvCnYn').split('|');
+		
+			
+		if (targetClases[0] == 'free' || targetClases[0] == 'dontSet') {
+			$('#dlvCstPayTypCd').hide();
+			$('#dlvCstPayTypCd').attr('disabled', true);
+		} else {
+			$('#dlvCstPayTypCd').show();
+			$('#dlvCstPayTypCd').attr('disabled', false);
+		}
+
+		if (targetClases[0] == 'dontSet') {
+			$('#bndlDlvCnYn').hide();
+			$('#bndlDlvCnYn').attr('disabled', true);
+		} else {
+			$('#bndlDlvCnYn').show();
+			$('#bndlDlvCnYn').attr('disabled', false);
+		}
+		
+
+		$('#bndlDlvCnYn > option').remove();
+		for (cnt = bndlDlvCnYn.length, i = 0; i < cnt; i++) {
+			var value	= bndlDlvCnYn[i];
+			var text	= (bndlDlvCnYn[i] == 'Y') ? '가능' : '불가';
+
+			$('#bndlDlvCnYn').append('<option value="' + value + '"> ' + text + ' </option>');
+		}
+
+		$('.dlv').attr('disabled', true);
+		$('.dlv').hide();
+
+		for (cnt = targetClases.length, i = 0; i < cnt; i++) {
+			nowVal	= targetClases[i];
+			if (nowVal.length < 2)
+				continue;
+
+			var nowObj		= {};
+			nowObj.name		= nowVal;
+			nowObj.value	= 'Y';
+			variableCheck(nowObj, 'Y');
+		}
+
+	}
+
+	function saleDateSet(checkValue) {
+		$('#aplBgnDy').attr('disabled', true);
+		$('#aplEndDy').attr('disabled', true);
+		if (checkValue == '0:100') {
+			$('#aplBgnDy').attr('disabled', false);
+			$('#aplEndDy').attr('disabled', false);
+		}
+	}
+
+	function setAddress (){
+		
+		var sendCloseCallBack 	= function (response){
+
+			if (response.success != 'Y') {
+				if(response.code > 0)
+					openDialogAlert('[' + response.code + '] ' + response.message);
+
+				return false;
+			}
+
+			var setCloseList	= response.resultData;
+			
+			$('#sendCloseTmpNo > option').remove();
+			$('#sendCloseTmpNo').append("<option value=''>발송 예정일 선택</option>");
+			for(cnt = setCloseList.length, i = 0; i < cnt; i++) {
+				var nowValue	= setCloseList[i];
+				var nowOption	= '<option value="' + nowValue.prdInfoTmpltNo + '">[' + nowValue.prdInfoTmpltNo + '] ' + nowValue.prdInfoTmpltNm + '</option>';
+				$('#sendCloseTmpNo').append(nowOption);
+			}
+			setRenewAddInfo(['dlvSendCloseTmpltNo']);
+
+		}
+
+		var shippingCallBack	= function (response) {
+			if (response.success != 'Y') {
+				if(response.code > 0)
+					openDialogAlert('[' + response.code + '] ' + response.message);
+
+				return false;
+			}
+
+			var addressList	= response.resultData;
+			
+			$('#addrSeqOut > option').remove();
+			$('#addrSeqOut').append("<option value='AUTO'>출고지 정보 자동매칭</option>");
+
+			if (addressList.hasOwnProperty('addr') === true) {
+				var nowValue	= addressList;
+				var nowOption	= '<option value="' + nowValue.addrSeq + '">' + nowValue.addrNm + ' - ' + nowValue.addr + '</option>';
+				$('#addrSeqOut').append(nowOption);
+			} else {
+				for(cnt = addressList.length, i = 0; i < cnt; i++) {
+					var nowValue	= addressList[i];
+					var nowOption	= '<option value="' + nowValue.addrSeq + '">' + nowValue.addrNm + ' - ' + nowValue.addr + '</option>';
+					$('#addrSeqOut').append(nowOption);
+				}
+			}
+			setRenewAddInfo(['addrSeqOut']);
+
+		}
+
+		var returnCallBack	= function (response) {
+			if (response.success != 'Y') {
+				if(response.code > 0)
+					openDialogAlert('[' + response.code + '] ' + response.message);
+
+				return false;
+			}
+
+			var addressList	= response.resultData;
+
+			$('#addrSeqIn > option').remove();
+			$('#addrSeqIn').append("<option value='AUTO'>반품지 정보 자동등록</option>");
+
+			if (addressList.hasOwnProperty('addr') === true) {
+				var nowValue	= addressList;
+				var nowOption	= '<option value="' + nowValue.addrSeq + '">' + nowValue.addrNm + ' - ' + nowValue.addr + '</option>';
+				$('#addrSeqIn').append(nowOption);
+			} else {
+				for(cnt = addressList.length, i = 0; i < cnt; i++) {
+					var nowValue	= addressList[i];
+					var nowOption	= '<option value="' + nowValue.addrSeq + '">' + nowValue.addrNm + ' - ' + nowValue.addr + '</option>';
+					$('#addrSeqIn').append(nowOption);
+				}
+			}
+
+
+			setRenewAddInfo(['addrSeqIn']);
+
+		}
+		
+		callConnector('sendCloseList', sendCloseCallBack);	//발송예정일 템플릿 리스트 불러오기
+		callConnector('shippingAddress', shippingCallBack);
+		callConnector('returnAddress', returnCallBack);
+	}
+
+
+</script>
+<style>
+	.page-buttons-right{padding-right:0 !important;}
+	#page-title-bar-area{padding:15px 15px 0 15px;}
+	#page-title-bar-area #page-title-bar.flyingMode .page-title {margin-left: 20px !important;}
+	#page-title-bar-area #page-title-bar.flyingMode .page-buttons-right{padding-right:20px !important;}
+	#page-title-bar-area + .contents_container{padding-bottom: 20px; height: auto;}
+	.ico_floating_top {display:none;}
+</style>
+<!-- 페이지 타이틀 바 : 시작 -->
+<!--{? displayMmode == 'popup'}-->
+<div id="page-title-bar-area">
+	<div id="page-title-bar">
+		<!-- 타이틀 -->
+		<div class="page-title">
+			<h2>
+				<!--{? mode != 'marketRenew'}-->
+				11번가 필수 정보
+				<!--{ : }-->
+				11번가 등록 필수 정보
+				<!--{ / }-->
+			</h2>
+		</div>
+
+		<!-- 우측 버튼 -->
+		<ul class="page-buttons-right">
+			<!--li><span class="helpicon" title=""></span></li-->
+			<li>
+				<button onClick="addInfoSave();" class="resp_btn active size_L" id="addInfoActionBtn">수정</button>
+			</li>
+		</ul>
+	</div>
+</div>
+<div class="contents_container">
+<!--{ : }-->
+<div class="title_top">필수정보 {? mode == 'renew' || mode == 'marketRenew'}수정{ : }등록{ / }</div>
+<div class="contents_container">
+<!--{ / }-->
+<!-- 페이지 타이틀 바 : 끝 -->
+
+<input type="hidden" name="displayMmode" id="displayMmode" value="{displayMmode}"/>
+<input type="hidden" name="market" id="market" value="{market}" toBeSaved="Y" rquired/>
+<input type="hidden" name="seller_id" id="seller_id" value='{seller_id}' toBeSaved="Y" rquired/>
+<input type="hidden" name="add_info_seq" id="add_info_seq" value='{add_info_seq}' toBeSaved="Y"/>
+<input type="hidden" name="fmMarketProduceSeq" id="fmMarketProduceSeq", value='{fmMarketProduceSeq}' toBeSaved="Y"/>
+	<div class="item-title">템플릿</div>
+	<table class="table_basic tdc">
+		<!--{? mode != 'marketRenew'}-->
+		<colgroup>
+			<col width="160" />
+			<col width="160" />
+			<col width="" />
+		</colgroup>	
+		<tr>
+			<th>11번가 ID <span class="required_chk"/></th>
+			<th>닉네임 <span class="required_chk"/></th>
+			<th>타이틀  <span class="required_chk"/></th>
+		</tr>		
+		<tbody>
+			<tr>
+				<td>{seller_id}</td>
+				<td>
+					<input type="text" name="selMnbdNckNm" value="" class="width-80per" toBeSaved="Y" rquired itemName='닉네임'/>
+				</td>
+				<td class="left">
+					<input type="text" name="add_info_title" value="" maxlength="100" class="width-90per" toBeSaved="Y" rquired itemName='필수 정보 타이틀'/>
+				</td>
+			</tr>
+		</tbody>
+		<!--{ : }-->
+		<input type="hidden" name="mode" value="marketRenew" toBeSaved="Y"/>
+		<input type="hidden" name="seller_id" value="{seller_id}" toBeSaved="Y"/>
+		<input type="hidden" class="_add_info_title" name="add_info_title" value="" toBeSaved="Y"/>
+		<input type="hidden" class="_selMnbdNckNm" name="selMnbdNckNm" value="" toBeSaved="Y"/>
+
+		<colgroup>
+			<col width="160" />
+			<col width="150" />
+			<col width="150" />
+			<col width="" />
+		</colgroup>
+		
+		<tr>
+			<th>11번가 ID <span class="required_chk"/></th>
+			<th>닉네임 <span class="required_chk"/></th>
+			<th>마켓 상품코드</th>
+			<th>마켓 상품명</th>
+		</tr>
+	
+		<tbody>
+			<tr>
+				<td>{seller_id}</td>
+				<td><span class="_selMnbdNckNm"></span>	</td>
+				<td>{marketProductCode}</td>
+				<td>{marketProductName}</td>
+			</tr>
+		</tbody>
+		<!--{ / }-->
+
+	</table>
+
+	<div class="item-title">카테고리 정보{? mode != 'marketRenew'} - <span class="desc normal">매칭 카테고리 사용시 필수정보의 카테고리값은 무시됩니다</span>{ / }</div>
+	<table class="table_basic">
+		<colgroup>
+			<col width="160" />
+			<col width="*" />
+			<col width="*" />
+			<col width="*" />
+			<col width="*" />
+		</colgroup>
+		
+		<tr>
+			<th>구분</th>
+			<th>1차 카테고리</th>
+			<th>2차 카테고리</th>
+			<th>3차 카테고리</th>
+			<th>4차 카테고리</th>
+		</tr>
+		
+		<tbody>
+			<!--{? mode != 'marketRenew'}-->
+			<tr>
+				<th class="left">11번가 카테고리</th>
+				<td>
+					<select id="dep1_category_sel" class="width-90per" onChange="getCategory('dep2_category', this.value)"></select>
+				</td>
+				<td>
+					<select id="dep2_category_sel" class="width-90per" onChange="getCategory('dep3_category', this.value)"></select>
+				</td>
+				<td>
+					<select id="dep3_category_sel" class="width-90per" onChange="getCategory('dep4_category', this.value)"></select>
+				</td>
+				<td>
+					<select id="dep4_category_sel" class="width-90per" onChange="sel_category('dep4_category', this.value)"></select>
+				</td>
+			</tr>
+			<!--{ / }-->
+			<tr>
+				<th class="left">선택 카테고리 <span class="required_chk"/></th>
+				<td>
+					<input type="text" name="dep1_category_name" id="dep1_category_name" value="" class="width-90per" toBeSaved="Y" readonly>
+					<input type="hidden" name="dep1_category_code" id="dep1_category_code" value="" toBeSaved="Y">
+				</td>
+				<td>
+					<input type="text" name="dep2_category_name" id="dep2_category_name" value="" class="width-90per" toBeSaved="Y" readonly>
+					<input type="hidden" name="dep2_category_code" id="dep2_category_code" value="" toBeSaved="Y">
+				</td>
+				<td>
+					<input type="text" name="dep3_category_name" id="dep3_category_name" value="" class="width-90per" toBeSaved="Y" readonly>
+					<input type="hidden" name="dep3_category_code" id="dep3_category_code" value="" toBeSaved="Y">
+				</td>
+				<td>
+					<input type="text" name="dep4_category_name" id="dep4_category_name" value=""  class="width-90per" toBeSaved="Y" readonly>
+					<input type="hidden" name="dep4_category_code" id="dep4_category_code" value="" toBeSaved="Y" saveType="text">
+					<input type="hidden" name="category_code" id="category_code" value="" toBeSaved="Y" saveType="text" itemName="선택 카테고리" required>
+				</td>
+			</tr>
+		</tbody>
+	</table>
+
+	<div class="item-title">상품 필수정보</div>
+
+	<table class="table_basic thl">
+	<colgroup>
+		<col width="15%" />
+		<col width="85%" />
+	</colgroup>
+		<tr>
+			<th>판매 방식</th>
+			<td>
+				<select name="selMthdCd" class="width-90per" toBeSaved="Y" saveType="select">
+					<option value="01" selected>고정가판매</option>
+					<!--option value="04">예약판매</option>
+					<option value="05">중고판매</option-->
+				</select>
+			</td>
+		</tr>	
+		<tr>
+			<th>판매 기간 설정 <span class="required_chk"/></th>
+			<td class="clear">
+				<table class="table_basic thl v3 th120">						
+					<tbody>
+						<tr>
+							<th>기간 설정 여부</th>								
+							<td>
+								<div class="resp_radio">
+									<label><input type="radio" name="selTermUseYn" value="N" class="variableCheck" toBeSaved="Y" checked> 영구판매</label>
+									<label><input type="radio" name="selTermUseYn" value="Y" class="variableCheck" toBeSaved="Y"> 설정함</label>
+								</div>
+							</td>
+						</tr>	
+						
+						<tr>
+							<th>판매 기간</th>								
+							<td>
+								<select name="selPrdClfCd" id="selPrdClfCd" class="selTermUseYn" toBeSaved="Y" itemName="판매기간 코드" required disabled>
+									<option value="" selected>판매기간 코드</option>
+									<option value="0:100">기간 직접입력</option>
+									<option value="3:101">3일</option>
+									<option value="5:102">5일</option>
+									<option value="7:103">7일</option>
+									<option value="15:104">15일</option>
+									<option value="30:105">30일</option>
+									<option value="60:106">60일</option>
+									<option value="90:107">90일</option>
+									<option value="120:108">120일</option>
+								</select>
+							</td>
+						</tr>	
+
+						<tr>
+							<th>기간 직접 입력</th>								
+							<td>								
+								<input type="text" name="aplBgnDy" id="aplBgnDy" value="" class="selPrdClfCd datepicker" size="10" toBeSaved="Y" rquired itemName="판매 시작일" disabled readonly> ~
+								<input type="text" name="aplEndDy" id="aplEndDy" value="" class="selPrdClfCd datepicker" size="10" toBeSaved="Y" rquired itemName="판매 종료일" disabled readonly>
+							</td>
+						</tr>	
+					</tbody>
+				</table>
+				
+			</td>
+		</tr>	
+		<tr>
+			<th>가격비교 사이트 등록 여부 <span class="required_chk"/></th>
+			<td>
+				<div class="resp_radio">
+					<label><input type="radio" name="prcCmpExpYn" value="Y" toBeSaved="Y" checked> 등록</label>
+					<label><input type="radio" name="prcCmpExpYn" value="N" toBeSaved="Y"> 등록 안 함</label>
+				</div>
+			</td>
+		</tr>	
+	</table>	
+
+	<div class="item-title">배송정보</div>
+	<table class="table_basic thl">
+		<colgroup>
+			<col width="15%" />
+			<col width="25%" />
+			<col width="15%" />
+			<col width="45%" />		
+		</colgroup>
+		<tbody>
+			<tr>
+				<th>배송가능지역 <span class="required_chk"/></th>
+				<td>
+					<select name="dlvCnAreaCd" id="dlvCnAreaCd" class="wx200" toBeSaved="Y">
+						<option value='01'>전국</option>
+						<option value='02'>전국(제주 도서산간지역 제외)</option>
+						<option value='03'>서울</option>
+						<option value='04'>인천</option>
+						<option value='05'>광주</option>
+						<option value='06'>대구</option>
+						<option value='07'>대전</option>
+						<option value='08'>부산</option>
+						<option value='09'>울산</option>
+						<option value='10'>경기</option>
+						<option value='11'>강원</option>
+						<option value='12'>충남</option>
+						<option value='13'>충북</option>
+						<option value='14'>경남</option>
+						<option value='15'>경북</option>
+						<option value='16'>전남</option>
+						<option value='17'>전북</option>
+						<option value='18'>제주</option>
+						<option value='19'>서울/경기</option>
+						<option value='20'>서울/경기/대전</option>
+						<option value='21'>충북/충남</option>
+						<option value='22'>경북/경남</option>
+						<option value='23'>전북/전남</option>
+						<option value='24'>부산/울산</option>
+						<option value='25'>서울/경기/제주도서산간 제외지역</option>
+						<option value='26'>일부지역불가</option>
+					</select>
+				</td>
+				<th>출고지 주소 <span class="required_chk"/></th>
+				<td>
+					<select name="addrSeqOut" id="addrSeqOut" class="width-80per" toBeSaved="Y"></select>
+					<div class="resp_message v2">- 오픈마켓 관리자 > 출고지관리에 등록된 정보를 자동으로 불러와 표시합니다.</div>
+				</td>
+			</tr>
+			<tr>
+				<th>배송방법 <span class="required_chk"/></th>
+				<td>
+					<select name="dlvWyCd" id="dlvWyCd" class="wx200" toBeSaved="Y">
+						<option value='01'>택배</option>
+						<option value='03'>직접전달(화물배달)</option>
+						<option value='04'>퀵서비스</option>
+						<option value='05'>배송필요없음</option>
+					</select>
+				</td>
+				<th>배송설정 <span class="required_chk"/></th>
+				<td colspan="2">
+					<select name="dlvCstInstBasiCd" id="dlvCstInstBasiCd" class="wx200" toBeSaved="Y">
+						<option value='01' bndlDlvCnYn='Y|N'	targetClases="free|noSetOther|noSetPay">무료</option>
+						<option value='02' bndlDlvCnYn='Y|N'	targetClases="dlvCst1|dlvCst1olny|noSetOther">고정 배송비</option>
+						<option value='03' bndlDlvCnYn='N'		targetClases="dlvCst1|PrdFrDlvBasiAmt">상품 조건부 무료</option>
+						<option value='04' bndlDlvCnYn='Y|N'	targetClases="dlvCst3|dlvCnt1">수량별 차등 ~ 이상 수량</option>
+						<option value='04' bndlDlvCnYn='Y|N'	targetClases="dlvCst3|dlvCnt2">수량별 차등 ~ 이하 수량</option>
+						<option value='05' bndlDlvCnYn='N'		targetClases="dlvCst4|noSetOther">1개당 배송비</option>
+						<option value='07' bndlDlvCnYn='Y'		targetClases="dontSet|dlv7||noSetPay">판매자 조건부 배송비</option>
+						<option value='08' bndlDlvCnYn='Y'		targetClases="dontSet|dlv8|noSetOtnoSetOtherher|noSetPay">출고지 조건부 배송비</option>
+					</select>
+				</td>
+			</tr>
+			<tr>
+				<th rowspan="2">배송비 상세설정</th>
+				<td colspan="3">
+					<table class="table_basic tdc wx700">
+						<colgroup>
+							<col width="22%" />
+							<col width="40%" />
+							<col width="18%" />
+							<col width="20%" />
+						</colgroup>
+						<thead>
+							<tr>
+								<th>배송비</th>
+								<th>
+									추가정보
+									<span class="dlv PrdFrDlvBasiAmt hide">(상품조건부 무료 상품기준금액)</span>
+									<span class="dlv dlvCnt1 hide">(수량별 차등 기준 ~이상 수량)</span>
+									<span class="dlv dlvCnt2 hide">(수량별 차등 기준 ~이하 수량)</span>
+
+								</th>
+								<th>묶음배송 여부</th>
+								<th>결제방법</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td>
+									<!--무료배송-->
+									<span class="dlv free dlv7 dlv8">-</span>
+
+									<!--고정 배송비-->
+									<span class="dlv dlvCst1 hide">
+										<input type="text" name="dlvCst1" id="dlvCst1" class="dlv dlvCst1 onlynumber width-90per" value="" toBeSaved="Y" rquired itemName="배송비" disabled/>
+									</span>
+
+									<!--수량별 차등 배송비-->
+									<span class="dlv dlvCst3 hide">
+										<input type="text" name="dlvCst3" id="dlvCst3" class="dlv dlvCst3 width-90per"  value="" toBeSaved="Y" rquired='Y' itemName="배송비" disabled/>
+									</span>
+
+									<!--1개당 배송비-->
+									<span class="dlv dlvCst4 hide">
+										<input type="text" name="dlvCst4" id="dlvCst4" class="dlv dlvCst4 onlynumber width-90per"  value="" toBeSaved="Y" rquired='Y' itemName="배송비" disabled/>
+									</span>
+								</td>
+								<td>
+									<!--상품 조건부 무료-->
+									<span class="dlv PrdFrDlvBasiAmt hide">
+										상품 <input type="text" name="PrdFrDlvBasiAmt" id="PrdFrDlvBasiAmt" class="dlv PrdFrDlvBasiAmt onlynumber" size="8" value="" toBeSaved="Y" rquired='Y' itemName="무료 상품기준금액" disabled/>원 이상 구매시 <span class="red bold">배송비 무료</span>
+									</span>
+
+									<!--수량별 차등 배송비(이상)-->
+									<span class="dlv dlvCnt1 hide">
+										<input type="text" name="dlvCnt1" id="dlvCnt1" class="dlv dlvCnt1 width-50per" value="" toBeSaved="Y" rquired='Y' itemName="무료 상품기준금액" disabled/>
+									</span>
+
+									<!--수량별 차등 배송비(이하)-->
+									<span class="dlv dlvCnt2 hide">
+										<input type="text" name="dlvCnt2" id="dlvCnt2" class="dlv dlvCnt2 width-50per" value="" toBeSaved="Y" rquired='Y' itemName="무료 상품기준금액" disabled/>
+									</span>
+
+									<!--설정 없음-->
+									<div class="dlv noSetOther center width-100per">-</div>
+								</td>
+								<td>
+									<select name="bndlDlvCnYn" id="bndlDlvCnYn" class="free dlvCst1 dlvCst3 dlvCst4 dontSet  width-90per" toBeSaved="Y">
+										<option value="Y"> 가능 </option>
+										<option value="N"> 불가 </option>
+									</select>
+									<!--설정 없음-->
+									<div class="dlv noSetBndl hide center width-100per">-</div>
+								</td>
+								<td >
+									<select name="dlvCstPayTypCd" id="dlvCstPayTypCd" class="dlvCst1 dlvCst3 dlvCst4 width-90per hide" toBeSaved="Y" disabled>
+										<option value='01'> 선결제가능 </option>
+										<option value='02'> 선결제불가 </option>
+										<option value='03'> 선결제필수 </option>
+									</select>
+									<!--설정 없음-->
+									<div class="dlv noSetPay center width-100per">-</div>
+								</td>
+							</tr>
+							<tr>
+								<td>
+									<span class="dlv free">무료 배송</span>
+									<span class="dlv dlvCst1olny hide">고정 배송비</span>
+									<span class="dlv PrdFrDlvBasiAmt hide">상품 조건부 무료</span>
+									<span class="dlv dlvCst4 hide">1개당 배송비</span>
+									<span class="dlv dlv7 hide">판매자 조건부 배송비</span>
+									<span class="dlv dlv8 hide">출고지 조건부 배송비</span>
+									<span class="dlv dlvCst3 hide">
+										수량별 차등 배송비(최대 3개)<br/>
+										ex) 2500^3000
+									</span>
+								</td>
+								<td class="its-td center">
+									<!--수량별 차등 배송비(이상)-->
+									<span class="dlv dlvCnt1 hide">
+										수량별 차등 기준 ~이상 수량(최대 3개)<br/>
+										ex) 1^10 (1개 ~ @ , 10개 ~ @)
+									</span>
+
+									<!--수량별 차등 배송비(이하)-->
+									<span class="dlv dlvCnt2 hide">
+										수량별 차등 기준 ~이상 수량(최대 3개)<br/>
+										ex) 9^19 (@ ~ 9개 , @ ~ 19개)
+									</span>
+
+									<!--셀러오피스 셋팅-->
+									<span class="dlv dlv7 dlv8 hide">기준설정은 SellerOffice 에서 설정하셔야합니다</span>
+								</td>
+								<td class="its-td pd10 center">
+									<span class="dlv PrdFrDlvBasiAmt dlvCst4 hide">묶음배송 설정 불가</span>
+								</td>
+								<td class="its-td"></td>
+							</tr>
+						</tbody>
+					</table>
+				</td>
+			</tr>
+			<tr>
+				<td colspan="3">
+					<table class="table_basic thl wx700">
+						<colgroup>
+							<col width="30%" />
+							<col />							
+						</colgroup>
+						<tbody>
+							<tr>
+								<th>제주 추가 배송비</th>
+								<td><input type="text" name="jejuDlvCst" id="jejuDlvCst" class="onlynumber" value="0" toBeSaved="Y" /></td>			
+							</tr>
+							<tr>
+								<th>도서산간 추가 배송비</th>
+								<td><input type="text" name="islandDlvCst" id="jejuDlvCst" class="onlynumber" value="0" toBeSaved="Y" /></td>
+							</tr>
+						</tbody>
+					</table>
+					<ul class="bullet_hyphen resp_message v2">
+						<li>제주/도서산간 배송지의 구매자에게 추가 운송비를 부담하게 설정합니다.</li>
+						<li>묶음배송상품 중 추가배송비가 0원 상품이 있을 경우 추가배송비는 발생하지 않습니다.</li>
+						<li>우체국 택배는 도서산간 추가배송비가 발생하지 않습니다.</li>
+					</ul>
+				</td>
+			</tr>
+			<tr>
+				<th>발송 예정일 <span class="required_chk"/></th>
+				<td colspan="3">
+					<select name="dlvSendCloseTmpltNo" id="sendCloseTmpNo" class="width-80per" toBeSaved="Y" itemName="발송 예정일" required></select>
+					<div class="resp_message v2">- [11번가 셀러오피스 > 상품관리 > 상품정보 템플릿 관리] 메뉴 등록된 '발송예정일 템플릿'을 자동으로 불러와 표시합니다.</div>
+				</td>
+			</tr>
+		</tbody>
+	</table>
+
+	<div class="item-title">반품/교환 정보</div>
+	<table class="table_basic thl">
+		<colgroup>
+			<col width="15%" />
+			<col width="23%" />
+			<col width="62%" />
+		</colgroup>
+
+		<tbody>
+			<tr>
+				<th>반품/교환지 주소 <span class="required_chk"/></th>
+				<td colspan="2">
+					<select name="addrSeqIn" id="addrSeqIn" class="width-50per" toBeSaved="Y"></select>
+					<div class="resp_message v2">- 오픈마켓 관리자 > 반품지관리에 등록된 정보를 자동으로 불러와 표시합니다.</div>
+				</td>
+			</tr>
+			<tr>
+				<th>반품배송비 <span class="required_chk"/></th>
+				<td>
+					편도 : <input type="text" name="rtngdDlvCst" id="rtngdDlvCst" class="width-50per" value="0" toBeSaved="Y" itemName="반품 배송비" required/>원
+				</td>
+				<td>
+					초기배송비 무료시 부과방법 :
+					<div class="resp_radio">
+						<label><input type="radio" name="rtngdDlvCd" value="01" class="onlynumber" toBeSaved="Y" checked> 왕복</label>
+						<label><input type="radio" name="rtngdDlvCd" value="02" class="onlynumber" toBeSaved="Y"> 편도</label>
+					</div>
+				</td>
+			</tr>
+			<tr>
+				<th>교환배송비 <span class="required_chk"/></th>
+				<td>
+					왕복 : <input type="text" name="exchDlvCst" id="exchDlvCst" class="width-50per" value="0" toBeSaved="Y" itemName="교환 배송비" required/>원
+				</td>
+				<td></td>
+			</tr>
+			<tr>
+				<th>A/S 안내 <span class="required_chk"/></th>
+				<td colspan="2"><textarea name="asDetail" id="asDetail" class="pdl20 width-95per" style="height:80px"  toBeSaved="Y" itemName="A/S 안내" required></textarea></td>
+			</tr>
+			<tr>
+				<th>반품/교환 안내 <span class="required_chk"/></th>
+				<td colspan="2"><textarea name="rtngExchDetail" id="rtngExchDetail" class="pdl20 width-95per" style="height:80px"  toBeSaved="Y" itemName="반품/교환 안내" required></textarea></td>
+			</tr>
+		</tbody>
+	</table>
+
+	<div class="item-title">할인 및 적립 등</div>
+	<table class="table_basic thl">
+		<colgroup>
+			<col width="15%" />
+			<col width="25%" />
+			<col width="28%" />
+			<col width="32%" />
+		</colgroup>
+		
+		<tr>
+			<th class="center">항목명</th>
+			<th class="center">설정</th>
+			<th class="center" colspan="2">추가정보</th>
+		</tr>		
+
+		<tbody>
+			<tr>
+				<th>즉시 할인 설정</th>
+				<td>
+					<div class="resp_radio">
+						<label><input type="radio" name="cuponcheck" value="N" class="variableCheck" toBeSaved="Y" checked> 설정안함</label>
+						<label><input type="radio" name="cuponcheck" value="Y" class="variableCheck" toBeSaved="Y"> 설정함</label>
+					</div>
+				</td>
+				<td>
+					할인 수치 : <input type="text" name="dscAmtPercnt" id="dscAmtPercnt" class="cuponcheck onlynumber" size="8" value="" toBeSaved="Y" itemName="할인수치" disabled required/>
+					<select name="cupnDscMthdCd" id="cupnDscMthdCd" class="cuponcheck" toBeSaved="Y" disabled>
+						<option value="01" selected>원</option>
+						<option value="02">%</option>
+					</select>
+				</td>
+				<td>
+					할인 적용기간 설정 :
+					<div class="resp_radio">
+						<label><input type="radio" name="cupnUseLmtDyYn" class="variableCheckSub cuponcheck" value="N" toBeSaved="Y" checked disabled> 설정안함</label>
+						<label><input type="radio" name="cupnUseLmtDyYn" class="variableCheckSub cuponcheck" value="Y" toBeSaved="Y" disabled> 설정함</label>
+					</div><br/>
+					<input type="text" name="cupnIssEndDy" id="cupnIssEndDy" value="" class="cupnUseLmtDyYn datepicker" size="10" toBeSaved="Y" itemName="판매 종료일" required disabled>
+				</td>
+			</tr>
+			<tr>
+				<th>포인트 지급 설정</th>
+				<td>
+					<div class="resp_radio">
+						<label><input type="radio" name="pointYN" value="N" class="variableCheck" toBeSaved="Y" checked> 설정안함</label>
+						<label><input type="radio" name="pointYN" value="Y" class="variableCheck" toBeSaved="Y"> 설정함</label>
+					</div>
+				</td>
+				<td colspan="2">
+					지급 수치 : <input type="text" name="pointValue" id="pointValue" class="pointYN onlynumber" size="8" value="" toBeSaved="Y" itemName="포인트수치" required disabled/>
+					<select name="spplWyCd" id="spplWyCd" class="pointYN" toBeSaved="Y" disabled>
+						<option value="01" selected>원</option>
+						<option value="02">%</option>
+					</select>
+				</td>
+			</tr>
+			<tr>
+				<th>OK캐쉬백 지급 설정</th>
+				<td>
+					<div class="resp_radio">
+						<label><input type="radio" name="ocbYN" value="N" class="variableCheck" toBeSaved="Y" checked> 설정안함</label>
+						<label><input type="radio" name="ocbYN" value="Y" class="variableCheck" toBeSaved="Y"> 설정함</label>
+					</div>
+				</td>
+				<td colspan="2">
+					지급 수치 : <input type="text" name="ocbValue" id="ocbValue" class="ocbYN onlynumber" size="8" value="" toBeSaved="Y" itemName="OK캐쉬백수치" required disabled/>
+					<select name="ocbWyCd" id="ocbWyCd" class="ocbYN" toBeSaved="Y" disabled>
+						<option value="01" selected>원</option>
+						<option value="02">%</option>
+					</select>
+				</td>
+			</tr>
+			<tr>
+				<th>마일리지 지급 설정</th>
+				<td>
+					<div class="resp_radio">
+						<label><input type="radio" name="mileageYN" value="N" class="variableCheck" toBeSaved="Y" checked> 설정안함</label>
+						<label><input type="radio" name="mileageYN" value="Y" class="variableCheck" toBeSaved="Y"> 설정함</label>
+					</div>
+				</td>
+				<td colspan="2">
+					지급 수치 : <input type="text" name="mileageValue" id="mileageValue" class="mileageYN onlynumber" size="8" value="" toBeSaved="Y" itemName="마일리지수치" required disabled/>
+					<select name="mileageWyCd" id="mileageWyCd" class="mileageYN" toBeSaved="Y" disabled>
+						<option value="01" selected>원</option>
+						<option value="02">%</option>
+					</select>
+				</td>
+			</tr>
+			<tr>
+				<th>무이자 할부 제공</th>
+				<td>
+					<div class="resp_radio">
+						<label><input type="radio" name="intFreeYN" value="N" class="variableCheck" toBeSaved="Y" checked> 설정안함</label>
+						<label><input type="radio" name="intFreeYN" value="Y" class="variableCheck" toBeSaved="Y"> 설정함</label>
+					</div>
+				</td>
+				<td colspan="2">
+					제공 기간 :
+					<select name="" id="mileageWyCd" class="intFreeYN" toBeSaved="Y" itemName="무이자할무 개월수" required disabled>
+						<option value="" selected>개월수</option>
+						<option value="05">2개월</option>
+						<option value="01">3개월</option>
+						<option value="06">4개월</option>
+						<option value="07">5개월</option>
+						<option value="02">6개월</option>
+						<option value="08">7개월</option>
+						<option value="09">8개월</option>
+						<option value="03">9개월</option>
+						<option value="10">10개월</option>
+						<option value="11">11개월</option>
+						<option value="04">12개월</option>
+					</select>
+				</td>
+			</tr>
+			<tr>
+				<th rowspan="2">복수 구매 할인</th>
+				<td>
+					<div class="resp_radio">
+						<label><input type="radio" name="pluYN" value="N" class="variableCheck" toBeSaved="Y" checked> 설정안함</label>
+						<label><input type="radio" name="pluYN" value="Y" class="variableCheck" toBeSaved="Y"> 설정함</label>
+					</div>
+				</td>
+				<td>
+					할인 기준 :
+					<select name="pluDscCd" id="pluDscCd" class="pluYN" toBeSaved="Y" disabled>
+						<option value="01" selected>수량기준</option>
+						<option value="02">금액기준</option>
+					</select>
+					<input type="text" name="pluDscBasis" id="pluDscBasis" class="pluYN onlynumber" size="8" value="" toBeSaved="Y" itemName="희망후원 수치" required disabled/>
+
+				</td>
+				<td>
+					할인 수치 :
+					<input type="text" name="pluDscAmtPercnt" id="pluDscAmtPercnt" class="pluYN onlynumber" size="8" value="" toBeSaved="Y" itemName="희망후원 수치" required disabled/>
+					<select name="pluDscMthdCd" id="pluDscMthdCd" class="pluYN" toBeSaved="Y" disabled>
+						<option value="01" selected>%</option>
+						<option value="02">원</option>
+					</select>
+				</td>
+			<tr>
+				<td colspan="3">
+					적용 기간 :
+					<div class="resp_radio">
+						<label><input type="radio" name="pluUseLmtDyYn" value="N" class="variableCheckSub pluYN" toBeSaved="Y" disabled checked> 설정안함</label>
+						<label><input type="radio" name="pluUseLmtDyYn" value="Y" class="variableCheckSub pluYN" toBeSaved="Y" disabled> 설정함</label>
+					</div>
+
+					<input type="text" name="pluIssStartDy" id="pluIssStartDy" value="" class="pluUseLmtDyYn datepicker" size="10" toBeSaved="Y" itemName="복수 구매 할인 시작일" disabled readonly> ~
+					<input type="text" name="pluIssEndDy" id="pluIssEndDy" value="" class="pluUseLmtDyYn datepicker" size="10" toBeSaved="Y" itemName="복수 구매 할인 종료일" disabled readonly>
+				</td>
+			</tr>
+			<tr>
+				<th>희망후원 설정</th>
+				<td>
+					<div class="resp_radio">
+						<label><input type="radio" name="hopeShpYn" value="N" class="variableCheck" toBeSaved="Y" checked> 설정안함</label>
+						<label><input type="radio" name="hopeShpYn" value="Y" class="variableCheck" toBeSaved="Y"> 설정함</label>
+					</div>
+				</td>
+				<td colspan="2">
+					후원 수치 : <input type="text" name="hopeShpPnt" id="hopeShpPnt" class="hopeShpYn onlynumber" size="8" value="" toBeSaved="Y" itemName="희망후원 수치" required disabled/>
+					<select name="hopeShpWyCd" id="mileageWyCd" class="hopeShpYn" toBeSaved="Y" disabled>
+						<option value="01" selected>원</option>
+						<option value="02">%</option>
+					</select>
+				</td>
+			</tr>
+		</tbody>
+	</table>
+	<br/>
+	<!--{? displayMmode != 'popup'}-->
+	
+	<div class="footer">
+		<button onClick="addInfoSave();" id="addInfoActionBtn" class="resp_btn active size_XL"></button>
+		<button onclick="moveMenu('./market_setting?market={market}&sellerId={seller_id}&pageMode=AddInfoListSet')" class="resp_btn v3 size_XL">취소</button>
+	</div>
+	<!--{ / }-->
+</div>
+
+<!--{? displayMmode == 'popup'}-->
+	{ #layout_footer }
+<!--{ : }-->
+	</div>
+<!--{ / }-->

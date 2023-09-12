@@ -1505,8 +1505,15 @@ class accountAllmodel extends CI_Model {
 					$rollback_cal_table = $calculatetableck;
 					unset($accountdata);
 				}
+
+				// 이월 주문이면서 정산 대상이 아닌 주문은 통계 데이터 기준으로 복사
+				// 복사 대상인 통계 데이터는 환불코드와 환불타입이 존재하지 않아 임의로 Insert
+				$rollbackdata['status'] = $status;
+				$rollbackdata['refund_code'] = $refund_code;
+				$rollbackdata['refund_type'] = 'cancel_payment';
+
 				// 마이너스 매출 데이터 생성
-				$this->create_tmp_calculate_sales_order_rollback($caltableck, $rollback_cal_table, $order_seq, $status, $accountdata, 'rollback');//마이너스 환불
+				$this->create_tmp_calculate_sales_order_rollback($caltableck, $rollback_cal_table, $order_seq, $rollbackdata, $accountdata, 'rollback');//마이너스 환불
 				// debug($calculatetableck);
 				// debug($this->db->last_query());
 			}
@@ -2416,7 +2423,7 @@ class accountAllmodel extends CI_Model {
 	* 상품고유번호
 	* 상품고유번호 필드명 //'option_seq'suboption_seq
 	*/
-	public function create_tmp_calculate_sales_order_rollback($copy_table, $target_table, $order_seq, $status='complete', $accountdata, $account_type=null) 
+	public function create_tmp_calculate_sales_order_rollback($copy_table, $target_table, $order_seq, $rollbackdata, $accountdata, $account_type=null) 
 	{
 		$not_filds = array("seq");//예외필드		
 
@@ -2439,13 +2446,13 @@ class accountAllmodel extends CI_Model {
 						$target_record[$k]	= date('Y-m-d H:i:s', $this->iOnTimeStamp);
 					}elseif($copy_field == "status"){
 						$copy_record[$k]	= $copy_field;
-						$target_record[$k]	= $status;
+						$target_record[$k]	= $rollbackdata['status'];
 					}elseif($copy_field == "refund_code"){
 						$copy_record[$k]	= $copy_field;
-						$target_record[$k]	= $accountdata['refund_code'];
+						$target_record[$k]	= $rollbackdata['refund_code'];
 					}elseif($copy_field == "refund_type"){
 						$copy_record[$k]	= $copy_field;
-						$target_record[$k]	= $accountdata['refund_type'];
+						$target_record[$k]	= $rollbackdata['refund_type'];
 					}elseif($copy_field == "account_type" && $account_type == "rollback" ){
 						$copy_record[$k]	= $copy_field;
 						$target_record[$k]	= "rollback";

@@ -1,0 +1,142 @@
+<!-- 회원설정 : 개인정보처리방침 -->
+<script type="text/javascript">
+	$(document).ready(function() {
+		apply_input_style();
+		addAccordionEvent();
+	});
+
+	function clipBoard(name, id){
+		var clip = new ZeroClipboard.Client();
+		clip.setHandCursor( true );
+		clip.setCSSEffects( true );
+		clip.setText($("input[name='"+name+"']").val());
+		clip.addEventListener( 'complete', function(client, text) {
+			alert("클립보드에 복사되었습니다.");
+		});
+		clip.glue(id);
+	}
+
+	function replace_code_copy(tmp){
+		var code = '\{'+tmp+'\}';
+		clipboard_copy(code);
+		alert('치환코드가 복사되었습니다.\nCtrl+V로 붙여넣기 하세요.');
+	}
+</script>
+
+<!-- 상단 단계 링크 : 끝 -->
+<ul id="subTab" class="tab_02 tabEvent mt20">
+	<li><a href="javascript:void(0);" onclick="formMoveSub('agreement',1);" id="agreement">이용약관</a></li>
+	<li><a href="javascript:void(0);" onclick="formMoveSub('privacy',2);" id="privacy" class="current">개인정보처리방침</a></li>
+	<li><a href="javascript:void(0);" onclick="formMoveSub('cancellation',4);" id="cancellation">청약철회 관련방침</a></li>
+	<li><a href="javascript:void(0);" onclick="formMoveSub('policy',5);" id="policy">개인정보 제공 동의</a></li>
+</ul>
+
+<div class="contents_dvs v2">
+	<div class="title_dvs">
+		<div class="item-title">
+			개인정보처리방침
+			<span class="tooltip_btn" onClick="showTooltip(this, '/admin/tooltip/member', '#tip5', 'sizeM')"></span>
+		</div>
+
+		<div class="resp_btn_dvs">
+			<button type="button" class="resp_btn active" onclick="window.open('https://www.privacy.go.kr/front/per/inf/perInfStep01.do','','');">개인정보처리방침 만들기</button>
+		</div>
+	</div>
+
+	<div class="box_style_03 ">
+		<textarea rows="10" name="policy_privacy">{policy_privacy}</textarea>
+	</div>	
+</div>
+
+<div class="contents_dvs v2">
+	<div class="item-title">
+		[회원가입]개인정보 수집 및 이용(필수)
+	</div>
+
+	<div class="box_style_03">
+		<textarea rows="10" name="policy_joinform">{policy_joinform}</textarea>
+	</div>
+</div>
+
+<div class="contents_dvs v2">
+	<div class="item-title">
+		[회원가입]개인정보 수집 및 이용(선택)
+	</div>
+	<table class="table_basic thl">
+		<tr>
+			<th>
+				사용 여부
+			</th>
+			<td>
+				<div class="resp_radio">
+					<label><input type="radio" name="joinform_optionYN" value="Y" {? joinform_optionYN != 'N'} checked="checked" {/}> 사용</label>
+					<label><input type="radio" name="joinform_optionYN" value="N" {? joinform_optionYN == 'N'} checked="checked" {/}> 사용 안 함</label>
+				</div>
+			</td>
+		</tr>		
+	</table>
+	<div class="box_style_03 mt10">
+		<textarea rows="10" name="policy_joinform_option">{policy_joinform_option}</textarea>
+	</div>	
+</div>
+
+<div class="contents_dvs v2">
+	<div class="item-title">
+		[회원가입]마케팅 및 광고 활용 동의
+	</div>
+
+	<div class="box_style_03">
+		<textarea rows="10" name="policy_marketing">{policy_marketing}</textarea>		
+	</div>	
+	<ul class="bullet_hyphen">
+		<li><a href="/admin/setting/member" class="link_blue_01"> 로그인 및 회원가입</a> > 회원가입 항목의 이메일/핸드폰 사용 시, 자동으로 노출됩니다.</li>
+	</ul>
+</div>
+
+<div class="contents_dvs v2">
+	<div class="item-title">
+		[비회원 주문]개인정보 수집 및 이용
+	</div>
+
+	<div class="box_style_03">
+		<textarea rows="10" name="policy_order">{policy_order}</textarea>
+	</div>
+</div>
+
+<div class="contents_dvs v2">
+	<div class="item-title">
+		[비회원 게시글 작성]개인정보 수집 및 이용
+	</div>
+
+	<div class="box_style_03">
+		<textarea rows="10" name="policy_board">{policy_board}</textarea>
+	</div>
+</div>
+
+<div class="contents_dvs v2">
+	<div class="item-title">
+		[비회원 댓글 작성]개인정보 수집 및 이용
+	</div>
+
+	<div class="box_style_03">
+		<textarea rows="10" name="policy_comment">{policy_comment}</textarea>
+	</div>
+</div>
+
+<div class="contents_dvs v2">
+	<div class="item-title">
+		[재입고 알림]개인정보 수집 및 이용
+	</div>
+
+	<div class="box_style_03">
+		<textarea rows="10" name="policy_restock">{policy_restock}</textarea>
+	</div>
+</div>
+
+<div class="box_style_05 mt20">
+	<div class="title">안내</div>
+	<ul class="bullet_hyphen ">
+		<li>약관 및 개인정보처리방침 치환 코드 안내 <span class="tooltip_btn" onClick="showTooltip(this, '/admin/tooltip/member', '#tip35', 480)"></span></li>
+		<li>설정한 약관 항목이 스킨에서 보이지 않는 경우 스킨 패치 여부를 확인해 주세요.</li>
+	</ul>
+</div>
