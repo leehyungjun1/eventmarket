@@ -3043,27 +3043,27 @@ class order extends front_base {
 			$privacy['cancellation'] = $member['cancellation'];
 		}
 
-		// 개인정보 취급위탁에 대한 동의 
-		if( (serviceLimit('H_AD') && count($arr_provider_name)) > 0 || !serviceLimit('H_AD')) { //입점 상품이 있을 경우
-			if($member['delegationYN'] == 'Y'){
-				//$privacy['policy_delegation'] = str_replace("{shopName}",$arrBasic['companyName'],$member['policy_delegation']);
+		/*
+		* [주문]개인정보 제3자 제공에 대한 동의 (입점몰은 policy_third_party / 일반몰은 policy_third_party_normal)
+		* [주문]개인정보 취급위탁에 대한 동의 (policy_delegation)
+		* 입점사 상품 구매 시에만 제공 (본사 상품 제외)
+		*/
+		if ((serviceLimit('H_AD') && count($arr_provider_name)>0) || !serviceLimit('H_AD')) { // 1. 입점몰&입점사 상품 OK 2.입점몰X
+			if(serviceLimit('H_AD') === true){ // 입점몰은 thirdPartyYN = Y 이기 때문에 체크하지 않음
+				$privacy['policy_third_party'] = $member['policy_third_party'];
+			}else{
+				if ($member['thirdPartyYN'] == 'Y') { // [주문]개인정보 제3자 제공에 대한 동의 사용 여부
+					$privacy['policy_third_party'] = $member['policy_third_party_normal'];
+				}
+			}
+			$privacy['policy_third_party'] = privacy_converting($privacy['policy_third_party'], $arr_provider_name);
+
+			if ($member['delegationYN'] == 'Y') { // [주문]개인정보 취급위탁에 대한 동의 사용 여부
 				$privacy['policy_delegation'] = $member['policy_delegation'];
-				$privacy['policy_delegation'] = str_replace("{sellerName}",implode(', ',$arr_provider_name),$privacy['policy_delegation']);
+				$privacy['policy_delegation'] = privacy_converting($privacy['policy_delegation'], $arr_provider_name);
 			}
 		}
 
-		/**
-		 * [주문]개인정보 제3자 제공에 대한 동의
-		 * 입점사는 policy_third_party / 일반몰은 policy_third_party_normal
-		 * 입점사는 무조건 사용 , 일반몰은 사용 안함이면 unset
-		 */
-		$policy_third_party = serviceLimit('H_AD') === true ? $member['policy_third_party'] : $member['policy_third_party_normal'];
-		$privacy['policy_third_party'] = str_replace('{sellerName}', implode(', ', $arr_provider_name), $policy_third_party);
-		if (!serviceLimit('H_AD') && $member['thirdPartyYN'] == 'N') {
-			unset($privacy['policy_third_party']);
-		}
-
-		//$privacy['policy_order'] = str_replace("{domain}",$arrBasic['domain'],str_replace("{shopName}",$arrBasic['companyName'],$member['policy_order']));
 		$privacy['policy_order'] = $member['policy_order'];
 		$this->template->assign($privacy);
 
@@ -3454,7 +3454,7 @@ class order extends front_base {
 		$sEventTags		= $this->googlegtag->eventTagCheckout($cart['total_price'], $this->config_system['basic_currency']);
 		if($sEventTags)		echo $sEventTags;
 
-	}
+	}	
 
 	## pg사별 크로스브라우징 플러그인 설치여부 확인.
 	public function pg_install_check($pgCompany){

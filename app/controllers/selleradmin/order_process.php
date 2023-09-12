@@ -1640,29 +1640,6 @@ class order_process extends selleradmin_base {
 		openDialogAlert("저장 되었습니다.",400,140,'parent',$callback);
 	}
 
-
-	public function auto_deposit_update(){
-		###
-		$this->load->model('usedmodel');
-		$this->usedmodel->auto_desposit_check();
-		return "[".json_encode($result)."]";
-	}
-
-	public function auto_deposit_update_plus(){
-		###
-		$setType		= $_GET['setType'];
-		$this->load->model('usedmodel');
-		$result['cnt']	= $this->usedmodel->auto_desposit_check_plus($setType);
-		return "[".json_encode($result)."]";
-	}
-
-	public function auto_deposit_update_term(){
-		###
-		$this->load->model('usedmodel');
-		$this->usedmodel->auto_desposit_check_term();
-		return "[".json_encode($result)."]";
-	}
-
 	public function _exec_reverse($order_seq){
 
 		$npay_use		= npay_useck();

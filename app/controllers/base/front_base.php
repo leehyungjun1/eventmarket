@@ -858,7 +858,8 @@ class front_base_original extends common_base {
 
 		// 예외 처리
 		if ($mobileAppSetting['app_popup_use'] === 'N' || !isset($mobileAppSetting['pop_html']) || $_COOKIE['appsettingpopup'] ||
-			in_array('zipcode', $this->uri->rsegments) || $this->input->get('popup') || $this->input->get('iframe')) {
+			in_array('zipcode', $this->uri->rsegments) || $this->input->get('popup') || $this->input->get('iframe') ||
+			(!$mobileAppSetting['popup_url_and'] && $mobileAppSetting['popup_url_ios'])) {
 			return false;
 		}
 

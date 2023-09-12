@@ -9,8 +9,10 @@ class dbpatch extends front_base {
 	{
 		ob_start();
 ?>
--- FMDEV-2145_1_개선-네이버쇼핑_렌탈이벤트_컬럼_정책_변경으로_인한_개선_요청.sql 실행 쿼리
-ALTER TABLE `fm_goods` ADD `rental_period` SMALLINT(10) NULL DEFAULT NULL COMMENT 'EP전송용 판매방식 렌탈 계약기간' AFTER `product_flag`;
+-- FMDEV-2026_1_회원_관련_슬로우쿼리_개선.sql 실행 쿼리
+ALTER TABLE fm_member MODIFY COLUMN auth_code varchar(255) NULL COMMENT '본인인증코드';
+
+ALTER TABLE fm_member ADD INDEX idx_auth_code (auth_code);
 <?
 		$sQuery = ob_get_contents();
 		ob_clean();

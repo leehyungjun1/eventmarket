@@ -3484,8 +3484,8 @@ class order_process extends admin_base {
 	public function auto_deposit_update(){
 		###
 		$this->load->model('usedmodel');
-		$this->usedmodel->auto_desposit_check();
-		return "[".json_encode($result)."]";
+		$result = $this->usedmodel->auto_desposit_check();
+		echo json_encode($result);
 	}
 
 	public function auto_deposit_update_plus(){
@@ -5225,14 +5225,27 @@ class order_process extends admin_base {
 	public function autodeposit_manual_match(){
 		$this->load->model('usedmodel');
 		$this->load->model('ordermodel');
+		$this->load->library('orderlibrary');
 
 		$bkcode				= $this->input->post('bkcode');
 		$order_seq			= $this->input->post('order_seq');
 
+		$callback	= "parent.location.reload();";
+		// 자동입금확인 중복실행방지 확인
+		$autodeporitStatus = $this->orderlibrary->select_autodeposit_receive();
+
+		if ($autodeporitStatus === 'ing') {
+			openDialogAlert('이미 자동입금확인 중입니다.', 400, 170, 'parent', $callback);
+			exit;
+		}
+
+		// 자동입금 확인중으로 상태 업데이트 
+		$this->orderlibrary->update_autodeposit_receive('ing');
+
 		// 해당 주문 매칭된 입금내역 확인
 		$chk				= $this->usedmodel->chk_bank_match(array($order_seq));
 		if	($chk){
-			openDialogAlert('이미 입금내역과 매칭된 주문입니다.', 400, 170, function(){});
+			openDialogAlert('이미 입금내역과 매칭된 주문입니다.', 400, 170, 'parent', $callback);
 			exit;
 		}
 
@@ -5269,11 +5282,13 @@ class order_process extends admin_base {
 		// 입금내역에 매칭값 추가
 		$this->usedmodel->set_marking_autodeposit($bkcode, $order_seq);
 
+		// 자동입금 확인 완료로 상태 업데이트 
+		$this->orderlibrary->update_autodeposit_receive('end');
+
 		// 매칭처리 로그
 		$log_str = "관리자가 입금내역과 매칭처리하였습니다.";
 		$this->ordermodel->set_log($order_seq, 'process', $this->managerInfo['manager_id'], '수동입금매칭', $log_str);
 
-		$callback	= "parent.location.reload();";
 		openDialogAlert($msg, 450, 170, 'parent', $callback);
 	}
 

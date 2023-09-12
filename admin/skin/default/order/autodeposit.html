@@ -115,7 +115,12 @@ function auto_runs(){
 		type: "get",
 		url: "../order_process/auto_deposit_update",
 		data: "",
+		dataType:"JSON",
 		success: function(result){	
+			if (result === false) {
+				alert('이미 자동입금확인 중입니다.');
+				return false;
+			}
 			alert('입금내역이 갱신되었습니다.');
 		}
 	});

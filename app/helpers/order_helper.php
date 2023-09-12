@@ -2013,6 +2013,14 @@ function is_order_simple_payment($order) {
 	}
 	return false;
 }
+
+/**
+* 약관 내용 입점사명 치환
+*/ 
+function privacy_converting($privacy, $provider_name) {
+	return str_replace('{sellerName}', implode(', ', $provider_name), $privacy);
+}
+
 // END
 /* End of file order_helper.php */
 /* Location: ./app/helpers/order_helper.php */

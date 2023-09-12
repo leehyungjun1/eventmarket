@@ -1573,6 +1573,7 @@ trait sns_process_legacy {
 
 							$where_arr = array('sns_k'=>$params['sns_k']);//
 							$data = get_data('fm_member', $where_arr);
+							
 							if(!$data) {//정보가 없을 경우 가입후 로그인하기
 								$snsregister = $this->sns_register_ok($params);
 								if($snsregister['result'] === "auth_false" ) {//실명인증 중복 가입 체크 추가 @2016-09-12 ysm
@@ -2173,10 +2174,10 @@ trait sns_process_legacy {
 
 		// 플랫폼 설정
 		$platform	= 'P';
-		if		($this->fammerceMode || $this->storefammerceMode)	$platform	= 'F';
-		elseif	($this->_is_mobile_app_agent_android)		$platform	= 'APP_ANDROID';
-		elseif	($this->_is_mobile_app_agent_ios)		$platform	= 'APP_IOS';
-		elseif	($this->mobileMode || $this->storemobileMode)		$platform	= 'M';
+		if		($this->ci->fammerceMode || $this->ci->storefammerceMode)	$platform	= 'F';
+		elseif	($this->ci->_is_mobile_app_agent_android)		$platform	= 'APP_ANDROID';
+		elseif	($this->ci->_is_mobile_app_agent_ios)		$platform	= 'APP_IOS';
+		elseif	(($this->ci->mobileMode || $this->ci->storemobileMode) && $this->ci->agent->is_mobile )	$platform	= 'M';
 		$params['platform']	= $platform;
 
 		// 본인인증 여부

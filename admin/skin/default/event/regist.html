@@ -576,7 +576,7 @@ function chkEventSubmit(obj)
 				<br>
 				<div class="resp_checkbox mt5">
 					<label><input type="checkbox" name="week_event" {?event.app_week}checked{/} class="daliyEvent"/> 요일 제한</label>			
-					<label><input type="checkbox" name="time_event" {?(event.app_start_hour && event.app_end_hour) && !(event.app_start_hour=="00" && event.app_end_hour=="23")}checked{/} class="daliyEvent"/> 시간 제한</label>
+					<label><input type="checkbox" name="time_event" {?(event.app_start_hour && event.app_end_hour) }checked{/} class="daliyEvent"/> 시간 제한</label>
 					<input type="hidden" name="daily_event" value="{?event.daily_event}{event.daily_event}{:}0{/}"/>
 				</div>
 			</td>

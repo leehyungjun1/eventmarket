@@ -33,7 +33,7 @@ class statsmodel extends CI_Model {
 	{
 		$platform	= 'P';
 		if		($this->fammerceMode || $this->storefammerceMode)	$platform	= 'F';
-		elseif	($this->_is_mobile_agent || $this->mobileMode || $this->storemobileMode)		$platform	= 'M';
+		elseif	($this->_is_mobile_agent && ($this->mobileMode || $this->storemobileMode))		$platform	= 'M';
 		if($address) $r_address = explode(" ",$address);
 		$refererArr	= $this->get_referer_url($_COOKIE['shopReferer']);
 		$insert_member_stats_params = array(

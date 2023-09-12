@@ -10937,24 +10937,22 @@ class Goodsmodel extends CI_Model {
 					//<---- sale library 적용
 				}
 
-				//통합세팅이면서 가용재고 사용시 @2015-11-13
-				if (!$goods['runout_policy'] && $cfg_order['runout'] == 'ableStock') {
-					$opt['stock'] = $opt['rstock'];
-				}
-
 				// 재고 체크
 				$opt['chk_stock'] = check_stock_option_list($goods, $cfg_order, $opt['stock'], $opt['reservation15'], $opt['reservation25'], 0, 'view');
 				if ($opt['chk_stock']) {
 					$runout = false;
 				}
 
+				//통합세팅이면서 가용재고 사용시 @2015-11-13
+				if (!$goods['runout_policy'] && $cfg_order['runout'] == 'ableStock') {
+					$opt['stock'] = $opt['rstock'];
+				}
+
 				$opt['opspecial_location'] = get_goods_options_print_array($opt);
 
-
-
-			if($data['newtype']) {
-				$data['infomation'] = ($data['infomation'])?$data['infomation'].'<br/>'.get_goods_special_option_print($data):get_goods_special_option_print($data);
-			}
+				if($data['newtype']) {
+					$data['infomation'] = ($data['infomation'])?$data['infomation'].'<br/>'.get_goods_special_option_print($data):get_goods_special_option_print($data);
+				}
 
 				$options[$k] = $opt;
 			}

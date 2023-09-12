@@ -8,7 +8,8 @@ if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 class OrderLibrary
 {
 	public $allow_exit = true;
-	
+	private $autodepositFilePath = ROOTPATH . 'data/autodeposit_exec.txt';
+
 	function __construct() {
 		$this->CI =& get_instance();
 		$this->CI->load->model('ordermodel');
@@ -1811,5 +1812,63 @@ class OrderLibrary
 		return $return;
 	}
 
+	
+
+	/* 무통장 자동입금확인 중복실행방지를 위한 현재 상태 체크 */
+	public function select_autodeposit_receive()
+	{
+		$status = 'end';
+
+		try {
+			$autodeposit = config_load('autodeposit', 'status', true);
+	
+			if (array_filter($autodeposit)) {
+				$status = $autodeposit['status'];
+		
+				// ing 와 end가 아닌 값은 들어갈 수 없음
+				if (!in_array($status, ['ing', 'end'])) {
+					throw new Exception('중복실행방지값이 잘못된 값으로 확인됩니다. 상태값을 확인해주세요.');
+				} 
+
+				if ($status == 'ing') {
+					$now_date = date('Y-m-d H:i:s');
+					$autodeposit_date = $autodeposit['status_date'];
+					$gapMinute = (int) ((strtotime($now_date) - strtotime($autodeposit_date)) / 60);
+
+					if ($gapMinute >= 5) {
+						$status = 'end';
+						$this->update_autodeposit_receive($status);
+					}
+				}
+
+				return $status;
+
+			} 
+
+		} catch (\Exception $e) {
+			if ($e->getMessage()) {
+				$message = $e->getMessage();
+			}
+			throw new \Exception('Error : ' . $message);
+			}
+	}
+	
+	/* 무통장 자동입금확인 중복실행방지 상태 업데이트 */
+	public function update_autodeposit_receive($status)
+	{
+		try {
+			if (!in_array($status, ['ing', 'end'])) {
+				throw new Exception('올바른 상태값이 아닙니다.');
+			}
+			config_save('autodeposit', ['status' => $status]);
+		} catch (\Exception $e) {
+			if ($e->getMessage()) {
+				$message = $e->getMessage();
+			}
+
+			throw new \Exception('Error : ' . $message);
+		}
+	}
 }
+
 ?>

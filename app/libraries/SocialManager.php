@@ -687,11 +687,10 @@ class SocialManager
     // 가입 플랫폼 처리
     private function getPlatform() {
         $platform	= 'P';
-		if		($this->fammerceMode || $this->storefammerceMode)	$platform	= 'F';
-		elseif	($this->_is_mobile_app_agent_android)		$platform	= 'APP_ANDROID';
-		elseif	($this->_is_mobile_app_agent_ios)		$platform	= 'APP_IOS';
-		elseif	($this->mobileMode || $this->storemobileMode)		$platform	= 'M';
-
+		if		($this->ci->fammerceMode || $this->ci->storefammerceMode)	$platform	= 'F';
+		elseif	($this->ci->_is_mobile_app_agent_android)		$platform	= 'APP_ANDROID';
+		elseif	($this->ci->_is_mobile_app_agent_ios)		$platform	= 'APP_IOS';
+		elseif	(($this->ci->mobileMode || $this->ci->storemobileMode) && $this->ci->agent->is_mobile ) $platform	= 'M';
         return $platform;
     }
 
