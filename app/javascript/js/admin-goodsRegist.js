@@ -3168,7 +3168,19 @@ function goods_save_submit(){
 
 		/* PC, 모바일 상품 설명 대량 업로드 되는 부분 방지를 위해 disable 처리 */
 		// 전용스킨이면서 상품번호가 있거나 반응형스킨이면서 발행번호가 존재하지 않은 경우만 초기화
-		if ((goodsSeq && gl_operation_type === 'heavy') || (goodsSeq &&  deploymentId.value === '' && geditorExcute.value === 'false')) {
+
+		var protection = false;
+		if (goodsSeq) {
+			if (gl_operation_type === 'light'){
+				if (deploymentId.value === '' && geditorExcute.value === 'false') {
+					protection = true;
+				}
+			} else {
+				protection = true;
+			}
+		}
+
+		if (protection === true) {
 			$("#goodscontents").attr('disabled',true);
 			$("#mobile_contents").attr('disabled',true);
 			$("#commonContents").attr('disabled',true);
@@ -3181,7 +3193,7 @@ function goods_save_submit(){
 		encodeFormValueOff("#optionLayer,#suboptionLayer");
 
 		/* PC, 모바일 상품 설명 대량 업로드 되는 부분 방지를 위해 disable 해제 */
-		if ((goodsSeq && gl_operation_type === 'heavy') || (goodsSeq &&  deploymentId.value === '' && geditorExcute.value === 'false')) {
+		if (protection === true) {
 			$("#goodscontents").attr('disabled',false);
 			$("#mobile_contents").attr('disabled',false);
 			$("#commonContents").attr('disabled',true);
