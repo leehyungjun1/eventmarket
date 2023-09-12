@@ -156,10 +156,9 @@ class naverpayment extends front_base {
 				throw new Exception('Wrong referer : [referer] ' . $referer);
 			}
 
-			// Mobile 현재창 이동 방식일 때 GET Param 검증
-			if ($platForm == 'M' && $aGetParams['resultCode'] != 'Success' && $this->naverpaymentlib->getMessage($aGetParams['resultCode'])) {
+			// GET Param 검증
+			if ($aGetParams['resultCode'] != 'Success' && $aGetParams['resultMessage']) {
 				$returnUrl = '/order/settle?mode='.$param['mode'];
-				$msg = $this->naverpaymentlib->getMessage($aGetParams['resultCode']);
 				throw new Exception('Wrong request : [request] ' . $aGetParams['resultCode'] . $aGetParams['resultMessage']);
 			}
 
@@ -213,10 +212,16 @@ class naverpayment extends front_base {
 
 			// 네이버페이 결과코드와 결제 승인 최종결과 값 체크
 			if ($read_data['code'] === 'Success' && $response['admissionState'] === 'SUCCESS') {
+				$success = true;
+
 				$resultCode = $response['admissionState']; // 결제 시도에 대한 최종결과
 				$tid = $response['paymentId']; // 네이버페이 결제 이력 번호
 				$amt = $response['totalPayAmount']; // 결제 승인 요청 금액
-				
+
+				if($amt != $orders['settleprice']) { // 금액 변조 체크
+					$naverpay_cancel_flag = 'Y';
+				}
+
 				if ($response['npointPayAmount'] > 0) { // 네이버페이 포인트 결제 금액
 					$response['primaryPayMeans'] = 'point';
 				}
@@ -271,11 +276,11 @@ class naverpayment extends front_base {
 				$log_title =  '결제실패[' . $resultCode . ']';
 				$log = "네이버페이 결제 실패" . chr(10) . "[" . $resultCode ." - " . $failMsg . "]";
 				$this->ordermodel->set_log($orders['order_seq'], 'pay', $orders['order_user_name'], $log_title, $log);
-				$naverpay_cancel_flag = 'Y';
+				$success = false;
 			}
 
 			// 최종 결제승인처리 (퍼스트몰 로직) - STEP3
-			if ($naverpay_cancel_flag != 'Y') {
+			if ($success && $naverpay_cancel_flag != 'Y') {
 				if (!$orders['order_seq']) {
 					throw new Exception('Wrong order status : [order_seq]' . $orders['order_seq']);
 				}
@@ -435,12 +440,15 @@ class naverpayment extends front_base {
 				if(count($commonSmsData) > 0){
 					commonSendSMS($commonSmsData);
 				}
-			} else {
+			} 
+
+			// 가맹점 주문 금액과 네이버페이 결제 금액이 상이한 경우 취소 API 호출
+			if($naverpay_cancel_flag == 'Y') {
 				$tid = $body_data['paymentId'];
 				$params = '{"paymentId": "'.$tid.'"}';
 				$result = $this->naverpaymentlib->callApi('list', $params);
 
-				// 실패응답인데 결제내역이 있으면...
+				// 결제내역이 있으면...
 				if ($result['error'] != true && $result['code'] == 'Success') {
 					// 결제취소 처리
 					$orders['pg_log']['tno'] = $tid;
@@ -462,11 +470,13 @@ class naverpayment extends front_base {
 		}
 
 		if ($error) {
-			$msg = $msg ?? getAlert('os217');
-			if ($returnUrl) {
+			$msg = $this->naverpaymentlib->getMessage($aGetParams['resultCode'], $aGetParams['resultMessage']);
+			$returnUrl = $returnUrl ?: '/';
+			if ($platForm == 'P') {
+				echo '<script type="text/javascript" src="/app/javascript/jquery/jquery.min.js"></script>';
+				openDialogAlert($msg, 400, 160, 'parent', $this->pg_cancel_script());
+			} else{
 				pageLocation($returnUrl, $msg);
-			} else {
-				pageLocation('/', $msg);
 			}
 			exit;
 		}
@@ -494,10 +504,10 @@ class naverpayment extends front_base {
 			)
 		);
 
-		if ($naverpay_cancel_flag == 'Y') { // 네이버페이 결제 실패
+		if (!$success) { // 네이버페이 결제 실패
 			if ($platForm == 'P') {
 				echo '<script type="text/javascript" src="/app/javascript/jquery/jquery.min.js"></script>';
-				openDialogAlert(getAlert('os217') . "<br /><font color=red>[{$resultCode}] - {$failMsg})</font>", 400, 160, 'parent', $this->pg_cancel_script());
+				openDialogAlert("[{$resultCode}] - {$failMsg}", 400, 160, 'parent', $this->pg_cancel_script());
 			} else{
 				pageLocation($returnUrl, "[{$resultCode}] - {$failMsg}");
 			}
@@ -516,9 +526,7 @@ class naverpayment extends front_base {
 	// 결제 실패 시 리턴
 	public function payfail(){
 		$aGetParams = $this->input->get();
-		if($aGetParams['resultCode']) {
-			$message = $this->naverpaymentlib->getMessage($aGetParams['resultCode']);
-		}
+		$message = $this->naverpaymentlib->getMessage($aGetParams['resultCode'], $aGetParams['resultMessage']);
 
 		// 결제 실패
 		echo '<script type="text/javascript" src="/app/javascript/jquery/jquery.min.js"></script>';

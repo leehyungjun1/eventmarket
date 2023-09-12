@@ -1666,7 +1666,7 @@ function getNaverpayConfig()
 	 * 
 	 * 조건
 	 * 1. 주문형 + 결제형 연동 시 : 주문형 버튼 상시 노출
-	 * 2. 주문형만 연동 시 : 비로그인 상태에서만 주문형 버튼 노출
+	 * 2. 주문형만 연동 시 : 회원로그인, 비로그인 상태 모두 주문형 버튼 노출
 	 * 3. 결제형만 연동 시 : 주문형 버튼 미 노출
 	 */
 	if (
@@ -1679,7 +1679,7 @@ function getNaverpayConfig()
 		// 주문형만 연동
 		strtolower($navercheckoutCfg['use']) =='y'
 	) {
-		$navercheckoutCfg['btnView'] = 'nonLogin';
+		$navercheckoutCfg['btnView'] = 'all';
 	} else {
 		$navercheckoutCfg['btnView'] = 'none';
 	}

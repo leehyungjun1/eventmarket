@@ -15,6 +15,7 @@ class naverpaymentlib
 	{
 		$this->CI = &get_instance();
 		$this->CI->load->helper('readurl');
+		$this->CI->load->helper('common');
 
 		$this->naverpaymentCfg = config_load('naverpayment');
 
@@ -222,10 +223,10 @@ class naverpaymentlib
 	}
 
 	// 네이버페이 에러응답에 따른 문구 리턴
-	public function getMessage($resultCode)
+	public function getMessage($resultCode, $resultMessage)
 	{
-		if ( !$resultCode ) {
-			return null;
+		if ($resultMessage) {
+			return $resultMessage;
 		}
 
 		switch($resultCode) {
@@ -248,6 +249,6 @@ class naverpaymentlib
 				$message = $resultCode;
 		}
 
-		return $message;
+		return $message ?: getAlert('os217');
 	}
 }
