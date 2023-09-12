@@ -1091,6 +1091,9 @@ class order extends front_base {
 			}
 		}
 
+		//트랜잭션 시작
+		$this->db->trans_begin();
+
 		// 옵션 선택 ver 0.1일 경우
 		if	($gl_option_select_ver == '0.1'){
 			$chk_result	= $this->cartmodel->chk_cart_ver_0_1();
@@ -1120,6 +1123,14 @@ class order extends front_base {
 			$member_seq		= $result['member_seq'];
 			$goods_seq		= $result['goods_seq'];
 			$cart_seq		= $result['cart_seq'];
+		}
+
+		if ($cart_seq > 0 ){
+			$this->db->trans_commit();
+		} else {
+			$this->db->trans_rollback();
+			openDialogAlert("처리 중 오류가 발생 했습니다. 다시 시도 해 주십시오.",400,140,'parent', "parent.location.reload();");
+			exit;
 		}
 
 		if($mode == "cart" || $order_mode){
@@ -1357,18 +1368,6 @@ class order extends front_base {
 		// 이동 처리
 		pageLocation($url, '', $moveTarget);
 		exit;
-	}
-
-
-	public function modify()
-	{
-		$seq = (int) $_GET['seq'];
-		$where[] = "cart_seq=?";
-		$where_val[] = $seq;
-		if(!($_POST['ea'][$seq]>=1)) $_POST['ea'][$seq] = 1;
-		$query = "update fm_cart_option set ea='".$_POST['ea'][$seq]."' where ".implode(' and ',$where);
-		$this->db->query($query,$where_val);
-		pageReload('','parent');
 	}
 
 	public function del()

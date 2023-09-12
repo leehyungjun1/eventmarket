@@ -4805,7 +4805,7 @@ class mypage extends board
 	 */
 	public function present_delivery() {
 		$param	= str_replace(" ","+",$this->input->get('params'));
-		$param = unserialize(base64_decode($param));
+		$param = unserialize(base64_decode($param), ['allowed_classes' => false]);
 
 		// 주문번호 없으면 return
 		if (!$param['order_seq']) {

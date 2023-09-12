@@ -52,7 +52,7 @@ function _lightShowDesignDisplay($display_seq, $perpage=null, $kind=null, $iscac
 
 
 		// 유저정보가 세션에 없고, 인자값으로 넘어온 경우 세션에 세팅처리
-		if	($aGetParams['userInfo'] && !$CI->userInfo) $CI->userInfo = unserialize(base64_decode($aGetParams['userInfo']));
+		if	($aGetParams['userInfo'] && !$CI->userInfo) $CI->userInfo = unserialize(base64_decode($aGetParams['userInfo']), ['allowed_classes' => false]);
 
 		########### 페이징 변수 설정 ###########
 		if($perpage){
@@ -283,7 +283,7 @@ function _heavyShowDesignDisplay($display_seq, $perpage=null, $kind=null, $iscac
     $aGetParams     = $CI->input->get();
     $aPostParams    = $CI->input->post();
     $sc_top         = $aGetParams['sc_top']; //페이징이 있는 경우 해당 위치로 스크롤바를 옮겨준다
-    if	($aGetParams['userInfo'] && !$CI->userInfo) $CI->userInfo = unserialize(base64_decode($aGetParams['userInfo']));
+    if	($aGetParams['userInfo'] && !$CI->userInfo) $CI->userInfo = unserialize(base64_decode($aGetParams['userInfo']), ['allowed_classes' => false]);
     $cfg_system     = ($CI->config_system) ? $CI->config_system : config_load('system');
     $template_path  = $CI->__tmp_template_path ? $CI->__tmp_template_path : $CI->template_path;
     $ajax_call      = ($display_ajax_call) ? true : false; //상품디스플레이 ajax 호출시 item 만 가져 오도록

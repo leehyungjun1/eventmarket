@@ -984,7 +984,7 @@ class promotion extends front_base {
 		/* 이벤트 상품 뷰 카운트 2019_07_23 sms */
 		$today_num = 0;
 		$today_view = $_COOKIE['event_view'];
-		if( $today_view ) $today_view = unserialize($today_view);
+		if( $today_view ) $today_view = unserialize($today_view, ['allowed_classes' => false]);
 		if( $today_view ) foreach($today_view as $v){
 			$today_num++;
 			if( count($today_view) > 50 && $today_num == 1 ) continue;

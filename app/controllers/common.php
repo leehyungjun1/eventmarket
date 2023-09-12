@@ -1055,7 +1055,7 @@ class common extends front_base  {
 		// 오늘본 상품 쿠키
 		$today_num = 0;
 		$today_view = $_COOKIE['today_view'];
-		if( $today_view ) $today_view = unserialize($today_view);
+		if( $today_view ) $today_view = unserialize($today_view, ['allowed_classes' => false]);
 		if( $today_view ) foreach($today_view as $v){
 			if($v!=$goods_seq){
 				$data_today_view[] = $v;
@@ -1747,7 +1747,7 @@ class common extends front_base  {
 		if ($type=="right_item_recent") {
 			$today_view = $this->input->cookie('today_view',TRUE);
 			if( $today_view ) {
-				$today_view = unserialize($today_view);
+				$today_view = unserialize($today_view, ['allowed_classes' => false]);
 				krsort($today_view);
 				if( $page && $limit ) {//오늘본 상품 페이징
 					$start = ($page-1)*$limit;
@@ -1835,7 +1835,7 @@ class common extends front_base  {
 			$today_view = $_COOKIE['today_view'];
 			$total = 0;
 			if( $today_view ) {
-				$today_view = unserialize($today_view);
+				$today_view = unserialize($today_view, ['allowed_classes' => false]);
 
 				// DB에 존재하는 상품만 카운트 leewh 2014-11-18
 				$this->load->model('goodsmodel');

@@ -3830,7 +3830,7 @@ class Goodsmodel extends CI_Model {
 		if	($act == 'view'){
 			$today_view = $_COOKIE['today_view'];
 			if( $today_view ) {
-				$today_view = unserialize($today_view);
+				$today_view = unserialize($today_view, ['allowed_classes' => false]);
 				$ret = end($today_view);
 			}
 		}else if ($act == 'cart'){
@@ -3848,7 +3848,7 @@ class Goodsmodel extends CI_Model {
 			$row = $query->result_array();
 			$ret = $row[0]['goods_seq'];
 		}else if ($act == 'search'){
-			$ret = unserialize($_COOKIE['today_search_top']);
+			$ret = unserialize($_COOKIE['today_search_top'], ['allowed_classes' => false]);
 		}else if ($act == 'order'){
 			$this->load->model('ordermodel');
 			$ret = $this->ordermodel->get_recent_order($this->userInfo['member_seq']);
@@ -11240,7 +11240,7 @@ class Goodsmodel extends CI_Model {
 		$today_num = 0;
 		$today_view = $_COOKIE['today_view'];
 		if ($today_view) {
-			$today_view = unserialize($today_view);
+			$today_view = unserialize($today_view, ['allowed_classes' => false]);
 		}
 		if ($today_view ) {
 			foreach($today_view as $v){

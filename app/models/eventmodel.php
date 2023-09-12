@@ -125,16 +125,13 @@ class Eventmodel extends CI_Model {
 		else						return false;
 	}
 
-	public function get_event_list(){
+	public function get_event_list($sc){
 
-		$sc					= $this->input->get();
-		$sc['sort']			= $sc['sort'] ? $sc['sort'] : 'evt.event_seq desc';
-		$sc['keyword']		= $sc['keyword'];
-		$sc['page']			= (isset($sc['page']) && $sc['page'] > 1) ? intval($sc['page']):'0';
-		$sc['perpage']		= (isset($sc['perpage'])) ?	intval($sc['perpage']):'10';
+		$sc['sort'] = (in_array($sc['sort'], ['asc',''] )) ? 'evt.event_seq desc' : $sc['sort'];
+		$sc['keyword'] = $sc['keyword'];
+		$sc['page'] = (isset($sc['page']) && $sc['page'] > 1) ? intval($sc['page']) : '0';
+		$sc['perpage'] = (isset($sc['perpage'])) ? intval($sc['perpage']) : '10';
 		if(isset($sc['search_text'])) $sc['search_mode']	= "search";
-
-		$limitStr = " LIMIT {$sc['page']}, {$sc['perpage']}";
 
 		if($sc['date'] == "all")				$sc['date']				= "";
 		if($sc['sc_goods_type'] == "all")		$sc['sc_goods_type']	= "";
@@ -144,7 +141,8 @@ class Eventmodel extends CI_Model {
 		if($sc['display'] == "all")				$sc['display']			= "";
 		if($sc['event_view'] == "all")			$sc['event_view']		= "";
 
-		$where = array();
+		$where = [];
+		$bindData = [];
 
 		if($sc['keyword']) $sc['keyword'] = trim($sc['keyword']);
 
@@ -182,23 +180,32 @@ class Eventmodel extends CI_Model {
 
 		// 단독이벤트 관련 검색
 		if(!empty($sc['sc_event_type'])){
-			$where[]	= " evt.event_type = '".$sc['sc_event_type']."' ";
+			$where[]	= " evt.event_type = ? ";
+			$bindData[] 	= $sc['sc_event_type'];
 			if($sc['sc_event_type'] == 'solo'){
 				if		(!empty($sc['sc_start_st']) && !empty($sc['sc_end_st'])){
-					$where[]	= " evt.st_num between '".$sc['sc_start_st']."' and '".$sc['sc_end_st']."' ";
+					$where[]	= " evt.st_num between ? and ? ";
+					$bindData[] 	= $sc['sc_start_st'];
+					$bindData[] 	= $sc['sc_end_st'];
 				}elseif	(!empty($sc['sc_start_st']) && empty($sc['sc_end_st'])){
-					$where[]	= " evt.st_num >= '".$sc['sc_start_st']."' ";
+					$where[]	= " evt.st_num >= ? ";
+					$bindData[] 	= $sc['sc_start_st'];
 				}elseif	(empty($sc['sc_start_st']) && !empty($sc['sc_end_st'])){
-					$where[]	= " evt.st_num <= '".$sc['sc_end_st']."' ";
+					$where[]	= " evt.st_num <= ? ";
+					$bindData[] 	= $sc['sc_end_st'];
 				}
 				if		(!empty($sc['sc_goods_type'])){
-					$where[]	= " g.goods_kind = '".$sc['sc_goods_type']."' ";
+					$where[]	= " g.goods_kind = ? ";
+					$bindData[] 	= $sc['sc_goods_type'];
 				}
 				if		(!empty($sc['sc_goods_name'])){
-					$where[]	= " g.goods_name like '%".$sc['sc_goods_name']."%' ";
+					$where[]	= " g.goods_name like ? ";
+					$bindData[] 	= "%".$sc['sc_goods_name']."%";
 				}
 				if		(!empty($sc['sc_goods_info'])){
-					$where[]	= " (g.goods_name like '%".$sc['sc_goods_info']."%' OR g.goods_seq = '" . $sc['sc_goods_info'] . "') ";
+					$where[]	= " (g.goods_name like ? OR g.goods_seq = ?) ";
+					$bindData[] 	= "%".$sc['sc_goods_info']."%";
+					$bindData[] 	= $sc['sc_goods_info'];
 				}
 			}
 		}
@@ -210,15 +217,17 @@ class Eventmodel extends CI_Model {
 
 		//사용자 접속 설정
 		if(!empty($sc['display'])){
-			$where[]	= "evt.display = '".$sc['display']."'";
+			$where[]	= "evt.display = ? ";
+			$bindData[] = $sc['display'];
 		}
 
 		//전체이벤트페이지 설정
 		if(!empty($sc['event_view'])){
-			$where[]	= "evt.event_view = '".$sc['event_view']."'";
+			$where[]	= "evt.event_view = ? ";
+			$bindData[] = $sc['event_view'];
 		}
 
-		$sqlWhereClause = $where ? implode(' AND ',$where) : "";
+		$sqlWhereClause = $where ? implode(' AND ',$where) : "";		
 
 		$sql = array();
 		$sql['field'] = "
@@ -239,10 +248,10 @@ class Eventmodel extends CI_Model {
 					left join fm_goods as g on evt.goods_seq = g.goods_seq
 					";
 		$sql['wheres']	= $sqlWhereClause;
-		$sql['orderby'] = "ORDER BY {$sc['sort']}";
-		$sql['limit']	= $limitStr;
+		$sql['orderby'] = " ORDER BY {$sc['orderby']} {$sc['sort']}";
+		$sql['limit']	= " LIMIT {$sc['page']}, {$sc['perpage']}";
 
-		$result = pagingNumbering($sql,$sc);
+		$result = pagingNumbering($sql, $sc, true, $bindData);
 
 		$ingeventsql = 'select count(event_seq) as cnt from fm_event where CURRENT_TIMESTAMP() between start_date and end_date';
 		$ingeventquery = $this->db->query($ingeventsql);

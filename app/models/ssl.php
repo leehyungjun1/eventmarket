@@ -119,7 +119,7 @@ class Ssl extends CI_Model {
 		}else{
 			if($this->ssl_use && !empty($_POST['sslEncodedString'])){
 				$this->load->helper('cookiesecure');
-				$decoded = unserialize(cookieDecode(base64_decode($_POST['sslEncodedString']),50));
+				$decoded = unserialize(cookieDecode(base64_decode($_POST['sslEncodedString']),50), ['allowed_classes' => false]);
 	
 				if(is_array($decoded)){
 					foreach($decoded as $k=>$v){

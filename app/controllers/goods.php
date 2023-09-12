@@ -4613,7 +4613,7 @@ class goods extends board {
 		$result = array();
 		$today_view = $_COOKIE['today_view'];
 		if( $today_view ) {
-			$today_view = unserialize($today_view);
+			$today_view = unserialize($today_view, ['allowed_classes' => false]);
 			krsort($today_view);
 			$result = $this->goodsmodel->get_goods_list($today_view,'thumbScroll');
 
@@ -4856,7 +4856,7 @@ class goods extends board {
 
 		$today_num = 0;
 		$today_view = $_COOKIE['today_view'];
-		if( $today_view ) $today_view = unserialize($today_view);
+		if( $today_view ) $today_view = unserialize($today_view, ['allowed_classes' => false]);
 		if( $today_view ) foreach($today_view as $v){
 			$today_num++;
 			if( count($today_view) > 50 && $today_num == 1 ) continue;
@@ -4877,7 +4877,7 @@ class goods extends board {
 		$goods_seq = (int) $_POST['goods_seq'];
 		$msg = "fail";
 
-		$today_view = unserialize($_COOKIE['today_view']);
+		$today_view = unserialize($_COOKIE['today_view'], ['allowed_classes' => false]);
 		$totalcnt = count($today_view);
 		if (in_array($goods_seq, $today_view)) {
 			$del_key = array_keys($today_view,$goods_seq);

@@ -1914,12 +1914,12 @@ class setting extends selleradmin_base {
 
 
 		// 수정시 data 변경
-		if($_POST['mode'] == 'modify'){
-			$post_data = $_POST;
-			$key = $_POST['idx'] - 1;
+		if($this->input->post('mode') == 'modify'){
+			$post_data = $this->input->post();
+			$key = $this->input->post('idx') - 1;
 			foreach($post_data as $col => $pdata){
-				if(is_array($pdata[$_POST['nation']]) === true){
-					$params[$col] = $pdata[$_POST['nation']][$key];
+				if(is_array($pdata[$this->input->post('nation')]) === true){
+					$params[$col] = $pdata[$this->input->post('nation')][$key];
 				}else{
 					$params[$col] = $pdata;
 				}
@@ -1932,7 +1932,7 @@ class setting extends selleradmin_base {
 			}
 			// 희망배송 선택불가일 재가공
 			if($params['limit_day_serialize']){
-				$tmp_arr = unserialize($params['limit_day_serialize']);
+				$tmp_arr = unserialize($params['limit_day_serialize'], ['allowed_classes' => false]);
 				foreach($tmp_arr as $year => $days){
 					$params['hopeday_limit_day_arr'][$year] = implode(', ',$days);
 				}

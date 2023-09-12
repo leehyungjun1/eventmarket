@@ -3825,56 +3825,8 @@ class design_process extends admin_base {
 		openDialogAlert("지역 네비게이션 디자인 설정이 저장 되었습니다.",400,140,'parent',$callback);
 	}
 
-	/* 게시판 넣기 */
-	public function lastest_insert(){
-
-		$this->load->helper('file');
-		$this->load->model('usedmodel');
-
-		$res = $this->usedmodel->used_limit_check();
-		if(!$res['type']){
-			openDialogAlert($res['msg'],600,370,'parent');
-			exit;
-		}
-
-		$params = $_POST;
-		$location = isset($params['location']) ? $params['location'] : null;
-
-		if(!$params['lastest_code']){
-			openDialogAlert("게시판 넣기 실패",400,140,'parent');
-			exit;
-		}
-
-		$template_path			= ROOTPATH."data/skin/".$this->designWorkingSkin."/".$params['template_path'];
-
-		$addSource = $params['lastest_code'];
-
-		/* 소스 불러오기 */
-		$source = read_file($template_path);
-
-		if($location == 'top'){
-			$source = $addSource . "\n" . $source;
-		}else{
-			$source = $source . "\n" . $addSource;
-		}
-
-		if(!write_file($template_path,$source)){
-			openDialogAlert("적용에 실패했습니다.",400,140,'parent');
-			exit;
-		}
-
-		if(preg_match("/^layout_/",$params['template_path']) || preg_match("/^board/",$params['template_path']) || preg_match("/^goods/",$params['template_path'])){
-			openDialogAlert("적용되었습니다.",400,140,'parent',"parent.parent.document.location.reload();document.location.href='about:blank';");
-		}else{
-			$locationUrl = $this->layout->get_tpl_path_url($this->designWorkingSkin,$params['template_path']);
-			openDialogAlert("적용되었습니다.",400,140,'parent',"parent.parent.document.location.href='{$locationUrl}';");
-		}
-
-	}
-
-
 	/* 게시판 넣기 추가기능 */
-	public function lastest_insert_new(){
+	public function lastest_insert(){
 
 		$this->load->helper('file');
 		$this->load->model('usedmodel');
@@ -3908,7 +3860,7 @@ class design_process extends admin_base {
 			exit;
 		}
 
-		$params = $_POST;
+		$params = $this->input->post();
 
 		$params['title'] = adjustEditorImages($params['title']);// /data/tmp 임시폴더변경 /data/editor
 		$params['boardtitle'] = $this->manager['name'];

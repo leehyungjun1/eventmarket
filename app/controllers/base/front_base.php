@@ -350,7 +350,7 @@ class front_base_original extends common_base {
 
 			$today_view = $_COOKIE['today_view'];
 			if( $today_view ) {
-				$today_view = unserialize($today_view);
+				$today_view = unserialize($today_view, ['allowed_classes' => false]);
 				krsort($today_view);
 				$this->load->model('goodsmodel');
 				$push_count_today = $this->goodsmodel->get_goods_list($today_view,'thumbScroll');

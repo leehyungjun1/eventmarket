@@ -2359,59 +2359,46 @@ class order extends admin_base {
 			/**
 			 * list setting
 			 **/
-			$sc						= $_GET;
+			$aGetParams				= $this->input->get();
+			$sc 					= $aGetParams;
 			$sc['isAll']			= 'y';
-			$sc['orderby']			= (!empty($_GET['orderby'])) ?	$_GET['orderby']:'seq desc';
-			$sc['page']				= (!empty($_GET['page'])) ?		intval($_GET['page']):0;
-			$sc['perpage']			= (!empty($_GET['perpage'])) ?	intval($_GET['perpage']):10;
-			if(!empty($_GET['member_seq'])) $sc['member_seq'] = $_GET['member_seq'];
-			if(!empty($_GET['keyword'])) $sc['keyword'] = $_GET['keyword'];
-			$sc['date_gb']			= (!empty($_GET['date_gb'])) ?	$_GET['date_gb']:"all";
+			$sc['orderby']			= (!empty($aGetParams['orderby'])) ?	$aGetParams['orderby']:'seq desc';
+			$sc['page']				= (!empty($aGetParams['page'])) ?		intval($aGetParams['page']):0;
+			$sc['perpage']			= (!empty($aGetParams['perpage'])) ?	intval($aGetParams['perpage']):10;
+			if(!empty($aGetParams['member_seq'])) $sc['member_seq'] = $aGetParams['member_seq'];
+			if(!empty($aGetParams['keyword'])) $sc['keyword'] = $aGetParams['keyword'];
+			$sc['date_gb']			= (!empty($aGetParams['date_gb'])) ?	$aGetParams['date_gb']:"all";
 
 			if (!empty($sc['typereceipt'])){
-				if(gettype($sc['typereceipt']) == 'string' ) $sc['typereceipt'] = unserialize(urldecode($sc['typereceipt']));
+				if(gettype($sc['typereceipt']) == 'string' ) $sc['typereceipt'] = unserialize(urldecode($sc['typereceipt']), ['allowed_classes' => false]);
 				foreach ($sc['typereceipt'] as $v) {
 					$checked['typereceipt'][$v] = "checked";
 				}
 			}
 
 			if (!empty($sc['admin_type'])){
-				if(gettype($sc['admin_type']) == 'string' ) $sc['admin_type'] = unserialize(urldecode($sc['admin_type']));
+				if(gettype($sc['admin_type']) == 'string' ) $sc['admin_type'] = unserialize(urldecode($sc['admin_type']), ['allowed_classes' => false]);
 				foreach ($sc['admin_type'] as $v) {
 					$checked['admin_type'][$v] = "checked";
 				}
 			}
 
 			if (!empty($sc['ostep'])){
-				if(gettype($sc['ostep']) == 'string' ) $sc['ostep'] = unserialize(urldecode($sc['ostep']));
+				if(gettype($sc['ostep']) == 'string' ) $sc['ostep'] = unserialize(urldecode($sc['ostep']), ['allowed_classes' => false]);
 				foreach ($sc['ostep'] as $v) {
 					$checked['ostep'][$v] = "checked";
 				}
 			}
 
-			if (!empty($sc['gb'])){
-				if(gettype($sc['gb']) == 'string' ) $sc['gb'] = unserialize(urldecode($sc['gb']));
-				foreach ($sc['gb'] as $v) {
-					$checked['gb'][$v] = "checked";
-				}
-			}
-
-			if (!empty($sc['type'])){
-				if(gettype($sc['type']) == 'string' ) $sc['type'] = unserialize(urldecode($sc['type']));
-				foreach ($sc['type'] as $v) {
-					$checked['type'][$v] = "checked";
-				}
-			}
-
 			if (!empty($sc['tstep'])){
-				if(gettype($sc['tstep']) == 'string' ) $sc['tstep'] = unserialize(urldecode($sc['tstep']));
+				if(gettype($sc['tstep']) == 'string' ) $sc['tstep'] = unserialize(urldecode($sc['tstep']), ['allowed_classes' => false]);
 				foreach ($sc['tstep'] as $v) {
 					$checked['tstep'][$v] = "checked";
 				}
 			}
 
 			if (!empty($sc['orefund'])){
-				if(gettype($sc['orefund']) == 'string' ) $sc['orefund'] = unserialize(urldecode($sc['orefund']));
+				if(gettype($sc['orefund']) == 'string' ) $sc['orefund'] = unserialize(urldecode($sc['orefund']), ['allowed_classes' => false]);
 				foreach ($sc['orefund'] as $v) {
 					$checked['orefund'][$v] = "checked";
 				}

@@ -1,0 +1,25 @@
+RewriteEngine on
+
+# data/index.php 페이지 변경
+RewriteRule ^data\/index\.php$ /main/blank [R=301]
+
+# CI 리다이렉트
+RewriteCond $1 !^(index\.php|images|robots\.txt|crossdomain\.xml|sitemap\.xml)
+RewriteCond %{REQUEST_URI} !^/app/javascript/(.*).[^html]$
+RewriteCond %{REQUEST_URI} !^/custom/(.*)$
+RewriteCond %{REQUEST_URI} !^/phpThumb/(.*)$
+RewriteCond %{REQUEST_URI} !^/data/(.*)$
+RewriteCond %{REQUEST_URI} !^/admin/skin/(.*)$
+RewriteCond %{REQUEST_URI} !^/selleradmin/skin/(.*)$
+RewriteCond %{REQUEST_URI} !^/admincrm/skin/(.*)$
+RewriteCond %{REQUEST_URI} !^/board_original/(.*)$
+RewriteCond %{REQUEST_URI} !^/pg/(.*)$
+# Oracle Web Listener 원격 명령 실행 URL CI 구동 예외 처리
+RewriteCond %{REQUEST_URI} !^/ows-bin/(.*)$
+RewriteRule ^((.*))$ index.php?/$1 [L]
+
+# 404 error document
+ErrorDocument 404 /errdoc/error_404
+
+# Oracle Web Listener 원격 명령 실행 URL 403 Forbidden 
+RewriteRule "^ows-bin/(.*)$" - [F]
