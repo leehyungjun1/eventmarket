@@ -325,7 +325,7 @@ class categorymodel extends CI_Model {
 		if(is_array($category)===true && count($category)>0) {
 			$this->db->where_in('cg.category_code', $category);
 		}else if($category){
-			$this->db->like('cg.category_code', $category, 'after');
+			$this->db->where('cg.category_code', $category);
 		}
 		$query = $this->db->get();
 		return $query->result_array();

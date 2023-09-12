@@ -159,8 +159,8 @@ class Eventmodel extends CI_Model {
 		if( !empty($sc['date']) ){
 			$date_field = $sc['date'];
 			if($sc['sdate'] && $sc['edate']) $where[] = "{$date_field} between '{$sc['sdate']} 00:00:00' and '{$sc['edate']} 23:59:59'";
-			else if($sc['sdate']) $where[] = "'{$sc['sdate']} 00:00:00' < {$date_field},'%Y-%m-%d'";
-			else if($sc['edate']) $where[] = "{$date_field},'%Y-%m-%d' < '{$sc['edate']} 23:59:59'";
+			else if($sc['sdate']) $where[] = "{$date_field} >= '{$sc['sdate']} 00:00:00'";
+			else if($sc['edate']) $where[] = "{$date_field} <= '{$sc['edate']} 23:59:59'";
 		}
 
 		// 이벤트진행상태

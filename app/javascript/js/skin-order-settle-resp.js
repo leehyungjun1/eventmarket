@@ -470,7 +470,6 @@
 				$("input[name='payment']:checked").each(function(){
 					if( $(this).val() == "bank" ){
 						$("#pay").html(btn_order_pay2);
-						$("#orderPaymentLayout .bank").show();
 					}else{
 						//쿠폰의 무통장쿠폰인 경우 점검
 						if( eval('$("#coupon_sale_payment_b")') ){
@@ -484,8 +483,15 @@
 
 						$("#orderPaymentLayout .bank").hide();
 					}
+					/*0원일 경우 증빙x*/
+					gl_chk_tot_price = $(".total").find(".settle_price").text();
+					if(gl_chk_tot_price == '0') {
+						$("#typereceiptcardlay").hide();
+						$("#typereceipttablelay").show();
+					} else {
+						typereceipt_layout_toggle($(this));
+					}
 
-					typereceipt_layout_toggle($(this));
 				});
 			}
 		});

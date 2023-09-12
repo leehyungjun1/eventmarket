@@ -286,7 +286,7 @@ class locationmodel extends CI_Model {
 		if (is_array($location) === true && count($location) > 0) {
 			$this->db->where_in('lg.location_code', $location);
 		} elseif ($location) {
-			$this->db->like('lg.location_code', $location, 'none');
+			$this->db->where('lg.location_code', $location);
 		}
 		$query = $this->db->get();
 		return $query->result_array();

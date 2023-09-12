@@ -1737,31 +1737,22 @@ class common extends front_base  {
 
 	/* 우측 퀵메뉴 리스트 생성 (ajax 호출) */
 	public function get_right_display(){
-		$type = $_GET["type"];
-		$page = $_GET["page"];
-		$limit = $_GET["limit"];
-		$sc = $_GET;
+		$type = $this->input->get('type');
+		$page = $this->input->get('page');
+		$limit = $this->input->get('limit');
+		$sc = $this->input->get();
 		$result = array();
 		$fname="recent";
 
 		if ($type=="right_item_recent") {
 			$today_view = $this->input->cookie('today_view',TRUE);
-			if( $today_view ) {
-				$today_view = unserialize($today_view, ['allowed_classes' => false]);
-				krsort($today_view);
-				if( $page && $limit ) {//오늘본 상품 페이징
-					$start = ($page-1)*$limit;
-					if($limit) $today_view = array_slice($today_view,$start,$limit);
-				}
-				$this->load->model('goodsmodel');
-				$result = $this->goodsmodel->get_goods_list($today_view,'thumbScroll');
-
-				if ($this->userInfo['member_seq']) {
-					$upSql = "update fm_member set today_view = '" . json_encode($today_view) . "' where member_seq = ? ";
-					$this->db->query($upSql, [$this->userInfo['member_seq']]);
-				}
-
-			}
+			$this->load->library('memberlibrary');
+			$today_view_member = $this->memberlibrary->today_view_member($this->userInfo['member_seq'], [
+				'today_view' => $today_view,
+				'page' => $page,
+				'limit' => $limit,
+			]);
+			$result = $today_view_member['result'];
 		} else if ($type=="right_item_recomm") {
 			$this->load->model('goodsmodel');
 			$data = $this->goodsmodel->get_recommend_goods_list($page,$limit);
@@ -1832,21 +1823,12 @@ class common extends front_base  {
 				$total = $this->wishmodel->get_wish_count($this->userInfo['member_seq']);
 			}
 		} else if ($type=="right_item_recent") {
-			$today_view = $_COOKIE['today_view'];
-			$total = 0;
-			if( $today_view ) {
-				$today_view = unserialize($today_view, ['allowed_classes' => false]);
-
-				// DB에 존재하는 상품만 카운트 leewh 2014-11-18
-				$this->load->model('goodsmodel');
-				$result = $this->goodsmodel->get_goods_list($today_view,'thumbScroll');
-				$total = count($result);
-			}
-
-			if($this->userInfo['member_seq']){
-				$upSql = "update fm_member set today_cnt = '".$total."' where member_seq = '".$this->userInfo['member_seq']."'";
-				$this->db->query($upSql);
-			}
+			$this->load->library('memberlibrary');
+			$today_view = $this->input->cookie('today_view', true);
+			$today_view_member = $this->memberlibrary->today_view_member($this->userInfo['member_seq'], [
+				'today_view' => $today_view
+			]);
+			$total = $today_view_member['total'];
 		}
 		echo $total;
 	}

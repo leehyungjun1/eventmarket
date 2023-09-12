@@ -313,7 +313,7 @@ class brandmodel extends CI_Model {
 		if (is_array($brand) === true && count($brand) > 0) {
 			$this->db->where_in('bg.category_code', $brand);
 		} elseif ($brand) {
-			$this->db->like('bg.category_code', $brand, 'none');
+			$this->db->where('bg.category_code', $brand);
 		}
 		$query = $this->db->get();
 		return $query->result_array();

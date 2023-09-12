@@ -11338,7 +11338,12 @@ class Goodsmodel extends CI_Model {
 		if ($data_today_view) {
 			$data_today_view = serialize($data_today_view);
 		}
-		setcookie('today_view',$data_today_view,time()+86400,'/');
+		// m. 도메인도 같이 사용하도록 수정
+		setcookie('today_view',$data_today_view,time()+86400,'/',".".$this->config_basic['domain']);
+
+		// 반응형 스킨을 위해 추가함
+		$this->load->library('memberlibrary');
+		$this->memberlibrary->today_view_member($this->userInfo['member_seq'],['today_view'=>$_COOKIE['today_view']]);
 
 		/* 동영상/플래시매직 치환 */
 		$goods['contents']        = showdesignEditor($goods['contents']);

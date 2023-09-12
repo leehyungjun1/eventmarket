@@ -1364,6 +1364,10 @@ class export extends selleradmin_base {
 						}
 						$data['inputs'] = $input;
 
+						foreach($data_export_item as $k => $data_export){
+							$data_export_item[$k]['inputs'] = $input;
+						}
+
 						if($suboptions) foreach($suboptions as $data_sub){
 							if( $data_sub['item_option_seq'] == $data['item_option_seq']){
 								$data['suboptions'][] = $data_sub;

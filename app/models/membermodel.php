@@ -2938,7 +2938,7 @@ SQL;
 			remain as emoney,
 			'기간만료로 마일리지 차감' as memo,
 			'' as memo_lang,
-			concat(limit_date,' 00:00:00')  as regist_date,
+			concat(DATE_ADD(limit_date, INTERVAL 1 DAY),' 00:00:00')  as regist_date,
 			'' as goods_review,
 			'' as manager_seq,
 			'' as limit_date,
