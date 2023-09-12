@@ -2511,21 +2511,14 @@ class common extends front_base  {
 
 		$this->load->model('shippingmodel');
 		$shipping_set = $this->shippingmodel->get_shipping_set($shipping_set_seq, 'shipping_set_seq');
-		echo json_encode($shipping_set);
-		exit;
-	}
 
-	/**
-	 * 상품 상세에서 네이버페이/카카오페이구매 사용여부 체크용
-	 */
-	function get_partner_useck() {
-		$partner_type = $this->input->get("partner_type");
+		//상품 상세에서 네이버페이/카카오페이구매 사용여부 체크
 		$this->load->helper('order');
 
-		$result['npay'] 	= npay_useck();
-		$result['talkbuy'] 	= talkbuy_useck();
-
-		echo json_encode($result);
+		$shipping_set['npay'] 		= npay_useck();
+		$shipping_set['talkbuy'] 	= talkbuy_useck();
+		
+		echo json_encode($shipping_set);
 		exit;
 	}
 }

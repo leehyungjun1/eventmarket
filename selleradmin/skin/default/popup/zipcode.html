@@ -1,0 +1,265 @@
+<script type="text/javascript" src="/app/javascript/js/admin-zipcode.js"></script>
+<script type="text/javascript">
+var zipcodeFlag = '{zipcodeFlag}';
+var zipcodeType = '{zipcode_type}';
+var idx = '{sc.idx}';
+
+function getZipcodeResult(zipcodeFlag,page){
+	var url = '../popup/zipcode';
+	$.get(url,{'keyword':$(':input[name=zipcode_keyword]',$("#{zipcodeFlag}Id")).val(),'SIDO':$("select[name='SIDO']",$("#{zipcodeFlag}Id")).val(),'SIGUNGU':$("select[name='SIGUNGU']",$("#{zipcodeFlag}Id")).val(), 'zipcodeFlag':zipcodeFlag, 'page':page, 'idx':'{sc.idx}', 'goodsoption':'{sc.goodsoption}','zipcode_type':'{zipcode_type}','zipcode':'{sc.zipcode}'} , function(data) {
+		$("#"+zipcodeFlag+"Id").html(data);
+	});
+}
+
+function enterchk(){
+	if(event.keyCode==13){
+		getZipcodeResult('{zipcodeFlag}',1);
+		event.returnValue=false;
+	}
+}
+
+
+$(document).ready(function() {
+	$("#zipcodeSearchButton",$("#{zipcodeFlag}Id")).bind("click",function(){
+		getZipcodeResult('{zipcodeFlag}',1);
+	});
+});
+
+</script>
+<style>
+.zipcodeResult {cursor:pointer; height:19px; line-height:19px;}
+.zipcodeResult:hover {color:#3333ff; background-color:#fafafa}
+
+.oldZipcodeResult {cursor:pointer; height:19px; line-height:19px;}
+.oldZipcodeResult:hover {color:#3333ff; background-color:#fafafa}
+
+ul.zipcodeSearchEx {width:400px; text-align:left;}
+
+.zsfText {height:33px !important; line-height:33px !important; padding:0 5px; border:4px solid #666 !important}
+.zsfSubmit {height:33px !important; padding:0 5px !important; border:4px solid #666 !important; background-color:#666; color:#fff; cursor:pointer; font-weight:bold; vertical-align: middle;}
+
+.tabBody {border:3px solid #ddd; padding:10px; height: calc(100% - 50px);}
+.tabs {*zoom:1}
+.tabs:after {content:"";display:block;clear:both;}
+.tabs li {float:left;}
+.tabs li a {display:inline-block; padding:5px 10px; background-color:#fff; border:1px solid #fff; border-bottom:0px; color:#666;}
+.tabs li.on a { background-color:#eee; border-top:1px solid #ddd; border-right:1px solid #ddd; border-left:1px solid #ddd; color:#000; font-weight:bold; border-bottom:0px;}
+</style>
+
+<table id="wrap" width="100%" height="400" cellspacing="0" cellpadding="20">
+<tr>
+	<td valign="top">
+		<ul class="tabs">
+			<!--{ ? cfg_zipcode.street_zipcode_5 }-->
+			<li {? zipcode_type=="street"}class="on"{/}><a href="javascript:openDialogZipcode{sc.goodsoption}('{zipcodeFlag}','','street','','');">신우편번호(5자리)로 도로명(지번)주소 검색</a></li>
+			<!--{ / }-->
+			<!--{ ? cfg_zipcode.street_zipcode_6 }-->
+			<li {? zipcode_type=="" || zipcode_type=="zibun"}class="on"{/}><a href="javascript:openDialogZipcode{sc.goodsoption}('{zipcodeFlag}','','zibun','','');">구우편번호(6자리)로 도로명(지번)주소 검색</a></li>
+			<!--{ / }-->
+			<!--{ ? cfg_zipcode.old_zipcode_lot_number }-->
+			<li {? zipcode_type=="oldzibun"}class="on"{/}><a href="javascript:openDialogZipcode{sc.goodsoption}('{zipcodeFlag}','','oldzibun','','');">구우편번호(6자리)로 (구)지번 검색</a></li>
+			<!--{ / }-->
+		</ul>
+
+		<div class="tabBody">
+
+			<table width="100%" height="100%" border="0" cellspacing="0" cellpadding="0">
+			<tr>
+				<td height="90">
+					<form name="zipForm" id="zipForm" method="get">
+					<input type="hidden" name="zipcode_type" value="{zipcode_type}">
+					<input type="hidden" name="old_zipcode" value="{sc.old_zipcode}">
+					<input type="text" name="addtext" value="" class="hide">
+					<table align="center" border="0" cellspacing="0" cellpadding="0" width="100%" height="100%" >
+					<tr><td height="10"></td></tr>
+					<tr>
+						<td align="center">
+
+						{@sc}
+						{?!in_array(.key_,array('page','keyword','SIDO','SIGUNGU'))}<input type="hidden" name="{.key_}" value="{.value_}" />{/}
+						{/}
+						<input type="text" name="zipcode_keyword" value="{keyword}" size="45" class="zsfText" title="{ ? zipcode_type=="oldzibun" }읍/면/동{: zipcode_type=="zibun"}지번입력{:}도로명주소{/}" onkeydown="enterchk();" /> <input type="button" id="zipcodeSearchButton" value="검색" class="zsfSubmit" />
+
+						</td>
+					</tr>
+					<tr><td height="10"></td></tr>
+					<tr><td height="1" bgcolor="cccccc"></td></tr>
+					<tr><td height="10"></td></tr>
+					<tr>
+						<td align="center">
+							{? keyword && arrSido}
+							<table width="50%" border="0" cellspacing="0" cellpadding="0">
+							<tr>
+								<td width="50%">
+									시도 :
+									<select name="SIDO" id="SIDO" style="width:100px;"   onchange="getZipcodeResult('{zipcodeFlag}');">
+									<option value="">전체</option>
+										{@ arrSido}
+										<option value="{.SIDO}" {? sc.SIDO == .SIDO}selected{/}>{.SIDO}</option>
+										{/}
+									</select>
+								</td>
+								<td>
+									시군구 :
+									<select name="SIGUNGU" style="width:120px;" onchange="getZipcodeResult('{zipcodeFlag}');">
+									<option value="">전체</option>
+									{@ arrSigungu }
+									<option value="{.SIGUNGU}" {? sc.SIGUNGU == .SIGUNGU}selected{/}>{.SIGUNGU}</option>
+									{/}
+									</select>
+								</td>
+							</tr>
+							</table>
+							{/}
+						</td>
+					</tr>
+					<tr><td height="10"></td></tr>
+					<tr>
+						<td align="center">
+							
+							<table>
+							<!--{? zipcode_type=="zibun"}-->
+							<tr>
+								<td>
+								동이름 검색 예)
+								</td>
+								<td>
+								삼평동 670, 암사동 480-1
+								</td>
+							</tr>
+							<!--{: zipcode_type=="street"}-->							
+							<tr>
+								<td>
+								'○○○길'이 있는 주소 검색
+								</td>
+								<td>
+								예) 남부순환로123가길 ← '길'번호로 검색
+								</td>
+							</tr>
+							<tr>
+								<td>
+								'○○○길'이 없는 주소 검색
+								</td>
+								<td>
+								예) 남부순환로 8 ← '번지'로 검색
+								</td>
+							</tr>
+							<tr>
+								<td>
+								건물명 검색
+								</td>
+								<td>
+								예) 전쟁기념관, 스타타워
+								</td>
+							</tr>
+							<tr>
+								<td colspan="2" class="desc pdt5">
+								※길이름은 공백없이 입력해주십시오.
+								</td>
+							</tr>
+							<!--{: zipcode_type=="oldzibun"}-->
+							<tr>
+								<td>
+								동을 입력하세요. 
+								</td>
+								<td>
+								예) 압구정동
+								</td>
+							</tr>
+							<!--{ / }-->
+							</table>
+							
+						</td>
+					</tr>
+					</table>
+					</form>
+				</td>
+			</tr>
+			<tr><td height="7"></td></tr>
+			<!--{ ? page.totalcount }-->
+			<tr><td height="10" align="right">총 {=number_format(page.totalcount)} 건</td></tr>
+			<!--{ / }-->
+			<tr><td height="3"></td></tr>
+			<tr>
+				<td style="padding:0px; background-color:#f9f9f9" align="center" >
+					<div style="height:210px; padding:5px; overflow:auto;">
+
+					<table width="100%" align="center" border="0">
+					<col width="14%" />
+					<col />
+					<!--{ ? zipcode_type != "oldzibun" }-->									
+					<col width="36%" />
+					<!--{ / }-->
+					<tr>
+						<th bgcolor="#eeeeee" height="20">우편번호</th>
+						<!--{ ? zipcode_type == "oldzibun" }-->
+						<th bgcolor="#eeeeee">지번 주소</th>						
+						<!--{ : }-->
+						<th bgcolor="#eeeeee">도로명 주소</th>
+						<th bgcolor="#eeeeee">지번 주소</th>
+						<!--{ / }-->
+					</tr>
+					<!--{ @loop }-->					
+					<tr class="zipcodeResult" onclick="choice_zipcode(this, idx);">					
+						<th><div class="zipcode">{.ZIPCODE}</div></th>
+						<!--{ ? zipcode_type == "oldzibun" }-->
+						<td nowrap>
+							{.ADDRESSVIEW}
+							<div class="address hide">{.ADDRESS}</div>
+						</td>						
+						<!--{ : }-->						
+						<td align="left" >{.ADDRESS_STREET}<div class="address_street hide">{.ADDRESS_STREET}</div></td>
+						<td align="left" >{.ADDRESS}<div class="address hide">{.ADDRESS}</div></td>
+						<!--{ / }-->
+					</tr>					
+					<!--{ / }-->
+					<!--{ ? !loop }-->
+					<tr>
+						<td colspan="3" align="center" height="30">
+							{? keyword}
+								<br><br>
+								검색 결과가 없습니다.
+								<br><br><span class="desc">주소가 검색되지 않는 경우는 행정안전부 새주소안내시스템<br>
+								<a href="http://www.juso.go.kr" target="_blank">http://www.juso.go.kr</a> 에서 확인하시기 바랍니다.</span>
+							{:}
+								{? zipcode_type=="zibun" || zipcode_type=="oldzibun"}
+								<strong>읍/면/동</strong>을 검색해주세요.
+								{:}
+									<strong>도로명/건물명</strong>을 검색해 주세요
+								{/}
+							{/}
+						</td>
+					</tr>
+					<!--{ / }-->
+					</table>					
+					{?page.totalpage>1}
+					<table align="center" width="50%"  border="0" cellpadding="0" cellspacing="0">
+					<tr>
+						<td>
+							<div class="paging_navigation">
+								<!--{ ? page.first }--><a href="javascript:getZipcodeResult('{zipcodeFlag}','{page.first}');" class="first" ></a><!--{ / }-->
+								<!--{ ? page.prev }--><a href="javascript:getZipcodeResult('{zipcodeFlag}','{page.prev}');" class="prev" ></a><!--{ / }-->
+								<!--{ @ page.page }-->
+									<!--{ ? page.nowpage ==  .value_ }-->
+										<a href="javascript:getZipcodeResult('{zipcodeFlag}','{.value_}');" class="on">{.value_ }</a>
+									<!--{ : }-->
+										<a href="javascript:getZipcodeResult('{zipcodeFlag}','{.value_}');">{.value_ }</a>
+									<!--{ / }-->
+								<!--{ / }-->
+								<!--{ ? page.next }--><a href="javascript:getZipcodeResult('{zipcodeFlag}','{page.next}');" class="next" ></a><!--{ / }-->
+								<!--{ ? page.last }--><a href="javascript:getZipcodeResult('{zipcodeFlag}','{page.last}');" class="last" ></a><!--{ / }-->
+							</div>
+						</td>
+					</tr>
+					</table>
+					{/}
+
+					</div>
+				</td>
+			</tr>
+			</table>
+		</div>
+
+	</td>
+</tr>
+</table>

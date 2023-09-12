@@ -459,9 +459,9 @@ class Couponmodel extends CI_Model {
 	/* 오프라인쿠폰 >  인증번호 중복체크 (자동생성의 랜덤 또는 수동생성의 수동등록) */
 	public function get_offlinecoupon_serialnumber_download_cnt( $couponSeq, $offline_serialnumber)
 	{
-		$sql = "SELECT coupon_seq FROM fm_download where coupon_seq='".$couponSeq."' and offline_input_serialnumber='".$offline_serialnumber."' ";
+		$sql = "SELECT coupon_seq, member_seq FROM fm_download where coupon_seq='".$couponSeq."' and offline_input_serialnumber='".$offline_serialnumber."' ";
 		$query = $this->db->query($sql);
-		return $query->num_rows();
+		return $query->row_array();
 	}
 
 	// @202003 통합 - 온라인/오프라인 쿠폰 등록/수정 필드 체크

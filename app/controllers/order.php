@@ -971,15 +971,17 @@ class order extends front_base {
 			$marketing_admin	= $this->session->userdata('marketing');
 			$this->load->library('partnerlib');
 
-			$navercheckout = $this->partnerlib->getPartnerSettingInfo('navercheckout', $goods, $marketing_admin, "cart");
+			$navercheckout = $this->partnerlib->getPartnerSettingInfo('navercheckout', [], $marketing_admin, "cart");
+			$navercheckoutConfig = $navercheckout['setConfig'];
 			// 네이버 체크아웃
 			if($navercheckout['use']) {
 				// 예외카테고리 체크, 예외상품 체크
 				$expectCategoryChk	= false;
 				$expectGoodsChk		= false;
+				
 				foreach($cart['list'] as $key => $data){
 					$categorys = $this->goodsmodel->get_goods_category($data['goods_seq']);
-					foreach($navercheckout['except_category_code'] as $v1){
+					foreach($navercheckoutConfig['except_category_code'] as $v1){
 						foreach($categorys as $v2){
 							if($v1['category_code']==$v2['category_code'] || preg_match("/^".$v1['category_code']."/",$v2['category_code'])){
 								$expectCategoryChk = true;
@@ -987,7 +989,7 @@ class order extends front_base {
 						}
 					}
 
-					foreach($navercheckout['except_goods'] as $v1){
+					foreach($navercheckoutConfig['except_goods'] as $v1){
 						if($v1['goods_seq']==$data['goods_seq']){
 							$expectGoodsChk = true;
 						}
@@ -998,7 +1000,7 @@ class order extends front_base {
 				}
 
 				$this->template->assign(array('use_postpaid'=>$navercheckout['use_postpaid']));
-				$this->template->assign(array('navercheckout'=>$navercheckout['setConfig']));
+				$this->template->assign(array('navercheckout'=>$navercheckoutConfig));
 				// 장바구니에서는 찜버튼 노출하지 않는다.
 				$navercheckout['btn'][2] = 1;
 				$this->template->assign(array('npay_btn'=>$navercheckout['btn']));
@@ -1008,7 +1010,7 @@ class order extends front_base {
 				$this->template->assign(array('navercheckout_tpl'=>$tmptpl));
 			}
 
-			$talkbuy = $this->partnerlib->getPartnerSettingInfo('talkbuy', $goods, $marketing_admin, "cart");
+			$talkbuy = $this->partnerlib->getPartnerSettingInfo('talkbuy', [], $marketing_admin, "cart");
 			$filePath	= $this->template_path();
 			$browsers = getBrowser();
 			// IE는 지원안함
@@ -6707,6 +6709,9 @@ class order extends front_base {
 						$insert_params['type'] 		= $data_inputs['type'];
 						$insert_params['title'] 	= $data_inputs['input_title'];
 						$insert_params['value'] 	= $data_inputs['input_value'];
+						if($data_inputs['type'] !== 'file'){
+							$insert_params['value'] = emojiFilter($insert_params['value']);
+						}
 						$this->db->insert('fm_order_item_input', $insert_params);
 					}
 
