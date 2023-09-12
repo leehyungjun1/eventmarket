@@ -464,14 +464,14 @@ class common extends front_base  {
 
 		// 게시판 업로드 세션이 없는경우
 		if (is_null($boardWriteSession) === true) {
-			$emptyFiles = json_encode([
+			$emptyFiles = json_encode([[
 				// 상태값 false
 				'status' => 0,
 				// javascript alert 출력에 사용되는 메세지
 				'msg' => getAlert('et005'),
 				// 화면에 출력되는 메세지
 				'desc' => getAlert('et004'),
-			]);
+			]]);
 			die($emptyFiles);
 		}
 
