@@ -299,42 +299,7 @@
 							<tr class="nothing {? additions}hide{/}">
 								<td class="center" height="30" colspan="3">항목을 추가해주세요.</td>
 							</tr>
-							<!--{ @ additions }-->
-							<tr>
-								<td class="center">
-									<input type="hidden" name="additionSeq[]" value="{.addition_seq}" />
-									<select name="selectEtcTitle[]" class="{ ? .type == 'direct' }wp40{:}wp85{/}">
-									<option value="" >-선택해주세요-</option>
-										{ @ .goodsaddinfo }<option value="goodsaddinfo_{..codeform_seq}"  style="background-color:orange;" { ? .code_seq == ..codeform_seq && strstr(.type,'goodsaddinfo_') } selected="selected" { / }>{..label_title}</option>{ / }
-										<option value="model" { ? .type == 'model' }selected{ / }>모델명</option>
-										<option value="brand" { ? .type == 'brand' }selected{ / }>브랜드</option>
-										<option value="manufacture" { ? .type == 'manufacture'}selected{ / }>제조사</option>
-										<option value="orgin" { ? .type == 'orgin' }selected{ / }>원산지</option>
-										<option value="direct" { ? .type == 'direct' }selected{ / }>직접입력</option>
-									</select>
-									<span { ? .type != 'direct' }class='hide'{ / }><input type="text" name="etcTitle[]" class="etcTitle resp_text" style="width:37%" value="{.title}"/></span>
-								</td>
-								<td>
-									<div class="resp_limit_text limitTextEvent">
-										<input type="text" name="etcContents[]" class="resp_text etcContents { ? .code_seq && strstr(.type,'goodsaddinfo_') } hide{ / }" maxlength="255" value="{.contents}" />
-									</div>
-									<input type="hidden" name="etcContents_title[]" class="etcContents_title " value="{.contents_title}"/>
-									<span class='goodsaddinfolay'>
-										{ @ .goodsaddinfo }<span class='goodsaddinfo_{..codeform_seq} goodsaddinfosublay { ? !(.code_seq == ..codeform_seq && strstr(.type,'goodsaddinfo_')) } hide{ / }'>{..label_write}</span>{ / }
-									</span>
-									<!--{ ? provider_seq == 1 && LINKAGE_SERVICE && !socialcpuse }-->
-									<span class="linkage-origin { ? .type!='orgin' }hide{ / }">
-										<select name="linkageOrigin[]">
-											<option value="">판매마켓용</option>
-											{ @ .linkageOrigin }<option value="{..origin_code}" { ? .linkage_val == ..origin_code }selected{ / }>{..origin_name}</option>{ / }
-										</select>
-									</span>
-									<!--{ / }-->
-								</td>
-								<td class="center"><button type="button" class="etcDel btn_minus"></button></td>
-							</tr>
-							<!--{ : }-->
-							<tr>
+							<tr class="hide">
 								<td class="center">
 									<input type="hidden" name="additionSeq[]" value="" />
 									<select name="selectEtcTitle[]" class="wp85">
@@ -363,6 +328,40 @@
 										<select name="linkageOrigin[]">
 											<option value="">판매마켓용</option>
 											{ @ linkageOrigin }<option value="{.origin_code}">{.origin_name}</option>{ / }
+										</select>
+									</span>
+									<!--{ / }-->
+								</td>
+								<td class="center"><button type="button" class="etcDel btn_minus"></button></td>
+							</tr>
+							<!--{ @ additions }-->
+							<tr>
+								<td class="center">
+									<input type="hidden" name="additionSeq[]" value="{.addition_seq}" />
+									<select name="selectEtcTitle[]" class="{ ? .type == 'direct' }wp40{:}wp85{/}">
+									<option value="" >-선택해주세요-</option>
+										{ @ .goodsaddinfo }<option value="goodsaddinfo_{..codeform_seq}"  style="background-color:orange;" { ? .code_seq == ..codeform_seq && strstr(.type,'goodsaddinfo_') } selected="selected" { / }>{..label_title}</option>{ / }
+										<option value="model" { ? .type == 'model' }selected{ / }>모델명</option>
+										<option value="brand" { ? .type == 'brand' }selected{ / }>브랜드</option>
+										<option value="manufacture" { ? .type == 'manufacture'}selected{ / }>제조사</option>
+										<option value="orgin" { ? .type == 'orgin' }selected{ / }>원산지</option>
+										<option value="direct" { ? .type == 'direct' }selected{ / }>직접입력</option>
+									</select>
+									<span { ? .type != 'direct' }class='hide'{ / }><input type="text" name="etcTitle[]" class="etcTitle resp_text" style="width:37%" value="{.title}"/></span>
+								</td>
+								<td>
+									<div class="resp_limit_text limitTextEvent">
+										<input type="text" name="etcContents[]" class="resp_text etcContents { ? .code_seq && strstr(.type,'goodsaddinfo_') } hide{ / }" maxlength="255" value="{.contents}" />
+									</div>
+									<input type="hidden" name="etcContents_title[]" class="etcContents_title " value="{.contents_title}"/>
+									<span class='goodsaddinfolay'>
+										{ @ .goodsaddinfo }<span class='goodsaddinfo_{..codeform_seq} goodsaddinfosublay { ? !(.code_seq == ..codeform_seq && strstr(.type,'goodsaddinfo_')) } hide{ / }'>{..label_write}</span>{ / }
+									</span>
+									<!--{ ? provider_seq == 1 && LINKAGE_SERVICE && !socialcpuse }-->
+									<span class="linkage-origin { ? .type!='orgin' }hide{ / }">
+										<select name="linkageOrigin[]">
+											<option value="">판매마켓용</option>
+											{ @ .linkageOrigin }<option value="{..origin_code}" { ? .linkage_val == ..origin_code }selected{ / }>{..origin_name}</option>{ / }
 										</select>
 									</span>
 									<!--{ / }-->

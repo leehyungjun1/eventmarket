@@ -2547,11 +2547,21 @@ function getTradersList(page){
 					rowHtml	+= '<td>' + data.trader_id + '</td>';
 					rowHtml	+= '<td>' + data.trader_name + '</td>';
 					rowHtml	+= '<td>' + data.company_owner + '</td>';
-					rowHtml	+= '<td><button class="resp_btn v2" type="button" onclick="selectTrader(\'' + data.trader_seq + '\', \'' + data.trader_name + '\', \'' + data.currency_unit + '\');">선택</button></td>';
+					rowHtml	+= '<td class="trader_select_btn"><button class="resp_btn v2" type="button" data-no="'+ data._no +'">선택</button></td>';
 					rowHtml	+= '</tr>';
 
 					$('#select_trader_lay').find('tbody.trader-list').append(rowHtml);
 				}
+				
+				// 거래처 선택 이벤트 처리
+				$(".trader_select_btn button").each(function(index, button) {
+					$(button).on("click").on("click", function() {
+						let no = $(this).data('no');
+						data = result.record.find(trader => trader._no == no);
+						selectTrader(data.trader_seq, data.trader_name, data.currency_unit);
+					});
+				});
+
 				pagenumber = parseInt(result.page.nowpage/perpage)+1;
 				$('#select_trader_lay').find('div.page-html-lay').pager({ pagenumber: pagenumber , pagecount: result.page.pagecount, buttonClickCallback: getTradersList,  });
 

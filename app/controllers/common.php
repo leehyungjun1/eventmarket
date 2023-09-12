@@ -498,6 +498,19 @@ class common extends front_base  {
 		// 파일명칭
 		$config['file_name'] = $this->randomFileName($_FILES['Filedata']['name']);
 
+		// 업로드 파일이 이미지인지 확인
+		if ($this->isImage($requestFiles['Filedata']['type']) === true) {
+
+			$imgInfo = getimagesize($requestFiles['Filedata']['tmp_name']);
+
+			$imgWidth = $imgInfo[0];
+		
+			if ($imgWidth > $galleryListWdith) {
+				// 돌아간 이미지 회전
+				rotateImage($requestFiles['Filedata']['tmp_name']); 
+			}
+		}
+
 		// 파일 업로드
 		$uploadResult = $upload->put([
 			'config' => $config,
@@ -520,9 +533,6 @@ class common extends front_base  {
 
 			//이미지인경우
 			if ($fileInfo['is_image'] == true && $fileInfo['image_width'] > $this->manager['gallery_list_w']) {
-				// 돌아간 이미지 수정
-				ImgLotate($config['upload_path'] . '/' . $fileInfo['file_name']); //@2017-04-25
-
 				$this->load->helper('board');
 				$source = $fileInfo['full_path'];
 				$target = str_replace($fileInfo['file_name'], '_thumb_' . $fileInfo['file_name'], $fileInfo['full_path']);

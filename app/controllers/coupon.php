@@ -107,12 +107,12 @@ class coupon extends front_base {
 	{
 		// 로그인 체크
 		$memberSeq = $this->userInfo['member_seq'];
-		if(!isset( $_GET['return_url'])) $_GET['return_url'] = "/main/index";
-		$_SERVER["REQUEST_URI"] = $_GET['return_url'];
 		login_check();
 
-		$couponSeq		= (int) $_GET['coupon'];
- 		$goodsSeq		= (int) $_GET['goods']; 
+		$couponSeq = (int) $this->input->get('coupon');
+ 		$goodsSeq = (int) $this->input->get('goods'); 
+		$returnUrl = $this->input->get('return_url') ?? '/main/index';
+		$_SERVER["REQUEST_URI"] = $returnUrl;
 		$this->load->model('goodsmodel');
 
 		$now_timestamp	= time();
@@ -169,13 +169,21 @@ class coupon extends front_base {
 		}
 
 		$return = $this->couponmodel->_members_downlod($couponSeq,$memberSeq);//_goods_downlod()=>_members_downlod()
-		if( $return ) { 
-			//쿠폰이 다운로드 되었습니다.
-			openDialogAlert(getAlert('gv018'),400,140,"parent","parent.coupondownlist('".$goodsSeq."','".$_GET[return_url]."','".$couponSeq."');");
-		}else{ 
+		
+		// 쿠폰 다운로드 실패 했을 경우
+		if (!$return) { 
 			//쿠폰다운로드가 실패 되었습니다.
-			openDialogAlert(getAlert('gv019'),400,140,"parent","parent.coupondownlist('".$goodsSeq."','".$_GET[return_url]."');");
+			openDialogAlert(getAlert('gv019'),400,140,"parent","parent.coupondownlist('".$goodsSeq."','".$returnUrl."');");
 		}
+
+		$callback = "";
+		// 쿠폰 다운로드 성공 및 상품 번호가 있을 경우
+		if ($return && $goodsSeq) {
+			// 쿠폰 다운로드 항목 리스트 출력 스크립트 호출
+			$callback = "parent.coupondownlist('".$goodsSeq."','".$returnUrl."','".$couponSeq."');";
+		}
+		// 쿠폰이 다운로드 되었습니다.
+		openDialogAlert(getAlert('gv018'), 400, 140, "parent", $callback);
 	}
 
 	//마이페이지의 회원쿠폰 다운받기

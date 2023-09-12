@@ -2836,7 +2836,7 @@ class design_process extends admin_base {
 		$m_display_seq		= $params['m_display_seq'];
 
 		//개발서버에선 display_seq를 마음대로 조정 할 수 있다
-		if	($_SERVER["REMOTE_ADDR"] == "106.246.242.226")
+		if	(developIpCheck())
 			$display_seq_update = $params['display_seq_update'];
 
 

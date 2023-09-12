@@ -1040,18 +1040,27 @@ class mypage_process extends front_base {
 		}
 
 		//환불 방법 입력부분 체크
-		if($aParams['mode'] != 'exchange' && $aParams['chk_seq'] && $aParams['chk_ea'] && in_array($data_order['payment'], ['bank', 'virtual', 'escrow_virtual'])) {
-			if(!$aParams['depositor'] || !implode('',$aParams['account'])) {
-
-				if(!$aParams['depositor']) $bank['depositor'] = "예금주";
-				if(!implode('',$aParams['account'])) $bank['accountNum'] = "계좌번호";
+		if ($aParams['mode'] != 'exchange' && $aParams['chk_seq'] && $aParams['chk_ea'] && in_array($data_order['payment'], ['bank', 'virtual', 'escrow_virtual'])) {
+			// 모바일 스킨은 string , 반응형/pc 는 array
+			$account = is_array($aParams['account']) ? implode('', $aParams['account']) : $aParams['account'];
+			if (!$aParams['depositor'] || !$account) {
+				if (!$aParams['depositor']) {
+					$bank['depositor'] = '예금주';
+				}
+				if (!$account) {
+					$bank['accountNum'] = '계좌번호';
+				}
 
 				$refundMethod = implode(', ', $bank);
 
-				if($data_order['payment']=='bank') $payMethod = "무통장";
-				if($data_order['payment']=='virtual' || $data_order['payment'] == 'escrow_virtual') $payMethod = "가상계좌";
+				if ($data_order['payment'] == 'bank') {
+					$payMethod = '무통장';
+				}
+				if ($data_order['payment'] == 'virtual' || $data_order['payment'] == 'escrow_virtual') {
+					$payMethod = '가상계좌';
+				}
 
-				openDialogAlert(getAlert('mo160',array($payMethod, $refundMethod)),400,160,'parent','');
+				openDialogAlert(getAlert('mo160', [$payMethod, $refundMethod]), 400, 160, 'parent', '');
 				exit;
 			}
 		}

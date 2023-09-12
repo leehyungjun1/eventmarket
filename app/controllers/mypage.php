@@ -3199,6 +3199,21 @@ class mypage extends board
 			$data_order['real_shipping_cost'] = $data_order['shipping_cost'];
 		}
 
+		// 반품정보 추출 :: 2018-05-28 lwh
+		$query	= "SELECT * FROM fm_order_return WHERE refund_code=?";
+		$query	= $this->db->query($query,$data_refund['refund_code']);
+		$res	= $query->row_array();
+		$data_refund['returns_status'] = $this->returnmodel->arr_return_status[$res['status']];
+		
+		// 반품 배송비 추가 정보 추출 :: 2018-05-28 lwh
+		$data_refund['refund_ship_duty']		= $res['refund_ship_duty'];
+		$data_refund['refund_ship_type']		= $res['refund_ship_type'];
+		$data_refund['return_shipping_price']	= $res['return_shipping_price'];
+		
+		if(!$data_refund['refund_ship_duty']){
+			$data_refund['refund_ship_duty'] = "seller";
+		}
+
 		// 원주문의 배송정보
 		$data_shipping		= $this->ordermodel->get_order_shipping($data_refund['order_seq']);
 		if	($data_shipping)foreach($data_shipping as $k => $ship){
@@ -3215,6 +3230,9 @@ class mypage extends board
 				$data['couponinfo'] = get_goods_coupon_view($data_return_item[0]['export_code']);
 				$tot['coupon_use_return'] = $data['couponinfo']['coupon_use_return'];
 				$tot['coupontotal']++;
+
+				// 3차 환불 개선으로 환불 위약금 :: 2018-11- lkh
+				$refundPenaltyDeductiblePriceTmp += $data['coupon_deduction_price'];
 			}else{
 				$tot['goodstotal']++;
 			}
@@ -3358,8 +3376,18 @@ class mypage extends board
 		}else{
 			$data_refund['refund_cash_sum']		= $data_refund['refund_cash'];
 		}
-		// 총 환불액 = 상품환불액+마일리지환불액+예치금환불액 pjm
-		$tot['refund_total_price'] = $data_refund['refund_price_sum']+$data_refund['refund_emoney']+$data_refund['refund_cash'];
+
+		// 총 환불금액 계산 
+		$tot['refund_penalty_deductible_price']		= ($refundPenaltyDeductiblePriceTmp) ? $refundPenaltyDeductiblePriceTmp : 0;
+		$tot['refund_all_deductible_price'] = $data_refund['refund_deductible_price']+$data_refund['refund_delivery_deductible_price']+$tot['refund_penalty_deductible_price'];
+		$tot['refund_total_price']		= $data_refund['refund_price_sum'] + $data_refund['refund_cash'] + $data_refund['refund_emoney'] - $tot['refund_all_deductible_price'];
+
+		// 반품 환불 배송비	
+		if($data_refund['refund_ship_duty'] == 'buyer' &&  $data_refund['refund_ship_type'] == 'M'){
+			$tot['refund_total_price'] -= (int)$data_refund['return_shipping_price'];
+		}else{
+			$data_refund['return_shipping_price'] = 0;
+		}
 
 		// 총환불액 검증부 추가 :: 2019-02-01 lwh
 		if($tot['refund_total_price'] != $data_refund['refund_price']){

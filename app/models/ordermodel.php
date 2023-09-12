@@ -851,7 +851,7 @@ class ordermodel extends CI_Model
 		];
 		$this->db->select($selectedFields)
 			->from('fm_order_item oi')
-			->join ('fm_goods g', 'g.goods_seq = oi.goods_code', 'left')
+			->join ('fm_goods g', 'g.goods_seq = oi.goods_seq', 'left')
 			->join ('fm_provider p', 'p.provider_seq = g.provider_seq', 'left')
 			->where('oi.order_seq', $order_seq)
 			->order_by("(CASE WHEN oi.goods_type =  'goods' THEN 0 ELSE 99 END)", 'ASC')

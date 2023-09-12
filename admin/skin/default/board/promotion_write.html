@@ -1,0 +1,439 @@
+{? _GET.mainview }
+<script type="text/javascript">
+var board_id = '{manager.id}';
+var boardlistsurl = '{boardurl->lists}';
+var boardwriteurl = '{boardurl->write}';
+var boardviewurl = '{boardurl->view}';
+var boardmodifyurl = '{boardurl->modify}';
+var boardreplyurl = '{boardurl->reply}';
+var file_use = '{=manager.file_use}';
+
+</script>
+{/}
+<form name="writeform" id="writeform" method="post" action="../board_process" enctype="multipart/form-data" target="actionFrame">
+<input type="hidden" name="mode" id="mode" value="{mode}">
+<input type="hidden" name="board_id" id="board_id" value="{manager.id}">
+<input type="hidden" name="reply" id="reply" value="{_GET.reply}">
+{? _GET.mainview }
+	<input type="hidden" name="mainview" id="mainview" value="{_GET.mainview}">
+{/}
+{? seq }
+	<input type="hidden" name="seq" id="seq" value="{seq}">
+{/}
+<input type="hidden" name="returnurl" id="returnurl" value="{? backtype=='view' }{boardurl->view}{:}{boardurl->lists}{boardurl->querystr}{/}">
+<!-- 페이지 타이틀 바 : 시작 -->
+<div id="page-title-bar-area" style="margin-top:-15px">
+	<div id="page-title-bar">
+
+		<!-- 타이틀 -->
+		<div class="page-title">
+			<h2>[{manager.name}] 게시글 {? seq && !_GET.reply }수정{: seq && _GET.reply == 'y' }답변{:}등록{/}</h2>
+		</div>
+
+		<!-- 좌측 버튼 -->
+		<ul class="page-buttons-left">
+			<li><button type="button" onclick="document.location.href='{boardurl->lists}';" class="resp_btn">게시글리스트<span class="arrowright"></span></button></li>
+			{? seq }<li><button type="button" class="resp_btn boad_view_btn" viewlink="{boardurl->view}">게시글보기</button></li>{/}
+		</ul>
+
+		<!-- 우측 버튼 -->
+		<ul class="page-buttons-right">
+			<li><button type="submit" name="data_save_btn" id="data_save_btn" class="resp_btn active">저장하기<span class="arrowright"></span></button></li>
+		</ul>
+
+	</div>
+</div>
+<!-- 페이지 타이틀 바 : 끝 -->
+
+<!-- 서브메뉴 바디 : 시작-->
+<div >
+{? _GET.reply == 'y' || depth > 0}
+<table class="table_basic">
+<colgroup>
+	<col width="10%">
+	<col width="40%">
+	<col width="10%">
+	<col width="40%">
+</colgroup>
+<tbody>
+<tr>
+	<th><label class="resp_checkbox">SMS전송 <input type="checkbox" name="board_sms" id="board_sms" value="1" {? manager.sms_reply_user_yn == 'N' } disabled="disabled" {/} {? rsms == 'Y' && tel1 && !isdemo.isdemo } checked="checked" {/} {? isdemo.isdemo } {isdemo.isdemojs1} {/}> </label></th>
+	<td >
+		<input type="text" name="board_sms_hand" id="board_sms_hand" value="{tel1}" title="휴대폰정보를 입력하세요.">
+		잔여 SMS:{=(count)}건
+	</td>
+	<th><label class="resp_checkbox">이메일 전송 <input type="checkbox" name="board_email" id="board_email" value="1" {? remail == 'Y' && email && !isdemo.isdemo } checked="checked" {/}  {? isdemo.isdemo } {isdemo.isdemojs1} {/}/></label></th>
+	<td >
+		<input type="text" name="board_sms_email" id="board_sms_email" value="{email}" title="이메일정보를 입력하세요.">
+	</td>
+</tr><!--
+<tr>
+<th>내용</th>
+<td colspan="3">
+<div style="margin: 3px 0"></div>
+<input type="text" name="sms_content1" id="sms_content1" class="sms_contents <?=$disabled?>" style='width:80%' <?=$disabled?>/>
+<font color="#5a84a1"><span class="sms_byte">0</span>bytes</font>
+</td></tr> -->
+</tbody>
+</table>
+<br>
+{/}
+
+<table class="table_basic thl">
+<tbody>
+
+<tr>
+	<th>작성자</th>
+	<td >
+		{? !_GET.seq || (_GET.seq && (mseq=='-1' || _GET.reply=='y')) }
+			{manager.writetitle}
+			<input type="hidden" name="name" id="name" value="{manager.write_admin}" title="작성자를 입력해 주세요" class="required line">
+		{:}
+			{? mseq }
+				{name}
+				<input type="hidden" name="name" id="name" value="{real_name}" title="작성자를 입력해 주세요" class="required line">
+			{:}
+				<input type="text" name="name" id="name" value="{real_name}" title="작성자를 입력해 주세요" class="required line">
+			{/}
+		{/}(IP:{_SERVER.REMOTE_ADDR})
+	</td>
+</tr>
+
+{? categorylist}
+<tr>
+	<th>분류</th>
+	<td >
+		<select name="category" id="addcategory" class="required line">
+		<option value="" selected="selected">- 분류선택 -</option>
+		{@ categorylist}
+			<option value="{.value_}" {? (category) == (.value_) } selected="selected" {/}>{.value_}</option>
+		{/}
+		<option value="newadd">- 신규분류 -</option>
+		</select>
+		<input type="text" name="newcategory" id="newcategory" value="" title="신규 분류를 입력해 주세요" class="hide line" size="30">
+	</td>
+</tr>
+{/}
+<tr>
+	<th>프로모션 기간</th>
+	<td >
+		<span>
+		<input type="text" name="start_date" id="start_date" value="{=substr(m_date,0,10)}" class="line" maxlength="10" size="10">~
+		<input type="text" name="end_date" id="end_date" value="{=substr(d_date,0,10)}" class="line" maxlength="10" size="10">
+		</span>
+	</td>
+</tr>
+
+<tr>
+	<th>배너등록 (250*90)</th>
+	<td >
+		<img class="imageUploadBtnImage hide" src="../images/common/btn_filesearch.gif">
+		<input type="hidden" name="adddata" id="adddata" value="{adddata}" class="required "/>
+		<input type="file" name="adddataimg" id="adddataimg" size="15">
+		<div style="width: 250px; text-align: center; margin: 10px">
+			<div style="float:right"><div style='width: 250px;min-height:90px;border: 1px dotted #2EA4C0;' id="adddataimglay">{? adddata }<img src="/data/board/{manager.id}/{adddata}"  width='250' height='90'/>{/}</div>
+			</div><div style="clear: both"></div>
+			</div>
+		</div>
+	</td>
+</tr>
+
+	{ #noticehidden }
+
+<tr>
+	<th>제목</th>
+	<td >
+		<input type="text" name="subject" id="subject" value="{subject}" class="required line" title="제목을 입력해 주세요" size="70">
+		{displayckeck}
+	</td>
+</tr>
+<tr>
+	<th>내용</th>
+	<td >
+		<textarea name="contents" id="contents" class="daumeditor" style='width:95%; height:300px;'  class="required">{contents}</textarea>
+	</td>
+</tr>
+{? manager.file_use == 'Y' || filelist //첨부파일 사용중이거나 첨부파일이 있는 경우 }
+<tr class="{? !ismobile //모바일접속시 첨부파일추가}hide{/}" id="filelistlay">
+	<th>첨부파일</th>
+	<td >
+		<div>
+			<table class="table_basic boardfileliststyle" id="BoardFileTable">
+			<colgroup>
+				<col width="10%">
+				<col width="60%">
+				<col width="20%">
+			</colgroup>
+			<thead>
+			<tr>
+				<th>순서</th>
+				<th>파일</th>
+				<th><span class="btn-plus gray"><button type="button" id="boardfileadd"></button></span></th>
+			</tr>
+			</thead>
+			<tbody>
+			{? filelist}
+				{@ filelist}
+				<tr>
+					<td align="center">↕</td>
+					<td align="left"> <input type="file" name="file_info[]" value=""/>
+					<input type="hidden" name="orignfile_info[]" class="orignfile_info" value="{.realfilename}^^{.orignfile}^^{.sizefile}^^{.typefile}"/>
+					<span class="realfilelist hand highlight-link" realfiledir="{.realfiledir}" realfilename="{.orignfile}" board_id="{boardid}" filedown="../board_process?mode=board_file_down&board_id={boardid}&realfiledir={.realfiledir}&realfilename={.orignfile}">{.orignfile}</span> </td>
+					<td align="center"><span class="btn-minus gray"><button type="button" class="etcDel"></button></span></td>
+				</tr>
+				{/}
+				{? manager.file_use == 'Y' //첨부파일사용인경우}
+				<tr>
+					<td align="center">↕</td>
+					<td align="center"><input type="file" name="file_info[]"/></td>
+					<td align="center"><span class="btn-minus gray"><button type="button" class="etcDel"></button></span></td>
+				</tr>
+				{/}
+			{:}
+				{? manager.file_use == 'Y' //첨부파일사용인경우}
+				<tr>
+					<td align="center">↕</td>
+					<td align="center"><input type="file" name="file_info[]"/></td>
+					<td align="center"><span class="btn-minus gray"><button type="button" class="etcDel"></button></span></td>
+				</tr>
+				{/}
+			{/}
+			</tbody>
+			</table>
+		</div>
+	</td>
+</tr>
+{/}
+
+
+<tr>
+	<th class="its-th-align center" colspan="2">
+		<div class="after"> 저장후
+		<label class="resp_radio"><input type="radio" name="backtype" id="backtype1" value="list" {? (!backtype || backtype=='list') } checked="checked" {/}>목록으로 이동</label>
+		{? !_GET.mainview }<label class="resp_radio"><input type="radio" name="backtype" id="backtype2" value="view" {? backtype=='view' } checked="checked" {/}>본문으로 이동</label>
+		<label class="resp_radio"><input type="radio" name="backtype" id="backtype3" value="now" {? backtype=='now' } checked="checked" {/}>이 화면 유지</label>
+		{/}
+		</div>
+	</th>
+</tr>
+</tbody>
+</table>
+</div>
+
+</form>
+
+<script type="text/javascript" src="/app/javascript/jquery/jquery.ajax.form.js"></script>
+<script type="text/javascript" src="/app/javascript/js/ajaxFileUpload.js"></script>
+<script type="text/javascript">
+$(document).ready(function() {
+	//게시판글쓰기공통
+	boardwrite();
+
+	/* 인풋파일 스타일 적용 */
+	changeFileStyle();
+	
+	/* 배너등록 버튼 ajax upload 적용 */
+	var opt = {
+		file_path: '/data/board/' + board_id,
+		overwrite: true
+	};
+
+	var callback = function(res) {
+		var _res = eval(res);
+
+		if (!_res.status) {
+			alert(_res.msg)
+			return;
+		}
+
+		if (_res) {
+			var filename = _res.fileInfo.file_name;
+			var imgUrl = _res.filePath + filename;
+
+			$("#adddataimglay").html("<img src='" + imgUrl + "' width='250' height='90'>");
+			$("#adddata").val(filename);
+		}
+	}
+
+	// ajax 이미지 업로드 이벤트 바인딩
+	$('#adddataimg').createAjaxFileUpload(opt, callback);
+
+	$("input[name='start_date']").addClass('datepicker');
+	$("input[name='end_date']").addClass('datepicker');
+	setDatepicker($("input[name='start_date']"));
+	setDatepicker($("input[name='end_date']"));
+
+	/* 첨부파일추가*/
+	$("#boardfileadd").click(function(){
+		var trObj = $("#BoardFileTable tbody tr");
+		var trClone = trObj.eq(0).clone();
+		trClone.find("input[type='file']").each(function(){
+			$(this).val("");
+		});
+		trClone.find("span.realfilelist").remove();
+		trClone.find("input.orignfile_info").remove();
+		trObj.parent().append(trClone);
+	});
+
+	/* 첨부파일정보 삭제 */
+	$("#BoardFileTable button.etcDel").click(function(){
+		var deletefile = $(this).parent().parent().parent();
+
+		if(deletefile.find("span.realfilelist").attr("realfiledir")){
+			if(confirm("정말로 파일을 삭제하시겠습니까?") ) {
+				var realfiledir = deletefile.find("span.realfilelist").attr("realfiledir");
+				var realfilename = deletefile.find("span.realfilelist").attr("realfilename");
+				var board_id =deletefile.find("span.realfilelist").attr("board_id");
+				$.ajax({
+					'url' : '../board_process',
+					'data' : {'mode':'board_file_delete', 'realfiledir':realfiledir,  'realfilename':realfilename, 'board_id':board_id},
+					'type' : 'post',
+					'target' : 'actionFrame'
+				});
+
+				$(this).parent().parent().parent().remove();
+			}
+		}else{
+			if($("#BoardFileTable tbody tr").length > 1) $(this).parent().parent().parent().remove();
+		}
+	});
+
+	$("span.realfilelist").click(function(){
+		var filedown = $(this).attr("filedown");
+		if(confirm("다운받으시겠습니까?") ) {
+			document.location.href=filedown;
+		}
+	});
+
+		/* 첨부파일순서변경 */
+	$("table.boardfileliststyle tbody").sortable({items:'tr'});
+
+	$("#backtype2").click(function() {
+		$("#returnurl").val('{boardurl->view}');
+	});
+
+	$("#backtype1").click(function() {
+		$("#returnurl").val('{boardurl->lists}');
+	});
+
+	// 게시글저장
+	$('#data_save_btn').click(function() {
+		$('input#start_date').closest('span').find('span').remove();
+		if			(!$('input#start_date').val() && !$('input#end_date').val()){
+			$('input#start_date').closest('span').append('<span class="red disc">프로모션 시작일과 종료일을 입력해 주세요.</span>');
+			return;
+		}else if	(!$('input#start_date').val()){
+			$('input#start_date').closest('span').append('<span class="red disc">프로모션 시작일을 입력해 주세요.</span>');
+			return;
+		}else if	(!$('input#end_date').val()){
+			$('input#start_date').closest('span').append('<span class="red disc">프로모션 종료일을 입력해 주세요.</span>');
+			return;
+		}
+
+		$("#writeform").submit();
+	});
+
+	$('body,input,textarea,select').bind('keydown','Ctrl+s',function(event){
+		event.preventDefault();
+
+		$("#writeform").submit();
+	});
+
+	$('#writeform').validate({
+		onkeyup: false,
+		rules: {
+			subject: { required:true},
+			contents: { required:true}
+		},
+		messages: {
+			name: { required:'<font color="red">작성자를 입력해 주세요.</font>'},
+			category: { required:'<font color="red">분류를 선택해 주세요.</font>'},
+			subject: { required:'<font color="red">제목을 입력해 주세요.</font>'}
+		},
+		errorPlacement: function(error, element) {
+			error.appendTo(element.parent());
+		},
+		submitHandler: function(f) {
+			if(readyEditorForm(f)){ 
+					if(!$("#subject").val() || $("#subject").val() == $("#subject").attr('title') ){
+						alert('제목을 입력해 주세요.');
+						return false;
+					} 
+
+				if($("#addcategory").val() == "newadd"){//신규분류
+					if(!$("#newcategory").val() ) {
+						alert('신규분류를 입력해 주세요.');
+						$("#newcategory").focus();
+						return false;
+					}
+				}
+
+				if(!$("#contents").val() || $("#contents").val() == "<p>&nbsp;</p>" ){
+					alert('내용을 입력해 주세요.');
+					$("#contents").focus();
+					return false;
+				}
+				f.submit();
+				loadingStart();
+			}
+		}
+	});
+
+
+	$("#addcategory").bind("change",function(){
+		if( $(this).val() == 'newadd') {
+			$("#newcategory").removeClass("hide").addClass("show");
+		}else{
+			$("#newcategory").removeClass("show").addClass("hide");
+		}
+	});
+
+});
+
+
+function readfilelistNew(attachments){
+{? (manager.file_use == 'Y' || filelist) && !ismobile //첨부파일 사용중이거나 첨부파일이 있는 경우  }
+{? filelist}
+attachments['image'] = [];
+attachments['file'] = [];
+{@ filelist}
+	var  filePath = '{.realfiledir}';
+	var  filePathurl = '{.realfileurl}';
+	{? realthumbfile }
+		var  realthumbfile = '{.realthumbfiledir}';
+		var  thumbfilePathurl = 'http://{_SERVER.HTTP_HOST}{.realthumbfileurl}';
+	{/}
+	var  orig_name = '{.orignfile}';
+	var  file_size = {.sizefile};
+	var  typefile = '{.typefile}';
+
+	{? .is_image || strstr(.typefile,'image') || in_array(.typefile, array('jpg','jpeg','png','gif','bmp','tif','pic')) }
+		attachments['image'].push({
+			'attacher': 'image',
+			'data': {
+				'imageurl': filePathurl,
+				'filename': orig_name,
+				'filesize': file_size,
+				'imagealign': 'C',
+				'originalurl': filePath,
+				'thumburl': {? realthumbfile } thumbfilePathurl {:}filePathurl{/}
+			}
+		});
+	{:}
+		attachments['file'].push({
+			'attacher': 'file',
+			'data': {
+				'filename': orig_name,
+				'filesize': file_size,
+				'filemime':typefile,
+				'originalurl': filePath,
+				'attachurl': filePath
+			}
+		});
+	{/}
+{/}
+return attachments;
+{/}
+{/}
+}
+</script>

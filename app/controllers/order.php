@@ -2722,9 +2722,9 @@ class order extends front_base {
 
 					// 재고 체크
 					$chk = check_stock_suboption($data['goods_seq'], $cart_suboption['suboption_title'], $cart_suboption['suboption'], $cart_suboption['ea'], $cfg['order'], 'view_stock' );
-					if( !$chk ){
+					if( $chk['stock'] < 0 ){
 						$opttitle = '';
-						$this->cartmodel->delete_option($data['cart_suboption_seq'],'');//해당상품의 옵션제거
+						$this->cartmodel->delete_option('',$cart_suboption['cart_suboption_seq']);//해당상품의 옵션제거
 						pageReload();
 					}
 				}

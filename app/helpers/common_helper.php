@@ -5226,16 +5226,61 @@ function ImgResize($source, $target, $width, $height) {
 	return $result;
 }
 
-# exif정보 출력
-function ImgExif($Img) {
-	$CI =& get_instance();
+// exif정보 출력
+function ImgExif($tmpImgName)
+{
+	$exif = exif_read_data($tmpImgName);
 
-	$exifData = exif_read_data($Img);
-	$ImgInfo = getimagesize($Img);
-	if($exifData['Orientation'] == 6)  $degree = 90;
-	else if($exifData['Orientation'] == 8) $degree = -90;
-	else if($exifData['Orientation'] == 3) $degree = -180;
-	return array('degree'=>$degree,'exif'=>$exifData, 'info'=>$ImgInfo);
+	switch (isset($exif['Orientation']) === true) {
+		case 6:
+			$degree = 270;
+
+			break;
+		case 8:
+			$degree = 90;
+
+			break;
+		case 3:
+			$degree = 180;
+
+			break;
+	}
+
+	$exifInfo = [
+		'degree' => $degree,
+		'exif' => $exif,
+	];
+
+	return $exifInfo;
+}
+
+// 이미지 회전
+function rotateImage($tmpImgName)
+{
+	$exifInfo = ImgExif($tmpImgName);
+
+	switch ($exifInfo['exif']['FileType']) {
+		case 1:
+			$source = imagecreatefromgif($tmpImgName);
+			$source = imagerotate($source, $exifInfo['degree'], 0);
+			imagegif($source, $tmpImgName);
+
+			break;
+		case 2:
+			$source = imagecreatefromjpeg($tmpImgName);
+			$source = imagerotate($source, $exifInfo['degree'], 0);
+			imagejpeg($source, $tmpImgName);
+
+			break;
+		case 3:
+			$source = imagecreatefrompng($tmpImgName);
+			$source = imagerotate($source, $exifInfo['degree'], 0);
+			imagepng($source, $tmpImgName);
+
+			break;
+	}
+
+	imagedestroy($source);
 }
 
 // page html 및 page값 등 return
