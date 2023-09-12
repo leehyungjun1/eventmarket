@@ -99,6 +99,25 @@
 					<th>배송비</th>
 					<td>{=get_currency_price(.shipping_tot.goods_shipping_cost + .shipping_tot.shipping_cost,4)}</td>
 				</tr>
+				<tr>
+					<th>할인</th>
+					<td>{=get_currency_price( .items_tot.event_sale + .items_tot.multi_sale + .items_tot.coupon_sale + .items_tot.member_sale + .items_tot.fblike_sale + .items_tot.mobile_sale + .items_tot.promotion_code_sale + .items_tot.referer_sale + .shipping_tot.shipping_coupon_sale + .shipping_tot.shipping_promotion_code_sale + .order.enuri ,4)}</td>
+				</tr>
+				<tr>
+					<th>사용 마일리지/예치금</th>
+					<td>{=get_currency_price(.order.emoney,4)} / {=get_currency_price(.order.cash,4)}</td>
+				</tr>
+				<tr>
+					<th>총 결제금액</th>
+					<td>
+						{?.order.deposit_yn!='y'}<span>(입금전)</span>{/}
+						<span style="font-size:12px;">{=get_currency_price(.order.settleprice,4)}</span>
+					</td>
+				</tr>
+				<tr>
+					<th>결제수단</th>
+					<td>{.order.mpayment}</td>
+				</tr>
 			</table>
 		</td>
 	</tr>

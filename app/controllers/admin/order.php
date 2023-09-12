@@ -2673,10 +2673,6 @@ class order extends admin_base {
 			// 네이버 페이 표기 추가 2016-09-07 jhr
 			if	($orders['pg'] == 'npay') $orders['mpayment'] = 'naver pay('.$orders['mpayment'].')';
 
-			if ($orders['pg'] == 'naverpayment') {
-				$orders['mpayment'] = $this->arr_payment[$orders['pg'].'_'.$orders['payment']];
-			}
-
 			$orders['mstep'] 	= $this->arr_step[$orders['step']];
 
 			$arr = config_load('bank');

@@ -192,22 +192,22 @@ class counsel_process extends crm_base {
 			}
 		}
 
-	    if(!$_POST['blacklist_level'] || $_POST['blacklist_level'] <= 0){
-	        $_POST['blacklist_level'] = 1;
+	    if(!$aPostParams['blacklist_level'] || $aPostParams['blacklist_level'] <= 0){
+	        $aPostParams['blacklist_level'] = 1;
 	    }
 
-		$data['blacklist_level'] = $_POST['blacklist_level'];
-		$data['blacklist_contents'] = $_POST['blacklist_contents'];
-		$data['member_seq'] = $this->mdata['member_seq'];
-		$data['order_seq'] = $_POST['order_seq'];
+		$data['blacklist_level'] = $aPostParams['blacklist_level'];
+		$data['blacklist_contents'] = $aPostParams['blacklist_contents'];
+		$data['member_seq'] =  $aPostParams['member_seq'];
+		$data['order_seq'] = $aPostParams['order_seq'];
 		$data['blacklist_regist_date'] = date("Y-m-d H:i:s");
 		$data['blacklist_regist_manager_seq'] = $this->managerInfo['manager_seq'];
 		$data['blacklist_regist_manager'] = $this->managerInfo['mname'];
 
 		$result = $this->db->insert('fm_member_blacklist', $data);
 
-		if($this->mdata['member_seq']){
-			$sqlWhere = " where member_seq = '".$this->mdata['member_seq']."'
+		if ($aPostParams['member_seq']) {
+			$sqlWhere = " where member_seq = '". $aPostParams['member_seq']."'
                             AND blacklist_regist_date > (SELECT blacklist_regist_date FROM
                                 fm_member_blacklist WHERE blacklist_level=0 ORDER BY blacklist_seq DESC LIMIT 1)";
 			$sql = "select count(*) as cnt, sum(blacklist_level) as lvSum from fm_member_blacklist".$sqlWhere;
@@ -218,10 +218,10 @@ class counsel_process extends crm_base {
 			if($result['cnt'] > 0) $blackListLevel = $result['lvSum'] / $result['cnt'];
 			$upData['blacklist'] = $blackListLevel;
 
-			$this->db->where('member_seq', $this->mdata['member_seq']);
+			$this->db->where('member_seq',  $aPostParams['member_seq']);
 			$this->db->update('fm_member', $upData);
-		}else if($_POST['order_seq']){
-			$sqlWhere = " where order_seq = '".$_POST['order_seq']."'
+		}else if($aPostParams['order_seq']){
+			$sqlWhere = " where order_seq = '".$aPostParams['order_seq']."'
                             AND blacklist_regist_date > (SELECT blacklist_regist_date FROM
                                 fm_member_blacklist WHERE blacklist_level=0 ORDER BY blacklist_seq DESC LIMIT 1)";
 			$sql = "select count(*) as cnt, sum(blacklist_level) as lvSum from fm_member_blacklist".$sqlWhere;
@@ -232,7 +232,7 @@ class counsel_process extends crm_base {
 			if($result['cnt'] > 0) $blackListLevel = $result['lvSum'] / $result['cnt'];
 			$upData['blacklist'] = $blackListLevel;
 
-			$this->db->where('order_seq', $_POST['order_seq']);
+			$this->db->where('order_seq', $aPostParams['order_seq']);
 			$this->db->update('fm_order', $upData);
 		}
 

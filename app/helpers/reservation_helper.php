@@ -1587,6 +1587,14 @@
 							$loop[]				= $data;
 
 						}
+
+						// 상품 리뷰 작성 유도에 해당하는 상품명
+						if (count($order) > 0) {
+							$mdata['goods_name'] = $order[0]['goods_name'];
+							if (count($order) > 1) {
+								$mdata['goods_name'] .= '외 '.(count($order)-1).'건';
+							}
+						}
 					}
 
 					if(count($loop) > 0){
@@ -1605,6 +1613,7 @@
 								$personal_param['shopName']		= $CI->config_basic['shopName'];
 								$personal_param['member_seq']	= $mdata['member_seq'];
 								$personal_param['username']		= $mdata['user_name'];
+								$personal_param['goods_name']	= $mdata['goods_name'];
 								## email (발송 제목 포함)
 								$myLinkparams_email						= $personal_param;
 								$myLinkparams_email['to_msg']			= reservation_replace($personal_param,$email_title,'email');

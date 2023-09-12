@@ -645,7 +645,11 @@ var jscls_option_select	= function(){
 		if	(!chkDuplicate)	return false;
 
 		// 색상컷변경
-		var color = $(".viewOptionsspecialbtn[value='"+$(obj).find('option:selected').val()+"']").parent().attr('class');
+		var value = '';
+		if ($(obj).find('option:selected').length > 0) {
+			value = $(obj).find('option:selected').val().replace(/\'/g, "\\'");
+		}
+		var color = $(".viewOptionsspecialbtn[value='"+value+"']").parent().attr('class');
 		if(color){
 			$("#goods_thumbs .pagination>li img[color='"+color+"']").eq(0).trigger("click");
 		}

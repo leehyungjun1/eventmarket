@@ -311,11 +311,6 @@ class prints extends front_base {
 
 		$orders['order_seq'] = $order_seq;
 
-		// 네이버페이 결제형 결제수단 표기
-		if ($orders['pg'] == 'naverpayment') {
-			$orders['mpayment'] = $this->arr_payment[$orders['pg'].'_'.$orders['payment']];
-		}
-
 		$this->template->assign(array('orders'	=> $orders));
 		$this->template->assign(array('items'	=> $items));
 		$this->template->assign(array('items_tot'	=> $tot));

@@ -296,6 +296,7 @@ class order_process extends admin_base {
 					'emoney'	=> $orders['emoney'],
 					'ordno'		=> $order_seq,
 					'memo'		=> "[복원]".$this->arr_step[95]."(".$order_seq.")에 의한 마일리지 환원",
+					'limit_date' => get_emoney_limitdate('order'),
 					'memo_lang'	=> $this->membermodel->make_json_for_getAlert("mp252",$order_seq),  // $this->arr_step[95] 는 "주문무효"이며 변동되지 않음, [복원]주문무효(%s)에 의한 마일리지 환원
 				);
 				$this->membermodel->emoney_insert($params, $orders['member_seq']);
@@ -923,6 +924,7 @@ class order_process extends admin_base {
 						'emoney'	=> $orders['emoney'],
 						'ordno'		=> $order_seq,
 						'memo'		=> "[복원]".$this->arr_step[95]."(".$order_seq.")에 의한 마일리지 환원",
+						'limit_date' => get_emoney_limitdate('order'),
 						'memo_lang'	=> $this->membermodel->make_json_for_getAlert("mp252",$order_seq),  // $this->arr_step[95] 는 "주문무효"이며 변동되지 않음, [복원]주문무효(%s)에 의한 마일리지 환원
 					);
 					$this->membermodel->emoney_insert($params, $orders['member_seq']);

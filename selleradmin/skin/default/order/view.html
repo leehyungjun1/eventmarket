@@ -735,7 +735,7 @@ table.order-summary-table tbody td.pvtd{border:1px solid #dcdde1;text-align:cent
 
 								<!-- 상품고유번호가 없거나 연동된 필수/추가옵션이 없으면 상품 매칭 -->
 									{ ? (!..goods_seq || ...nomatch > 0) && ...step < 40 && ..goods_type != 'gift' }
-										<span class="btn small cyanblue" onclick="set_goods_list('{=orders.member_seq}','{=...item_seq}','{=...item_option_seq}','rematch')"><button type="button">매칭</button></span>
+										<span class="btn small cyanblue" onclick="set_goods_list('{=orders.member_seq}','{=...item_seq}','{=...item_option_seq}','rematch')"><button type="button" class="resp_btn active size_S">매칭</button></span>
 								{ / }
 
 								{? ..goods_type == "gift" }

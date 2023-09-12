@@ -1,0 +1,154 @@
+<!-- {? viewlist != 'view' //리스트에만출력 } --> <!-- {/} -->
+
+<form name="boardsearch" id="boardsearch">
+	<input type="hidden" name="id" value="{_GET.id}">
+	<input type="hidden" name="popup" value="{_GET.popup}">
+	<input type="hidden" name="iframe" value="{_GET.iframe}">
+	<input type="hidden" name="goods_seq" value="{_GET.goods_seq}">
+	<input type="hidden" name="perpage" id="perpage" value="{_GET.perpage}">
+	<input type="hidden" name="category" id="category" value="{_GET.category}">
+
+	<ul class="bbsbtn_wrap">
+		<li>
+			<!--{? categorylist}-->
+			<select name="category" id="searchcategory" class="line">
+				<option value="" selected="selected" >- 전체 -</option>
+				<!--{@ categorylist}-->
+				<option value="{.value_}" {? _GET.category == .value_} selected="selected" {/}>{.value_}</option>
+				<!--{/}-->
+			</select>
+			<!--{ / }-->
+			<span class="article_info hide">
+				{? sc.totalcount > sc.searchcount }Search {=number_format(sc.searchcount)}개/{/}총 {=number_format(sc.totalcount)}개(현재 {? sc.total_page== 0 }0{:}{=((sc.page/sc.perpage)+1)}{/}/총 {=number_format(sc.total_page)}페이지)
+			</span>
+			<!--검색폼 : 시작 -->
+			<span class="searchform">					
+				<input type="text" name="search_text" id="search_text" value="{_GET.search_text}" title="Name, Title, Contents" size="40" />
+				<input type="submit" value=" Search " class="bbs_btn btn_sch small" />
+				<input type="button" value=" Reset " class="bbs_btn hide" onclick="document.location.href='{boardurl->resets}'"/>					
+			</span>				
+		</li>
+		<li>
+			{? manager.auth_write != '[admin]' }
+			<input type="button" name="boad_write_btn{manager.isperm_write}" id="boad_write_btn{manager.isperm_write}" board_id="{boardid}" fileperm_read="{manager.fileperm_write}" value="{manager.name} 쓰기" class="bbs_btn btn_chg hidden" />
+			{/}
+		</li>
+	</ul>
+</form>
+<!-- //검색폼 -->
+
+<table class="bbslist_table_style" width="100%" border="0" cellpadding="0" cellspacing="0" summary="[{manager.name}] 게시글리스트 입니다.">
+	<!-- 테이블 헤더 : 시작 -->
+	<colgroup>
+		{? strstr(manager.list_show,'[num]') }<col width="8%" />{/}
+		{? strstr(manager.list_show,'[subject]') }<col />{/}
+		{? strstr(manager.list_show,'[writer]') }<col width="12%" />{/}
+		{? strstr(manager.list_show,'[date]') }<col width="12%" />{/}
+		{? strstr(manager.list_show,'[hit]') }<col width="10%" />{/}
+		{? strstr(manager.list_show,'[score]') && manager.auth_recommend_use == 'Y' }<col width="10%" />{/}
+	</colgroup>
+	<thead >
+		<tr>
+			{? strstr(manager.list_show,'[num]') }<th scope="col">번호</th>{/}
+			{? strstr(manager.list_show,'[subject]') }<th scope="col">제목</th>{/}
+			{? strstr(manager.list_show,'[writer]') }<th scope="col">작성자</th>{/}
+			{? strstr(manager.list_show,'[date]') }<th scope="col">등록일</th>{/}
+			{? strstr(manager.list_show,'[hit]') }<th scope="col">Views</th>{/}
+			{? strstr(manager.list_show,'[score]') && manager.auth_recommend_use == 'Y' }<th scope="col">{manager.scoretitle}</th>{/}
+		</tr>
+	</thead>
+	<!-- 테이블 헤더 : 끝 -->
+	<!-- 리스트 : 시작 -->
+	<tbody>
+		<!-- 공지리스트데이터 : 시작 -->
+		{? noticeloop }
+			{@ noticeloop }
+			<tr class="noticetr">
+				{? strstr(manager.list_show,'[num]') }<td class="number">{.number}</td>{/}
+				{? strstr(manager.list_show,'[subject]') }
+				<td class="sbj">
+					<span class="hand boad_view_btn{.isperm_read}" viewlink="{boardurl->view}{.seq}"  viewtype="{manager.viewtype}"  pagetype="{pagetype}"  board_seq="{.seq}" board_id="{_GET.id}"><a>{.iconmobile}{.blank}{.category} {.subjectcut} {? .comment >0 }<span class="comment">({=number_format(.comment)}){/}{.iconimage}{.iconfile}{.iconvideo}{.iconnew}{.iconhot}{.iconhidden}</a></span></span>
+				</td>
+				{/}
+				{? strstr(manager.list_show,'[writer]') }<td class="name" >{.name}</td>{/}
+				{? strstr(manager.list_show,'[date]') }<td class="date">{=date('Y.m.d',strtotime(.date))}</td>{/}
+				{? strstr(manager.list_show,'[hit]') }<td class="hit">{.hit}</td>{/}
+				{? strstr(manager.list_show,'[score]') && manager.auth_recommend_use == 'Y' }
+				<td class="hit score">
+					{.recommendlay}
+				</td>
+				{/}
+			</tr>
+			{/}
+		{/}
+		<!--공지 리스트 : 끝 -->
+		<!-- 리스트데이터 : 시작 -->
+		{? loop }
+			{@ loop }
+			<tr class=" {? .display == 1}gray{/} datalist">
+				{? strstr(manager.list_show,'[num]') }<td class="number">{.number}</td>{/}
+				{? strstr(manager.list_show,'[subject]') }
+					<td class="sbj">
+						<span class="hand boad_view_btn{.isperm_read}" viewlink="{boardurl->view}{.seq}"  viewtype="{manager.viewtype}"  pagetype="{pagetype}"  board_seq="{.seq}" board_id="{_GET.id}"><a>{.iconmobile}{.blank}{.category} {.subjectcut} {? .comment >0 }<span class="comment">({=number_format(.comment)}){/}{.iconimage}{.iconfile}{.iconvideo}{.iconnew}{.iconhot}{.iconhidden}</a></span></span>
+					</td>
+				{/}
+				{? strstr(manager.list_show,'[writer]') }<td class="name" >{.name}</td>{/}
+				{? strstr(manager.list_show,'[date]') }<td class="date">{=date('Y.m.d',strtotime(.date))}</td>{/}
+				{? strstr(manager.list_show,'[hit]') }<td class="hit">{.hit}</td>{/}
+				{? strstr(manager.list_show,'[score]') && manager.auth_recommend_use == 'Y' }
+				<td class="hit score">
+					{.recommendlay}
+				</td>
+				{/}
+			</tr>
+			{/}
+		{:}
+			<tr>
+				<td colspan="6" class="nodata">
+					{ ? search_text }
+						'{search_text}' 검색된 {manager.name} 게시글이 없습니다.
+					{:}
+						등록된 {manager.name} 게시글이 없습니다.
+					{/}
+				</td>
+			<tr>
+		{/}
+	</tbody>
+	<!-- 리스트 : 끝 -->
+</table>
+<!-- //테이블 -->
+
+<ul class="bbsbtn_wrap2">
+	<li>
+		<button name="boardviewclose" class="bbs_btn hidden">List</button>
+		<span class="article_info">
+			{? sc.totalcount > sc.searchcount }Search {=number_format(sc.searchcount)}개/{/}총 {=number_format(sc.totalcount)}개<span class="hide">(현재 {? sc.total_page== 0 }0{:}{=((sc.page/sc.perpage)+1)}{/}/총 {=number_format(sc.total_page)}페이지)</span>
+		</span>
+	</li>
+	<li>
+		{? pagin }<!-- 페이징 --><div class="paging_navigation">{pagin}</div><!-- 페이징 --> {/}
+	</li>
+	<li class="last">
+		{? manager.auth_write != '[admin]' }
+		<input type="button" name="boad_write_btn{manager.isperm_write}" id="boad_write_btn{manager.isperm_write}" board_id="{boardid}" fileperm_read="{manager.fileperm_write}" value="{manager.name} 쓰기" class="bbs_btn btn_chg" />
+		{/}
+	</li>
+</ul>
+<!-- //버튼 -->
+
+<div id="BoardPwCk" class="hide BoardPwCk">
+	<div class="msg">
+		<h3> 비밀번호 확인</h3>
+		<div>게시글 등록시에 입력했던 비밀번호를 입력해 주세요.</div>
+	</div>
+	<form name="BoardPwcheckForm" id="BoardPwcheckForm" method="post" action="{=sslAction('../board_process')}" target="actionFrame " >
+	<input type="hidden" name="seq" id="pwck_seq" value="" />
+	<input type="hidden" name="returnurl" id="pwck_returnurl" value="" />
+	<div class="ibox">
+		<input type="password" name="pw" id="pwck_pw" class="input" />
+		<input type="submit" id="BoardPwcheckBtn" value=" 확인 " class="btnblue" />
+		<input type="button" value=" 취소 " class="btngray" onclick="$('#BoardPwCk').dialog('close');" />
+	</div>
+	</form>
+</div>
+<!-- //비밀번호 확인 -->

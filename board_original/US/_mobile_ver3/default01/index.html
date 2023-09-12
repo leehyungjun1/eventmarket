@@ -1,0 +1,170 @@
+<!--{? viewlist != 'view' }-->
+<div class="sub_title_bar">
+	<h2>{manager.name}</a></h2>
+	<a href="javascript:history.back();" class="stb_back_btn"><img src="../../../images/design/btn_back.png" /></a>
+</div>
+
+<div class="bbstopbox">
+	<div class="pright">
+		{? manager.auth_write != '[admin]' }
+		<span id="boad_write_btn{manager.isperm_write}" board_id="{boardid}" fileperm_read="{manager.fileperm_write}" class="btn_style black hand">글쓰기</span>
+		{/}
+		<span class="btn_style black hand boad_search_btn_m" >Search ▼</span>
+	</div>
+</div>
+{?!_GET.search_text}<script>$('.boad_search_btn_m').click();</script>{/}
+<div class="bbssearchbox" {?!_GET.search_text}style="display:none"{/}>
+	<form name="boardsearch" id="boardsearch" >
+	<input type="hidden" name="id" value="{_GET.id}" >
+	<input type="hidden" name="popup" value="{_GET.popup}" >
+	<input type="hidden" name="iframe" value="{_GET.iframe}" >
+	<input type="hidden" name="goods_seq" value="{_GET.goods_seq}" >
+	<input type="hidden" name="perpage" id="perpage" value="{_GET.perpage}" >
+	<input type="hidden" name="category" id="category" value="{_GET.category}" >
+	<input type="text" name="search_text" id="search_text" value="{_GET.search_text}" title="이 게시판 검색" /><input type="image" src="../../../images/design/btn_search_s.png" />
+	</form>
+</div>
+<!--{ / }-->
+
+<!--{? categorylist}-->
+<div class="bbstopbox"> <select  name="category" id="searchcategory" class="required common-select styled"  >
+	<option value="" selected="selected" >- Select a subject -</option>
+	<!--{@ categorylist}-->
+	<option value="{.value_}" {? _GET.category == .value_} selected="selected"  {/}>{.value_}</option>
+	<!--{/}-->
+	</select>
+</div>
+<!--{ / }-->
+
+<ul class="bbslist_ul_style">
+	<!-- 공지사항 리스트데이터 : 시작 -->
+	{? noticeloop }
+		{@ noticeloop }
+		<li>
+			<span class="hand boad_view_btn_m{.isperm_read}" viewlink="{boardurl->view}{.seq}"  viewtype="{manager.viewtype}"  pagetype="{pagetype}"  board_seq="{.seq}" board_id="{_GET.id}">
+				<div class="bus_subject">
+					<img src="../../../images/board/icon/icon_notice.gif" />
+					<span ><a>{.iconmobile}{.iconaward}{.blank}{.category} {.subjectcut} {.iconimage}{.iconfile}{.iconvideo}{.iconnew}{.iconhot}{.iconhidden}</a></span></span>
+				</div>
+				<span class="bus_record_info">
+				{? strstr(manager.list_show,'[writer]') }<span class="cell" >{.name}</span>{/}
+				{? strstr(manager.list_show,'[date]') }<span class="cell">{? getDateFormat(.r_date,"Y-m-d") == date("Y-m-d") }{=date('H:i',strtotime(.date))}{:}{.date}{/}</span>{/}
+				{? strstr(manager.list_show,'[hit]') }<span class="cell">Views {=number_format(.hit)}</span>{/}
+				{? strstr(manager.list_show,'[score]') && manager.auth_recommend_use == 'Y' }
+				<span class="cell">{manager.scoretitle} {.recommendlay}</span>
+				{/}
+				</span>
+			</span>
+			{? manager.auth_cmt_use == 'Y' }<span class="bus_comment">{=number_format(.comment)}</span>{/}
+		</li>
+		<li class="board_contents hide" style="background-color:#fcfcfc;" id="board_contents_{.seq}">{.seq}</li>
+		{/}
+	{/}
+	<!-- 공지사항리스트데이터 : 끝 -->
+
+	<!-- 리스트데이터 : 시작 -->
+	{? loop }
+		{@ loop }
+		<li>
+			<span class="hand boad_view_btn_m{.isperm_read}" viewlink="{boardurl->view}{.seq}"  viewtype="{manager.viewtype}"  pagetype="{pagetype}"  board_seq="{.seq}" board_id="{_GET.id}">
+				<div class="bus_subject">
+					<span>
+					<a>{? strstr(manager.list_show,'[num]') }{.number}{/}{.iconmobile}{.iconaward}{.blank}{.category} {.subject_real}
+						<span class="comment_{.seq}">
+							{.iconimage}{.iconfile}{.iconvideo}
+							{? .iconnew }
+								<img src="../../../images/icon/icon_new.png" title="new" align="absmiddle" >
+							{/}
+							{.iconhot}{.iconhidden}
+						</span>
+					</a>
+					</span>
+				</div>
+				<span class="bus_record_info">
+				{? strstr(manager.list_show,'[writer]') }<span class="cell" >{.name}</span>{/}
+				{? strstr(manager.list_show,'[date]') }<span class="cell">{? getDateFormat(.r_date,"Y-m-d") == date("Y-m-d") }{=date('H:i',strtotime(.date))}{:}{.date}{/}</span>{/}
+				{? strstr(manager.list_show,'[hit]') }<span class="cell">Views {=number_format(.hit)}</span>{/}
+				
+				{? strstr(manager.list_show,'[score]') && manager.auth_recommend_use == 'Y' } 
+				<span class="cell"> {manager.scoretitle} {.recommendlay} </span> 
+				{/}
+				{? manager.auth_reply_use == 'Y' } 
+				<!-- <br/><span class="cell">{.reply_title}</span> -->
+				{/}
+				</span>
+			</span>
+			{? manager.auth_cmt_use == 'Y' }<span class="bus_comment idx-comment-{.seq}">{=number_format(.comment)}</span>{/}
+		</li>
+		<li class="board_contents hide" style="background-color:#fcfcfc;" id="board_contents_{.seq}">{.seq}</li>
+		{/}
+	{:}
+		<li style="text-align:center;">
+			{ ? search_text }
+				'{search_text}' 검색된 게시글이 없습니다.
+			{:}
+				등록된 게시글이 없습니다.
+			{/}
+		</li>
+	{/}
+	<!-- 리스트데이터 : 끝 -->
+</ul>
+
+{? loop }
+<div class="pd20">
+	{? pagin }<!-- 페이징 --><div class="paging_navigation">{pagin}</div><!-- 페이징 --> {/}
+</div>
+{/}
+
+<div id="BoardPwCk" class="hide BoardPwCk">
+	<div class="msg">
+		<h3> 비밀번호 확인</h3>
+		<div>게시글 등록시에 입력했던 비밀번호를 입력해 주세요.</div>
+	</div>
+	<form name="BoardPwcheckForm" id="BoardPwcheckForm" method="post" action="{=sslAction('../board_process')}" target="actionFrame " >
+	<input type="hidden" name="seq" id="pwck_seq" value="" />
+	<input type="hidden" name="returnurl" id="pwck_returnurl" value="" />
+	<div class="ibox">
+		<input type="password" name="pw" id="pwck_pw" class="input" />
+		<input type="submit" id="BoardPwcheckBtn" value=" 확인 " class="hand round_btn " />
+		<input type="button" value=" 취소 " class="bbs_btn round_btn" onclick="$('#BoardPwCk').dialog('close');" />
+	</div>
+	</form>
+</div>
+
+<!--게시글 비회원 비밀번호 확인 -->
+<div id="ModDelBoardPwCk_m" class="hide BoardPwCk">
+	<div class="msg">
+		<div>등록시에 입력했던 비밀번호를 입력해 주세요.</div>
+	</div>
+	<form name="ModDelBoardPwcheckForm" id="ModDelBoardPwcheckForm" method="post" action="{=sslAction('../board_process')}" target="actionFrame" >
+	<input type="hidden" name="board_id" id="board_id" value="{_GET.id}" />
+	<input type="hidden" name="modetype" id="modetype" value="board_delete" />
+	<input type="hidden" name="mode" id="mode" value="board_delete" />
+	<input type="hidden" name="delseq" id="moddel_pwck_seq" value="" />
+	<input type="hidden" name="iframe" value="{_GET.iframe}" >
+	<input type="hidden" name="returnurl" id="moddel_pwck_returnurl" value="{boardurl->userurl}" />
+	<div class="ibox" style="text-align:center;">
+		<input type="password" name="pw" id="moddel_pwck_pw" style="width:130px;" class="input" />
+		<input type="submit" id="BoardPwcheckBtn" value=" 확인 " class="hand round_btn " />
+		<input type="button" value=" 취소 " class="hand round_btn " onclick="$('#moddel_pwck_pw').val(''); $('#ModDelBoardPwCk_m').dialog('close');" />
+	</div>
+	</form>
+</div>
+
+<!-- 댓글 비회원 비밀번호 확인 -->
+<div id="CmtBoardPwCk" class="hide BoardPwCk">
+	<div class="msg">
+		<div>댓글 등록시에 입력했던 <br/>비밀번호를 입력해 주세요.</div>
+	</div>
+	<form name="BoardPwcheckForm" id="CmtBoardPwcheckForm" method="post">
+	<input type="hidden" name="board_id" id="board_id" value="{_GET.id}" />
+	<input type="hidden" name="mode" value="board_comment_delete_pwcheck" />
+	<input type="hidden" name="seq" id="cmt_pwck_seq" value="" />
+	<input type="hidden" name="cmtseq" id="cmt_pwck_cmtseq" value="" />
+	<div class="ibox">
+		<input type="password" name="pw" id="cmt_pwck_pw" class="input" style="width:120px;" />
+		<input type="submit" id="CmtBoardPwcheckBtn" value=" 확인 " class="hand round_btn " />
+		<input type="button" value=" 취소 " class="hand round_btn " onclick="$('#CmtBoardPwCk').dialog('close');" />
+	</div>
+	</form>
+</div>

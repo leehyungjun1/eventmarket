@@ -20,6 +20,10 @@ $(document).ready(function() {
 		$(this).parent().remove();
 	});
 
+	$("select[name=cardCompany]").on("change", function(){
+		$("input[type='checkbox'][name='nonInterestTerms[]").prop("checked", false);
+	});
+
 	/* 무이자 할부기간 추가 */
 	$("button#nonInterestAddButton").bind("click",function(){
 		var arrPlaform = new Array();
@@ -27,8 +31,9 @@ $(document).ready(function() {
 		arrPlaform[1] = "mobile";
 		var codeName = arrPlaform[onInterestSettingButtonIndex] + "CardCompanyCode[]";
 		var termsName =  arrPlaform[onInterestSettingButtonIndex] + "CardCompanyTerms[]";
-		var opt_text = $("select[name=cardCompany] option:selected").html();
-		var opt_value = $("select[name=cardCompany] option:selected").val();
+		let cardCompanyObj = $(this).parents('#nonInterestPopup').find("select[name=cardCompany] option:selected");
+		let opt_text = cardCompanyObj.html();
+		let opt_value = cardCompanyObj.val();
 		var mons = "";
 		$("input[type='checkbox'][name='nonInterestTerms[]']:checked").each(function(){
 			 mons += ',' + $(this).val();

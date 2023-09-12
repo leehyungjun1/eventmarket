@@ -1144,6 +1144,8 @@ class kakaotalkmodel extends CI_Model {
 				break;
 				case 'inputUrl' : //선물하기 등록 URL
 					$rep_str = $params['inputUrl'];
+				case 'mileage_rest' : // 다음달 소멸 적립금
+					$rep_str = $params['mileage_rest'];
 				break;
 			}
 

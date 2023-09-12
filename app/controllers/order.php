@@ -1179,17 +1179,9 @@ class order extends front_base {
 
 
 			}else{
-
-				$goodsSeq 				= $this->input->get('no');
-				$skin_version			= $this->input->get('skin_version');
 				# 네이버페이/카카오톡구매 주문시
-				if($order_mode == "talkbuy") {
-					//pageRedirect("../talkbuy/buy?goodsSeq=".$goodsSeq."&mode=".$mode."&skin_version=".$skin_version."&market=".$order_mode,'','self');
-					echo json_encode(["result" => "success", "message" => "장바구니 담기 성공"]);
-					exit;
-				}else{
-					pageRedirect("../naverpay/buy?goodsSeq=".$goodsSeq."&mode=".$mode."&skin_version=".$skin_version."&market=".$order_mode,'','self');
-				}
+				echo json_encode(["result" => "success", "message" => "장바구니 담기 성공"]);
+				exit;
 			}
 		}else{
 			$url	= "/order/settle?mode=".$mode;

@@ -1254,7 +1254,11 @@ class export extends selleradmin_base {
 			list($data_export_shipping) 	= array_values($tmp_export_shipping);
 
 			// 택배 선착불 정보 추가 :: 2018-01-02 lwh
-			$data_export['out_shipping_method'] = $arr_shipping_method[$tmp_export_shipping[$data_export['shipping_group']]['shipping_type']];
+			$data_export['out_shipping_method'] = '';
+			$shipping_method = $tmp_export_shipping[$data_export['shipping_group']]['shipping_method'] ?? '';
+			if ($shipping_method) {
+				$data_export['out_shipping_method'] = $arr_shipping_method[$shipping_method] ?? $this->shippingmodel->shipping_method_arr[$shipping_method];
+			}
 
 			//2016.04.21 바코드 설정 추가 pjw
 			foreach($data_export_item as $k => $data){
@@ -1282,12 +1286,6 @@ class export extends selleradmin_base {
 				$tot		= array();
 				$orders 	= $this->ordermodel->get_order($order_seq);
 				$items 		= $this->ordermodel->get_item($order_seq);
-
-				$orders['mpayment'] = $this->arr_payment[$orders['payment']];
-
-				if ($orders['pg'] == 'naverpayment') {
-					$orders['mpayment'] = $this->arr_payment[$orders['pg'].'_'.$orders['payment']];
-				}
 
 				$orders['mstep'] 	= $this->arr_step[$orders['step']];
 
@@ -1364,7 +1362,7 @@ class export extends selleradmin_base {
 						}
 						$data['inputs'] = $input;
 
-						foreach($data_export_item as $k => $data_export){
+						if($input) {
 							$data_export_item[$k]['inputs'] = $input;
 						}
 

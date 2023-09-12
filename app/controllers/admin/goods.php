@@ -4811,8 +4811,10 @@ class goods extends admin_base {
 				$goodsData = array();
 				foreach($_field_list as $_key){
 					if(in_array($_key,array("goods_name","provider_name"))){
-						$goodsData[$_key] 			= addslashes((strip_tags($data[$_key])));
-						if($_key == "goods_name") $goodsData['goodsstrcut'] 	= getstrcut(strip_tags($data[$_key]),$sc['goods_name_strcut']);
+						$goodsData[$_key] = addslashes(strip_tags($data[$_key]));
+						$goodsData[$_key] = str_replace("\"", "&quot;", $goodsData[$_key]); // HTML 특수 문자 - 큰따옴표 치환
+						$goodsData[$_key] = str_replace("\'", "&#039;", $goodsData[$_key]); // HTML 특수 문자 - 작은따옴표 치환
+						if($_key == "goods_name") $goodsData['goodsstrcut'] 	= getstrcut($goodsData[$_key],$sc['goods_name_strcut']);
 					}else{
 						$goodsData[$_key] 			= $data[$_key];
 					}

@@ -1274,73 +1274,12 @@ class Board extends front_base {
 			$data['datacategory']	= ($data['category'])?$data['category']:$_GET['category'];
 
 			//파일리스트 filelist
-			if(!empty($_GET['reply']) != 'Y') {
-				if($data['upload']){
-					$uploadar = @explode("|",$data['upload']);
-					foreach($uploadar as $filenamear){
-						$filelistar = @explode("^^",$filenamear);
-						@list($realfile, $orignalfile, $sizefile, $typefile) = $filelistar;
-						if(preg_match("/[\xA1-\xFE\xA1-\xFE]/",$realfile)) {//데이타이전->한글파일명처리
-							$realfilename = iconv('utf-8','cp949',$realfile);
-
-							if(empty($typefile)) {
-							$filetypetmp = @getimagesize($this->Boardmodel->upload_path.$realfilename);
-							$is_image			= ($filetypetmp && !($filetypetmp[2] == 4 || $filetypetmp[2] == 5) )?1:0;
-								if(!$filetypetmp['mime']){
-									$typefile =end(explode('.', $realfile));//확장자추출
-								}else{
-									$typefile =$filetypetmp['mime'];
-								}
-							}else{
-								$is_image			= ( preg_match("/image/",$typefile) )?1:0;
-							}
-
-							if(!$sizefile) {
-								$realfile_temp			= @explode("/",$realfile);
-								$orignalfile		= @end($realfile_temp);
-							}
-
-							if(!$sizefile) {
-								$writefilesize = get_file_info($this->Boardmodel->upload_path.$realfilename, 'size');
-								$sizefile		= $writefilesize['size'];
-							}
-						}
-
-						if( is_file($this->Boardmodel->upload_path.$realfile) || ($realfilename && is_file($this->Boardmodel->upload_path.$realfilename) )) {
-							if(empty($typefile)) {
-							$filetypetmp = @getimagesize($this->Boardmodel->upload_path.$realfile);
-							$is_image			= ($filetypetmp && !($filetypetmp[2] == 4 || $filetypetmp[2] == 5) )?1:0;
-								if(!$filetypetmp['mime']){
-									$typefile =end(explode('.', $realfile));//확장자추출
-								}else{
-									$typefile =$filetypetmp['mime'];
-								}
-							}else{
-								$is_image			= ( preg_match("/image/",$typefile) )?1:0;
-							}
-
-							if(!$sizefile) {
-								$realfile_temp			= @explode("/",$realfile);
-								$orignalfile		= @end($realfile_temp);
-							}
-
-							if(!$sizefile) {
-								$writefilesize = get_file_info($this->Boardmodel->upload_path.$realfile, 'size');
-								$sizefile		= $writefilesize['size'];
-							}
-
-							if(is_array($data['filelist'])) {
-								$usefile = false;
-								foreach($data['filelist'] as $realfilenew) {
-									if($realfilenew['orignfile'] == $realfile) {$usefile=true;break;}
-								}
-								if(!$usefile) {
-									$data['filelist'][] = array('orignfile'=>$orignalfile,'realfilename'=>$realfile,'realfile'=>$this->Boardmodel->upload_src.$realfile,'realthumbfile'=>$thumbimg,'sizefile'=>$sizefile,'typefile'=>$typefile,'is_image'=>$is_image,'realfiledir'=>$this->Boardmodel->upload_path.$realfile,'realfileurl'=>$this->Boardmodel->upload_src.$realfile,'realthumbfiledir'=>$this->Boardmodel->upload_path.$thumbimg,'realthumbfileurl'=>$this->Boardmodel->upload_src.$thumbimg);
-								}
-							} else {
-								$data['filelist'][] = array('orignfile'=>$orignalfile,'realfilename'=>$realfile,'realfile'=>$this->Boardmodel->upload_src.$realfile,'realthumbfile'=>$thumbimg,'sizefile'=>$sizefile,'typefile'=>$typefile,'is_image'=>$is_image,'realfiledir'=>$this->Boardmodel->upload_path.$realfile,'realfileurl'=>$this->Boardmodel->upload_src.$realfile,'realthumbfiledir'=>$this->Boardmodel->upload_path.$thumbimg,'realthumbfileurl'=>$this->Boardmodel->upload_src.$thumbimg);
-							}
-						}
+			if (!empty($_GET['reply']) != 'Y') {
+				if ($data['upload']) {
+					getBoardViewUploadAllfiles($data);
+					// filelist 값이 없는 경우 filelistimages 데이터 넘김
+					if (empty($data['filelist'])) {
+						$data['filelist'] = $data['filelistimages'];
 					}
 				}
 			}

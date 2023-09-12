@@ -261,12 +261,29 @@ $(document).ready(function(){
 	}
 
 	// 장바구니 삭제
-	function cart_delete(list_key){
+	function cart_delete(cart_seq,list_key){
 				
 		$(".tmp_cart_item."+list_key).remove();
 		if($(".tmp_cart_item").length == 0) targetList_null();
 
-		openDialogAlert("상품이 삭제되었습니다.", 500, 140);
+		if(!cart_seq) {
+			return false;
+		}
+
+		$.ajax({
+			url: "/admin/order/delete_cart",
+			type:"post",
+			data: {'cart_seq' : cart_seq},
+			dataType: "json",
+			success: function(data){
+				if(data == 'ERROR'){
+					openDialogAlert("장바구니 삭제 오류(번호 누락)입니다.", 500, 140);
+				}
+				//console.log(data);
+			},error : function(res){
+				openDialogAlert("장바구니 삭제 오류입니다.", 500, 140);
+			}
+		});
 	}
 </script>
 <style>

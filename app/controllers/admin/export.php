@@ -1528,7 +1528,11 @@ class export extends admin_base {
 			list($data_export_shipping) = array_values($tmp_export_shipping);
 
 			// 택배 선착불 정보 추가 :: 2018-01-02 lwh
-			$data_export['out_shipping_method'] = $arr_shipping_method[$tmp_export_shipping[$data_export['shipping_group']]['shipping_type']];
+			$data_export['out_shipping_method'] = '';
+			$shipping_method = $tmp_export_shipping[$data_export['shipping_group']]['shipping_method'] ?? '';
+			if ($shipping_method) {
+				$data_export['out_shipping_method'] = $arr_shipping_method[$shipping_method] ?? $this->shippingmodel->shipping_method_arr[$shipping_method];
+			}
 
 			//2016.04.21 바코드 설정 추가 pjw
 			foreach($data_export_item as $k => $data){
@@ -1556,12 +1560,6 @@ class export extends admin_base {
 				$tot		= array();
 				$orders 	= $this->ordermodel->get_order($order_seq);
 				$items 		= $this->ordermodel->get_item($order_seq);
-
-				$orders['mpayment'] = $this->arr_payment[$orders['payment']];
-				
-				if ($orders['pg'] == 'naverpayment') {
-					$orders['mpayment'] = $this->arr_payment[$orders['pg'].'_'.$orders['payment']];
-				}
 
 				// 네이버 페이 표기 추가 2016-09-07 jhr
 				if	($orders['pg'] == 'npay') $orders['mpayment'] = 'naver pay('.$orders['mpayment'].')';
@@ -1606,6 +1604,8 @@ class export extends admin_base {
 						$data['out_refund_price'] = $data['price']*$data['refund_ea'];
 
 						//promotion sale
+						$data['out_event_sale'] = $data['event_sale'];
+						$data['out_multi_sale'] = $data['multi_sale'];
 						$data['out_member_sale'] = $data['member_sale']*$data['ea'];
 						$data['out_coupon_sale'] = ($data['download_seq'])?$data['coupon_sale']:0;
 						$data['out_fblike_sale'] = $data['fblike_sale'];
@@ -1614,7 +1614,7 @@ class export extends admin_base {
 						$data['out_promotion_code_sale'] = $data['promotion_code_sale'];
 
 						// total sale
-						$out_sale_price	= $data['out_member_sale'] + $data['out_coupon_sale'] + $data['out_promotion_code_sale'] + $data['out_fblike_sale'] + $data['out_mobile_sale'] + $data['out_referer_sale'];
+						$out_sale_price	=  $data['out_event_sale'] + $data['out_multi_sale'] + $data['out_member_sale'] + $data['out_coupon_sale'] + $data['out_promotion_code_sale'] + $data['out_fblike_sale'] + $data['out_mobile_sale'] + $data['out_referer_sale'];
 						$total_sale += $out_sale_price;
 
 						// 할인가격
@@ -1638,7 +1638,7 @@ class export extends admin_base {
 						}
 						$data['inputs'] = $input;
 
-						foreach($data_export_item as $k => $data_export){
+						if($input) {
 							$data_export_item[$k]['inputs'] = $input;
 						}
 
@@ -1661,6 +1661,8 @@ class export extends admin_base {
 						$tot['sale_price'] += $data['sale_price'];
 
 						//promotion sale
+						$tot['event_sale']	+= $data['out_event_sale'];
+						$tot['multi_sale'] += $data['out_multi_sale'];
 						$tot['member_sale'] += $data['out_member_sale'];
 						$tot['coupon_sale'] += $data['out_coupon_sale'];
 						$tot['fblike_sale'] += $data['out_fblike_sale'];
@@ -1722,7 +1724,7 @@ class export extends admin_base {
 						$data['out_mobile_sale'] = $data['mobile_sale'];
 						$data['out_referer_sale'] = $data['referer_sale'];
 						$data['out_promotion_code_sale'] = $data['promotion_code_sale'];
-
+						$data['out_event_sale'] = $data['event_sale'];
 
 						//member use
 						$data['out_reserve']	= $data['reserve']*$data['reserve_ea'];
@@ -1747,6 +1749,7 @@ class export extends admin_base {
 						$tot['mobile_sale'] += $data['out_mobile_sale'];
 						$tot['referer_sale'] += $data['out_referer_sale'];
 						$tot['promotion_code_sale'] += $data['out_promotion_code_sale'];
+						$tot['event_sale']	+= $data['out_event_sale'];
 
 						$tot['out_sale_price'] += $data['out_sale_price'];
 						$tot['sale_price'] += $data['sale_price'];

@@ -34,26 +34,57 @@
 		} else {
 			msg = "";
 		}
+
+		var isValid = true;
+
 		if(msg==""){
 			if(mode == "direct"){
-				f.attr("action","../order/add?mode="+mode+"&order_mode=npay&skin_version={=skin_version}&no={=goods.goods_seq}");
-			}else{
-				f.attr("action","../naverpay/buy?mode="+mode+"&shippingType="+shippingType+"&skin_version={=skin_version}");
+				$.ajax({
+					type	: "POST",
+					dataType : 'json',
+					url		: "/order/add?mode=direct&order_mode=npay&skin_version={=skin_version}&no={=goods.goods_seq}",
+					data	: f.serialize(),
+					success	: function(result){
+						if(typeof result != "undefined" && result.result != "success") {
+							alert("ERROR:" + result.message);
+							isValid = false;
+							return null;
+						}
+					}
+				});
+				if(!isValid) return;
 			}
+
+			f.attr("action","../naverpay/buy?mode="+mode+"&shippingType="+shippingType+"&skin_version={=skin_version}");
+			
 			f[0].submit();
 		}else{
 			//네이버페이 주문 시 제주/도서/산간/오지/일부 지역은 배송비가 추가 과금될 수 있습니다.주문하시겠습니까?
 			openDialogConfirm(msg,400,155,function(){ //yesCallback function
 				if(mode == "direct"){
-					f.attr("action","../order/add?mode="+mode+"&order_mode=npay&skin_version={=skin_version}&no={=goods.goods_seq}");
-				}else{
-					f.attr("action","../naverpay/buy?mode="+mode+"&shippingType="+shippingType+"&skin_version={=skin_version}");
+					$.ajax({
+						type	: "POST",
+						dataType : 'json',
+						url		: "/order/add?mode=direct&order_mode=npay&skin_version={=skin_version}&no={=goods.goods_seq}",
+						data	: f.serialize(),
+						success	: function(result){
+							if(typeof result != "undefined" && result.result != "success") {
+								alert("ERROR:" + result.message);
+								isValid = false;
+								return null;
+							}
+						}
+					});
+					if(!isValid) return;
 				}
+
+				f.attr("action","../naverpay/buy?mode="+mode+"&shippingType="+shippingType+"&skin_version={=skin_version}");
+				
 				f[0].submit();
-				},function(){ //noCallback function
-					return false;
-				});
-			}
+			},function(){ //noCallback function
+				return false;
+			});
+		}
 	}
 
 	function buy_nc(){

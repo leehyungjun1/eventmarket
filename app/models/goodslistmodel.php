@@ -763,6 +763,8 @@ class goodslistmodel extends CI_Model
 
 		//
 		$selectedFields = [
+			'fc.position',
+			'fc.left',
 			'fc.category_code',
 			'fc.title category_name',
 		];
@@ -780,7 +782,8 @@ class goodslistmodel extends CI_Model
 
 			$this->db->select($selectedFields)
 				->where('fg.cnt >', 0)
-				->where('fc.level', $category_level + 1);
+				->where('fc.level', $category_level + 1)
+				->order_by('fc.position asc', 'fc.left asc');
 			if ($category) {
 				$this->db->like('fc.category_code', $category, 'after');
 

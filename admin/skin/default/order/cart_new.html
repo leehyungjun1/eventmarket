@@ -40,10 +40,7 @@
 			<input type="hidden" class="tmp_cart{=..list_key}" name="goods[{..goods_seq}][optionEa][{..key_}]" value="{..ea}" />
 
 			<input type="hidden" name="cartOptionSeq[{..cart_seq}][]" value="{..cart_option_seq}" />
-			<!--<img src="../images/design/icon_del_detail.gif" style="cursor:pointer;" onclick="cart_delete('{..cart_seq}','{..cart_option_seq}');">-->
-
-			<img src="../images/design/icon_del_detail.gif" style="cursor:pointer;" onclick="cart_delete('{=..list_key}');">
-
+			<img src="../images/design/icon_del_detail.gif" style="cursor:pointer;" onclick="cart_delete('{..cart_seq}','{=..list_key}');">
 		</td>
 		<td class="cell rborder">
 			<table width="100%" border="0" cellpadding="0" cellspacing="0">

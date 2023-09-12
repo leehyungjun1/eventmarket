@@ -1,0 +1,138 @@
+<!-- {? viewlist != 'view' //리스트에만출력 } --> <!-- {/} -->
+<table border="0" width="99%">
+<tr>
+<td>
+	<div class="sub_title_bar">
+		<h2>{manager.name}</a></h2>
+		<a href="javascript:history.back();" class="stb_back_btn"><img src="../../../images/design/btn_back.gif" /></a>
+	</div>
+
+	<table width="100%" border="0" cellpadding="0" cellspacing="0">
+	<tr>
+		<td width="50%" align="left" valign="bottom" class="pd5">
+			<!--{? categorylist}-->
+			<select name="category" id="searchcategory" class="line">
+				<option value="" selected="selected" >- 전체 -</option>
+				<!--{@ categorylist}-->
+				<option value="{.value_}" {? _GET.category == .value_} selected="selected" {/}>{.value_}</option>
+				<!--{/}-->
+			</select>
+			<!--{ / }-->
+
+			<span class="article_info">
+				 Total <b>{=number_format(sc.totalcount)}</b>
+			</span>
+		</td>
+		<td width="50%" align="right" class="pd5">
+			{? manager.auth_write != '[admin]' }
+			<input type="button" name="boad_write_btn{manager.isperm_write}" id="boad_write_btn{manager.isperm_write}" board_id="{boardid}" fileperm_read="{manager.fileperm_write}" value="{manager.name} 쓰기" class="bbs_gray_button_style" style="padding:0 10px;" />
+			{/}
+		</td>
+	</tr>
+	</table>
+
+	<ul class="bbslist_ul_style">
+		<!-- 공지사항 리스트데이터 : 시작 -->
+		{? noticeloop }
+			{@ noticeloop }
+			<li>
+				<span>
+					{? strstr(manager.list_show,'[subject]') }
+						<span class="bus_subject">
+							<span class="hand boad_view_btn{.isperm_read}" viewlink="{boardurl->view}{.seq}"  viewtype="{manager.viewtype}"  pagetype="{pagetype}"  board_seq="{.seq}" board_id="{_GET.id}"><a>{.iconmobile}{.blank}{.category} {.subjectcut} {? .comment >0 }<span class="comment">({=number_format(.comment)}){/}{.iconimage}{.iconfile}{.iconvideo}{.iconnew}{.iconhot}{.iconhidden}</a></span></span>
+						</span>
+					{/}
+					<span class="bus_record_info">
+					{? strstr(manager.list_show,'[writer]') }<span class="cell_bar">|</span><span class="cell" >{.name}</span>{/}
+					{? strstr(manager.list_show,'[date]') }<span class="cell_bar">|</span><span class="cell">{=date('Y.m.d',strtotime(.date))}</span>{/}
+					{? strstr(manager.list_show,'[hit]') }<span class="cell_bar">|</span><span class="cell">조회 {.hit}</span>{/}
+					</span>
+				</span>
+				{? .comment }
+				<span class="bus_comment">
+					{=number_format(.comment)}
+				</span>
+				{/}
+			</li>
+			{/}
+		{/}
+		<!-- 공지사항리스트데이터 : 끝 -->
+
+		<!-- 리스트데이터 : 시작 -->
+		{? loop }
+			{@ loop }
+			<li>
+				<span>
+					{? strstr(manager.list_show,'[subject]') }
+						<span class="bus_subject">
+							<span class="hand boad_view_btn{.isperm_read}" viewlink="{boardurl->view}{.seq}"  viewtype="{manager.viewtype}"  pagetype="{pagetype}"  board_seq="{.seq}" board_id="{_GET.id}"><a>{.iconmobile}{.blank}{.category} {.subjectcut} {? .comment >0 }<span class="comment">({=number_format(.comment)}){/}{.iconimage}{.iconfile}{.iconvideo}{.iconnew}{.iconhot}{.iconhidden}</a></span></span>
+						</span>
+					{/}
+					<span class="bus_record_info">
+					{? strstr(manager.list_show,'[writer]') }<span class="cell_bar">|</span><span class="cell" >{.name}</span>{/}
+					{? strstr(manager.list_show,'[date]') }<span class="cell_bar">|</span><span class="cell">{=date('Y.m.d',strtotime(.date))}</span>{/}
+					{? strstr(manager.list_show,'[hit]') }<span class="cell_bar">|</span><span class="cell">조회 {.hit}</span>{/}
+					</span>
+				</span>
+				{? .comment }
+				<span class="bus_comment">
+					{=number_format(.comment)}
+				</span>
+				{/}
+			</li>
+			{/}
+		{/}
+		<!-- 리스트데이터 : 끝 -->
+	</ul>
+
+	<!--검색폼 : 시작 -->
+	<div class="searchform hide">
+		<form name="boardsearch" id="boardsearch" >
+		<input type="hidden" name="id" value="{_GET.id}" >
+		<input type="hidden" name="popup" value="{_GET.popup}" >
+		<input type="hidden" name="iframe" value="{_GET.iframe}" >
+		<input type="hidden" name="goods_seq" value="{_GET.goods_seq}" >
+		<input type="hidden" name="perpage" id="perpage" value="{_GET.perpage}" >
+		<input type="hidden" name="category" id="category" value="{_GET.category}" >
+		<input type="text" name="search_text" id="search_text" value="{_GET.search_text}" title="작성자, 제목, 내용" />
+		<input type="submit" value=" 검색 " class="bbs_btn" />
+		<input type="button" value=" 초기화 " class="bbs_btn" onclick="document.location.href='{boardurl->resets}'"/>
+		</form>
+	</div>
+	<!-- 검색폼 : 끝 -->
+
+	<table width="100%" border="0" cellpadding="0" cellspacing="0">
+	<tr>
+		<td width="50%" align="left" class="pd5">
+			<button name="boardviewclose" class="bbs_gray_button_style" style="width:50px;">목록</button>
+		</td>
+		<td width="50%" align="right" class="pd5">
+			{? manager.auth_write != '[admin]' }
+			<input type="button" name="boad_write_btn{manager.isperm_write}" id="boad_write_btn{manager.isperm_write}" board_id="{boardid}" fileperm_read="{manager.fileperm_write}" value="{manager.name} 쓰기" class="bbs_gray_button_style" style="padding:0 10px;" />
+			{/}
+		</td>
+	</tr>
+	</table>
+
+	<div class="pd20">
+		{? pagin }<!-- 페이징 --><div class="paging_navigation">{pagin}</div><!-- 페이징 --> {/}
+	</div>
+
+	<div id="BoardPwCk" class="hide BoardPwCk">
+		<div class="msg">
+			<h3> 비밀번호 확인</h3>
+			<div>게시글 등록시에 입력했던 비밀번호를 입력해 주세요.</div>
+		</div>
+		<form name="BoardPwcheckForm" id="BoardPwcheckForm" method="post" action="{=sslAction('../board_process')}" target="actionFrame " >
+		<input type="hidden" name="seq" id="pwck_seq" value="" />
+		<input type="hidden" name="returnurl" id="pwck_returnurl" value="" />
+		<div class="ibox">
+			<input type="password" name="pw" id="pwck_pw" class="input" />
+			<input type="submit" id="BoardPwcheckBtn" value=" 확인 " class="btnblue" />
+			<input type="button" value=" 취소 " class="btngray" onclick="$('#BoardPwCk').dialog('close');" />
+		</div>
+		</form>
+	</div>
+</td>
+</tr>
+</table>

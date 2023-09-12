@@ -479,7 +479,14 @@ if(is_file_facebook_tag == true){
 							}
 						}
 					}
-					typereceipt_layout_toggle($(this));
+					/*0원일 경우 증빙x*/
+					gl_chk_tot_price = $(".total").find(".settle_price").html();
+					if(gl_chk_tot_price == '0') {
+						$("#typereceiptcardlay").hide();
+						$("#typereceipttablelay").show();
+					} else {
+						typereceipt_layout_toggle($(this));
+					}
 				});
 			}
 		});

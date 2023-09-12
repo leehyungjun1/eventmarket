@@ -3234,9 +3234,8 @@ iframe#actionFrame { width:0; height:0; position:absolute; left:0; bottom:0; vis
 .layout_header .nav_wrap .categorySubWrap .categoryDepth2>li:hover .categoryDepth3 { opacity:1; transform:translateX(0); z-index:3; }
 .layout_header .nav_wrap .categorySubWrap .categoryDepth3 + a:after { display:block; content:''; width:5px; height:31px; position:absolute; right:3px; top:0; background:url(../images/common/bul_gnb_3depth_a.png) 50% 50% no-repeat; opacity:0.4; }
 .layout_header .nav_wrap .categorySubWrap .categoryDepth2>li:hover .categoryDepth3 + a:after { opacity:1; }
-
-/* 카테고리배너 오른쪽에 있는 놈들 */
 .layout_header .nav_wrap .categoryDepth1.right_area .categorySub { left:auto; right:-2px; }
+
 @media screen and (-webkit-min-device-pixel-ratio:0) { /* 크롬 전용 */
 	.layout_header .nav_wrap .categoryDepth1.right_area .categorySubWrap { display:flex; text-align:right; }
 	.layout_header .nav_wrap .categoryDepth1.right_area .categorySubWrap>ul,
