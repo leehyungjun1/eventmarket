@@ -2470,7 +2470,7 @@ class Goodsmodel extends CI_Model {
 
 		//
 		$selectedFields = [
-			'g.goods_seq', 'g.sale_seq', 'g.goods_status', 'g.goods_kind', 'g.socialcp_event', 'g.goods_name', 'g.goods_code', 'g.summary', 'g.string_price_use',
+			'g.goods_seq', 'g.sale_seq', 'g.goods_status', 'g.goods_kind', 'g.socialcp_event', 'g.goods_name', 'g.goods_code', 'g.summary', 'g.string_price_use','g.string_price_color',
 			'g.string_price', 'g.string_price_link', 'g.string_price_link_url', 'g.member_string_price_use', 'g.member_string_price', 'g.member_string_price_link',
 			'g.member_string_price_link_url', 'g.allmember_string_price_use', 'g.allmember_string_price', 'g.allmember_string_price_link',
 			'g.allmember_string_price_link_url', 'g.file_key_w', 'g.file_key_i', 'g.videotmpcode', 'g.videousetotal', 'g.purchase_ea', 'g.shipping_policy',
@@ -3452,7 +3452,7 @@ class Goodsmodel extends CI_Model {
 
 		$selectedFields = [
 			'g.goods_seq', 'g.sale_seq', 'g.goods_status', 'g.goods_kind', 'g.socialcp_event', 'g.goods_name', 'g.goods_code', 'g.summary',
-			'g.string_price_use', 'g.string_price', 'g.string_price_link', 'g.string_price_link_url', 'g.member_string_price_use', 'g.member_string_price',
+			'g.string_price_use', 'g.string_price', 'g.string_price_color', 'g.string_price_link', 'g.string_price_link_url', 'g.member_string_price_use', 'g.member_string_price',
 			'g.member_string_price_link', 'g.member_string_price_link_url', 'g.allmember_string_price_use', 'g.allmember_string_price',
 			'g.allmember_string_price_link', 'g.allmember_string_price_link_url', 'g.file_key_w', 'g.file_key_i', 'g.videotmpcode', 'g.videousetotal',
 			'g.purchase_ea', 'g.shipping_policy', 'g.review_count', 'g.review_sum', 'g.reserve_policy', 'g.multi_discount_use', 'g.multi_discount_ea',

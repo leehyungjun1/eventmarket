@@ -1944,7 +1944,11 @@ class order extends front_base {
 			$this->db->select('cart_seq');
 			$query		= $this->db->get($table);
 			$cart_info	= $query->result_array();
-			foreach($cart_info as $val)		$cart_arr[] = $val['cart_seq'];
+			foreach($cart_info as $val) {
+				if ($val['cart_seq']) {
+					$cart_arr[] = $val['cart_seq'];
+				}
+			}
 
 			$set_params = array(
 				'shipping_set_seq'		=> $ship_set_seq,
@@ -8260,7 +8264,15 @@ class order extends front_base {
 		$this->load->model('membermodel');
 		$this->load->model('shippingmodel');
 
-		$order_seq			= (int) $_GET['no'];
+		$order_seq			= (int) $this->input->get('no');
+
+		if (empty($order_seq)) {
+			$msg = '잘못된 접근입니다.';
+			$return_url	= '/';
+			pageRedirect($return_url, $msg);
+			exit;
+		}
+
 		$session_id			= session_id();
 		$orders				= $this->ordermodel->get_order($order_seq);
 

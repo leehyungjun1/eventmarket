@@ -1,0 +1,333 @@
+<!--{ ? !_GET.iframe }-->
+<div class="sub_title_bar">
+	<h2>{manager.name}</h2>
+	<a href="javascript:history.back();" class="stb_back_btn"><img src="../../../images/design/btn_back.png" /></a>
+</div>
+
+<div class="bbstopbox">
+	<div class="pleft">
+		<button type="button" class="btn_style" style="width:60px;" onclick="{? _GET.popup }self.close();{:}document.location.href='{boardurl->lists}';{/}">取消</button>
+	</div>
+	<div class="center bold">写作</div>
+	<div class="pright">
+		<button type="button" class="btn_style data_save_btn" style="width:60px;" name="data_save_btn">保存</button>
+	</div>
+</div>
+<!--{/}-->
+
+<div id="boardlayout" class="pdb10">
+	<script type="text/javascript">
+	//<![CDATA[
+	var board_id = '{manager.id}';
+	var board_seq = '{_GET.seq}';
+	var boardlistsurl = '{boardurl->lists}';
+	var boardwriteurl = '{boardurl->write}';
+	var boardviewurl = '{boardurl->view}';
+	var boardmodifyurl = '{boardurl->modify}';
+	var file_use = '{=manager.file_use}';
+	//]]>
+	</script>
+
+	<iframe name="boardactionFrame" src="" frameborder="0" width="0" height="0" class="hide"></iframe>
+	<div id="openDialogLayer" style="display: none">
+		<div align="center" id="openDialogLayerMsg"></div>
+	</div>
+
+	<div id="bbswrite">
+		<form name="writeform" id="writeform" method="post" action="{=sslAction('../board_process')}"   {? (manager.file_use == 'Y' || filelist)} enctype="multipart/form-data" {/}  target="boardactionFrame">
+		<input type="hidden" name="mode" id="mode" value="{mode}" />
+		<input type="hidden" name="board_id" id="board_id" value="{manager.id}" />
+		<input type="hidden" name="reply" id="reply" value="{_GET.reply}" />
+		{? seq }
+		<input type="hidden" name="seq" id="seq" value="{seq}" />
+		{/}
+		<input type="hidden" name="returnurl" id="returnurl" value="{? backtype=='view' }{boardurl->view}{:}{boardurl->lists}{/}" />
+		<input type="hidden" name="popup" value="{_GET.popup}" >
+		<input type="hidden" name="iframe" value="{_GET.iframe}" >
+		<input type="hidden" name="goods_seq" value="{_GET.goods_seq}" >
+		<input type="hidden" name="backtype" value="list" >
+		<!-- 서브메뉴 바디 : 시작-->
+		{? categorylist}
+		<div class="bbswrite_division"  >
+			<select  name="category" id="addcategory" class="common-select styled" >
+			<option value="" selected="selected" >- 选择类别 -</option>
+			{@ categorylist}
+			<option value="{.value_}" {? datacategory == .value_} selected="selected"  {/}>{.value_}</option>
+			{/}
+			</select>
+			<div style="height:6px;"></div>
+		</div>
+		{/}
+
+		<div class="bbswrite_division">
+			<span class="input_round_style" style="width:100%; box-sizing:border-box">
+				{? defined('__ISUSER__') && name //회원}
+					<input type="hidden" name="name" id="name" value="{name}" >
+					<input type="text" value="{name}"  readonly="readonly" disabled="disabled" class="required line" />
+				{:}
+					<input type="text" name="name" id="name" value="{name}"  title="请输入你的名字。" class="required line" />
+				{/}
+			</span>
+			<div style="height:6px;"></div>
+			{? pw }
+			<input type="hidden" name="oldpw" value="{pw}" >
+			{:}
+			<span class="input_round_style" style="width:100%; box-sizing:border-box"><input type="password" name="pw" id="pw" value=""  password="password"  title="请输入密码。"  class="required line" /></span>
+			<div style="height:6px;"></div>
+			{/}
+
+			<span class="input_round_style" style="width:100%; box-sizing:border-box"><input type="text" name="subject" id="subject" value="{subject}" class="required line"  title="请输入题目。"  size="50" /></span>
+			
+			<div style="height:6px;clear:both"></div>
+
+			<span class="{hiddenlay}" ><input type="checkbox" name="hidden" id="hidden"  value="1" {hiddenckeck} /><label for="hidden" > 秘密内容</label></span>
+
+			{displayckeck}
+		</div>
+
+		<div class="bbswrite_division">
+
+			<!--{? manager.video_use == 'Y' //동영상사용인경우  && (file_key_w || file_key_i)}-->
+			<span style="width:100%;"><!-- 동영상<br /> -->
+			<table width="50%" border="0" cellpadding="0" cellspacing="0">
+			<tr>
+				<td align="center">
+					<div id="boardVideolay" >
+						<!--{? file_key_i && uccdomain_fileurl}-->
+						<label ><input type="checkbox" name="video_del" value="1" >删除</label>
+						<div class="content" >
+							<iframe   width="100" height="100" src="{uccdomain_fileurl}&g=tag&width={manager.video_size_mobile0}&height={manager.video_size_mobile1}" frameborder="0" allowfullscreen></iframe>
+						</div>
+						<!--{: file_key_w && uccdomain_fileurl}-->
+						<label ><input type="checkbox" name="video_del" value="1" >删除</label>
+						<div class="content" >
+							<iframe   width="100" height="100" src="{uccdomain_fileurl}&g=tag&width={manager.video_size_mobile0}&height={manager.video_size_mobile1}" frameborder="0" allowfullscreen></iframe>
+						</div>
+						<!--{/}-->
+					</div>
+				</td>
+				<td  ><button type="button" class="batchVideoRegist btn_style" board_seq="{seq}" >发布视频</button></td>
+			</tr>
+			</table>
+			</span>
+			<div style="height:6px;"></div>
+			<!--{:  file_key_i && uccdomain_fileurl }-->
+			<span style="width:100%;"><!-- 동영상<br /> -->
+			<label ><input type="checkbox" name="video_del" value="1" >删除</label>
+			<div>
+				<iframe   width="100" height="100" src="{uccdomain_fileurl}&g=tag&width={manager.video_size_mobile0}&height={manager.video_size_mobile1}" frameborder="0" allowfullscreen></iframe>
+			</div>
+			</span>
+
+			<div style="height:6px;"></div>
+			<!--{:  file_key_w && uccdomain_fileurl }-->
+			<span style="width:100%;">视频<br />
+			<label ><input type="checkbox" name="video_del" value="1" >删除</label>
+			<div>
+				<iframe width="100" height="100" src="{uccdomain_fileurl}&g=tag&width={manager.video_size_mobile0}&height={manager.video_size_mobile1}" frameborder="0" allowfullscreen></iframe>
+			</div>
+			</span>
+
+			<div style="height:6px;"></div>
+			<!--{ / }-->
+		</div>
+
+		<div class="bbswrite_division" >
+			<textarea name="contents" id="contents" style='border:1px solid #ccc; width:100%; height:250px; box-sizing:border-box;'  class="line" title="请输入内容。" >{contents}</textarea>
+		</div>
+
+		{? (manager.file_use == 'Y' || filelist) //첨부파일 사용중이거나 첨부파일이 있는 경우 }
+		 <div class="bbswrite_division">{#mobile_file}</div>
+		{/}
+
+		{? manager.autowrite_use == 'Y' && !defined('__ISUSER__')}
+		<div>
+			{#securimage}
+		</div>
+		{/}
+
+		{? !defined('__ISUSER__') //비회원 개인정보 동의}
+		<div class="bbswrite_division">
+			<div style="margin-left:10px;">
+				<label><input type="radio" name="agree" value="Y" /> 我同意收集和我的信息的使用。</label><br/>
+				<label><input type="radio" name="agree" value="N" checked /> 我不同意收集和我的信息的使用。</label>
+			</div>
+			<div style="margin-top:5px;"></div>
+			<div class="agree_box" >
+				<textarea style="padding:0px; width:100%; height:100px; border:0px;overflow:auto;" class="small" readonly>{policy}</textarea>
+			</div>
+		</div>
+		{/}
+
+		<div align="center" style="padding-top: 8px;">
+			<input class="btn_normal_large" style="width: 48%; height: 50px; cursor: pointer;" type="button" onclick="{? _GET.popup && !_GET.iframe }self.close();{:}document.location.href='{boardurl->lists}';{/}" value="取消">
+			<input class="btn_important_large data_save_btn" style="width: 48%; height: 50px; cursor: pointer;" type="button" value="保存">
+		</div>
+
+		</form>
+	</div>
+</div>
+
+<!-- 주문검색 폼 선택상품정보 -->
+<div id="displayOrderlay" class="hide"></div>
+<input type="hidden"  id="order_goods_list" value="{? _GET.goods_seq }{_GET.goods_seq}{:}{goods_seq}{/}" >
+
+<script type="text/javascript">
+//<![CDATA[
+$(document).ready(function() {
+	$("#backtype2").click(function() {
+		$("#returnurl").val('{boardurl->view}');
+	});
+
+	$("#backtype1").click(function() {
+		$("#returnurl").val('{boardurl->lists}');
+	});
+
+	// 게시글저장
+	$('.data_save_btn').click(function() {
+		$("#writeform").submit();
+	});
+
+	$('#writeform').validate({
+		onkeyup: false,
+		rules: {
+			subject: {required:true},
+			{? manager.autowrite_use == 'Y' && !defined('__ISUSER__') //비회원 }
+			captcha_code:{required:true},
+			{/}
+			{? !defined('__ISUSER__') //비회원 개인정보 동의}
+			pw:{required:true},
+			agree:{required:true},
+			{/}
+		},
+		messages: {
+			name: { required:getAlert('et369')}, //<font color="red">작성자를 입력해 주세요.</font>
+			category: { required:getAlert('et370')}, //<font color="red">분류를 선택해 주세요.</font>
+			{? manager.autowrite_use == 'Y' &&  !defined('__ISUSER__') //비회원 }
+			captcha_code: { required:getAlert('et371')}, //<font color="red">스팸방지 코드를 입력해 주세요.</font>
+			{/}
+			{?  !defined('__ISUSER__') //비회원 }
+			pw: { required:getAlert('et372')}, //<font color="red">비밀번호를 입력해 주세요.</font>
+			agree:{required:getAlert('et373')}, //<font color="red"><b>개인정보 수집ㆍ이용에 동의해 주세요.</b></font>
+			{/}
+			subject: { required:getAlert('et374')} //<font color="red">제목을 입력해 주세요.</font>
+		},
+		errorClass: "input_round_style_rounded",
+		validClass: "input_round_style", 
+		highlight: function(element, errorClass, validClass) {
+			$(element).parent().addClass(errorClass);
+			$(element).parent().removeClass(validClass);
+		},
+		unhighlight: function(element, errorClass, validClass) {
+			$(element).parent().removeClass(errorClass);
+			$(element).parent().addClass(validClass);
+		},errorPlacement: function(error, element) {
+			setDefaultText(); 
+		},
+		submitHandler: function(f) {
+			//if(readyEditorForm(f)){
+
+				{? !defined('__ISUSER__') //비회원 개인정보 동의}
+					if($("input[name='agree']:checked").val()!='Y'){						
+						setDefaultText();
+						//개인정보 수집ㆍ이용에 동의하셔야 합니다.
+						alert(getAlert('et375'));
+						$("input[name='agree']").focus();
+						return false;
+					}
+				{/}
+
+				{? categorylist}
+					if( !$("#addcategory").val()){ 
+						setDefaultText();
+						//신규를 입력해 주세요.
+						alert(getAlert('et376'));
+						$("#addcategory").focus();
+						return false; 
+					}
+				{/}
+
+				var bcontents = $("#writeform").find("#contents").val();
+				if(!bcontents || bcontents.toLowerCase() == "<p>&nbsp;</p>"  || bcontents.toLowerCase() == "<p><br></p>" ){
+					setDefaultText();
+					//내용을 입력해 주세요.
+					alert(getAlert('et377'));
+					$("#contents").focus();
+					return false;
+				}
+				loadingstartsubmit();
+				
+
+				if (submitFlag == true)
+				{
+				//게시물을 등록하고 있습니다. 잠시만 기다려 주세요.
+				 alert(getAlert('et378'));
+				 return false;
+				}   
+				submitFlag = true;
+				f.submit();
+			//}
+		}
+	});
+
+iframeset();
+});
+
+{? (manager.file_use == 'Y' || filelist) && !ismobile //첨부파일 사용중이거나 첨부파일이 있는 경우  }
+function readfilelistNew(attachments){
+{? filelist}
+attachments['image'] = [];
+attachments['file'] = [];
+{@ filelist}
+	var  filePath = '{.realfiledir}';
+	var  filePathurl = '{.realfileurl}';
+	{? realthumbfile }
+		var  realthumbfile = '{.realthumbfiledir}';
+		var  thumbfilePathurl = 'http://{_SERVER.HTTP_HOST}{.realthumbfileurl}';
+	{/}
+	var  orig_name = '{.orignfile}';
+	var  file_size = {.sizefile};
+	var  typefile = '{.typefile}';
+
+	{? .is_image || strstr(.typefile,'image') || in_array(.typefile, array('jpg','jpeg','png','gif','bmp','tif','pic')) }
+		attachments['image'].push({
+			'attacher': 'image',
+			'data': {
+				'imageurl': filePathurl,
+				'filename': orig_name,
+				'filesize': file_size,
+				'imagealign': 'C',
+				'originalurl': filePath,
+				'thumburl': {? realthumbfile } thumbfilePathurl {:}filePathurl{/}
+			}
+		});
+	{:}
+		attachments['file'].push({
+			'attacher': 'file',
+			'data': {
+				'filename': orig_name,
+				'filesize': file_size,
+				'filemime':typefile,
+				'originalurl': filePath,
+				'attachurl': filePath
+			}
+		});
+	{/}
+{/}
+return attachments;
+{/}
+}
+{/}
+//]]>
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){
+	$(document).resize(function(){
+	  $('#'+board_id+'_frame',parent.document).height($('#boardlayout').height()+200);
+	 }).resize();
+});
+function iframeset(){
+	  $('#'+board_id+'_frame',parent.document).height($('#boardlayout').height()+200);
+}
+</script>

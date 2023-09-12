@@ -223,7 +223,7 @@ $(document).ready(function() {
 			setDefaultText(); 
 		},
 		submitHandler: function(f) {
-			//if(readyEditorForm(f)){
+			if(readyEditorForm(f)){
 
 				{? !defined('__ISUSER__') //비회원 개인정보 동의}
 					if($("input[name='agree']:checked").val()!='Y'){						
@@ -263,7 +263,7 @@ $(document).ready(function() {
 				}   
 				submitFlag = true;
 				f.submit();
-			//}
+			}
 		}
 	});
 

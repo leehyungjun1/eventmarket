@@ -1,0 +1,948 @@
+{ #layout_header_popup }
+<link rel="stylesheet" type="text/css" href="../css/orderprint.css" />
+<!--{ @ loop }-->
+<div class="pbreak">
+	<div align="center">
+	<table cellspacing="5" cellpadding="0" border="0">
+		<tr>
+			<td>
+			<span style="text-align:center;font-size:20px;letter-spacing:-1px;font-weight:bold;padding-top:20px;">
+			주문내역서
+			</span>
+			</td>
+			<td>
+			<!--{ ? shop_logo_type=='img' }-->
+			<img src="{=shop_logo_img}" border="0" style="max-height:30px">
+			<!--{ : }-->
+			<span style="text-align:center;font-size:15px;letter-spacing:-1px;font-weight:bold;padding-top:20px;color:#747474;">
+			{=shop_logo_text}
+			</span>
+			<!--{ / }-->
+			</td>
+		</tr>
+	</table>
+	</div>
+	<!--{ ? order_barcode }-->
+	<table style="width:97%" cellspacing="0" cellpadding="0" border="0">
+			<tr>
+				<td align="right">
+					<!--{=.order.order_barcode}-->
+				</td>
+			</tr>
+	</table>
+	<!--{ / }-->
+	<div style="height:5px;"></div>
+	<table align="center" width="98%" cellspacing="0" cellpadding="0" border="0">
+	<col width="48%" />
+	<col style="width:4%;" />
+	<col width="48%" />
+	<tr>
+		<td><span class="title_print_info">주문정보</span></td>
+		<td></td>
+		<td><span class="title_print_info">결제정보</span></td>
+	</tr>
+	<tr>
+		<td><div style="width:100%;border-top:1px solid #545454;height:1px;"></div></td>
+		<td></td>
+		<td><div style="width:100%;border-top:1px solid #545454;height:1px;"></div></td>
+	</tr>
+	<tr>
+		<td>
+			<table width="100%" class="order_print_info" cellspacing="0" cellpadding="0" border="0">
+				<tr>
+					<th>주문번호</th>
+					<td>
+						{.order.order_seq}
+						<!--{? .order.linkage_mall_order_id }-->
+						<br/>{.order.linkage_mall_order_id} ({.order.linkage_mallname_text})
+						<!--{: .order.npay_order_id }-->
+						<br/>{.order.npay_order_id} (Npay주문번호)
+						<!--{: .order.talkbuy_order_id }-->
+						<br/>{.order.talkbuy_order_id} (Kpay주문번호)
+						<!--{: .order.linkage_id == 'pos' }-->
+						<br/>{.order.linkage_order_id} ({.order.linkage_mallname_text})
+						<!--{ / }-->
+					</td>
+				</tr>
+				<tr>
+					<th>주문일자</th>
+					<td>{.order.regist_date}</td>
+				</tr>
+				<tr>
+					<th>주문고객</th>
+					<td>{.order.order_user_name}</td>
+				</tr>
+				<tr>
+					<th>전화</th>
+					<td>{.order.order_phone}</td>
+				</tr>
+				<tr>
+					<th>휴대전화</th>
+					<td>{.order.order_cellphone}</td>
+				</tr>
+				<tr>
+					<th>이메일</th>
+					<td>{.order.order_email}</td>
+				</tr>
+			</table>
+		</td>
+		<td></td>
+		<td valign="top">
+			<table width="100%" class="order_print_info" cellspacing="0" cellpadding="0" border="0">
+				<tr>
+					<th>상품금액</th>
+					<td>
+					{?.order.deposit_yn!='y'}<span>(입금전)</span>{/}
+					{=get_currency_price(.items_tot.price,4)}</td>
+				</tr>
+				<tr>
+					<th>배송비</th>
+					<td>{=get_currency_price(.shipping_tot.goods_shipping_cost + .shipping_tot.shipping_cost,4)}</td>
+				</tr>
+			</table>
+		</td>
+	</tr>
+	</table>
+	<div style="height:5px"></div>
+	<table align="center" width="98%" cellspacing="0" cellpadding="0" border="0">
+	<tr>
+		<td><span class="title_print_info">배송정보</span></td>
+	</tr>
+	</table>
+	<table width="98%"  class="delivery_goods_print_info"  cellspacing="0" cellpadding="0" border="0" align="center">
+	<col width="10%"></col>
+	<col width="20%"></col>
+	<col width="10%"></col>
+	<col width="20%"></col>
+	<col width="10%"></col>
+	<col width="20%"></col>
+	<tr>
+		<th>받는고객</th>
+		<td>{.order.recipient_user_name}</td>
+		<th>연락처1</th>
+		<td>
+			{.order.recipient_phone}
+		</td>
+		<th>연락처2</th>
+		<td>
+		{.order.recipient_cellphone}
+		{? .order.recipient_email && .order.recipient_cellphone}<br/>{ / }
+		{.order.recipient_email}
+		</td>
+	</tr>
+	<tr>
+		<th>배송지 주소</th>
+		<td colspan="5">
+		{?  .order.international == "international"}
+			{.order.international_address} 	{.order.international_town_city} {.order.international_county} {.order.international_postcode} {.order.international_country}
+		{ : }
+			{?.order.recipient_address_type!='street'} (구) {/}
+			({.order.recipient_zipcode})
+			{ ?.order.recipient_address_type=='street' }{.order.recipient_address_street}{:}{.order.recipient_address}{/} {.order.recipient_address_detail}
+		{ / }
+		</td>
+	</tr>
+	<tr>
+		<th>배송 메시지</th>
+		<td colspan="5">{.order.memo}</td>
+	</tr>
+	</table>
+
+	<div style="height:10px"></div>
+	<table align="center" width="98%" cellspacing="0" cellpadding="0" border="0">
+	<tr>
+		<td class="left"><span class="title_print_info">주문상품</span>({=number_format(.order.total_type)}종-총 {=number_format(.items_tot.ea)}개)</td>
+	</tr>
+	</table>
+	<!--{ @ .shipping_group_items }-->
+	<!--{ ? ..couopn_items }-->
+	<table class="delivery_goods_print_info" align="center" width="98%" cellspacing="0" cellpadding="0" border="0">
+		<col />
+		<col width="35" />
+		<col width="70" />
+		<col width="70" />
+		<col width="70" />
+		<col width="50" />
+		<col width="70" />
+		<col width="35" />
+
+		<tr>
+			<th>티켓명</th>
+			<th>주문</th>
+			<th>판매가</th>
+			<th>할인</th>
+			<th>할인가</th>
+			<th>적립</th>
+			<th>배송</th>
+			<th>취소</th>
+
+		</tr>
+		<!--{ @ ..couopn_items }-->
+		<!--{ @ ...options }-->
+		<tr>
+			<td>
+			<table border="0" cellpadding="0" cellspacing="0">
+					<tr>
+						<!--{ ? order_goods_image }-->
+						<td style="border:0px">
+							<img src="{...image}" style="max-width:50px;max-height:50px;">
+						</td>
+						<!--{ / }-->
+						<td style="font-size:11px;border:0px;">
+							{...goods_name}
+							<!--{ ? ....option1 != null }-->
+							<div style="padding:2px 0px 0px 10px;">
+								{....title1}:{....option1}
+								{ ? ....option2!=null } {....title2}:{....option2}{ / }
+								{ ? ....option3!=null } {....title3}:{....option3}{ / }
+								{ ? ....option4!=null } {....title4}:{....option4}{ / }
+								{ ? ....option5!=null } {....title5}:{....option5}{ / }
+							</div>
+							<!--{ / }-->
+							<!--{ ? order_addinfo }-->
+								<!--{ ? ( order_warehouse && ....whinfo.wh_seq > 0 ) || ( order_goods_code && ....goods_code ) }-->
+							<div style="padding:5px;margin:2px 10px 5px 0;border:1px solid #c5c5c5;background-color:#fff;">
+							<ul>
+									<!--{ ? order_warehouse && ....whinfo.wh_seq > 0 }-->
+								<li>
+										<!--{ ? ....whinfo.wh_name }-->
+								{....whinfo.wh_name} ({....whinfo.location_code}) : {=number_format(....whinfo.ea)}({=number_format(....whinfo.badea)})
+										<!--{ : }-->
+								해당 창고에 입고된 내역이 없습니다.
+										<!--{ / }-->
+								</li>
+									<!--{ / }-->
+									<!--{ ? order_goods_code && ....goods_code }-->
+								<li>{....goods_code}</li>
+									<!--{ / }-->
+							</ul>
+							</div>
+								<!--{ / }-->
+							<!--{ / }-->
+							<!--{ ? order_goods_barcode && ....goods_code }-->
+							<div style="padding:2px 0px 0px 0px;">
+								<!--{=....barcode_image}-->
+							</div>
+							<!--{ / }-->
+							<!--{ ? ....inputs }-->
+							<div style="padding:2px 0px 0px 10px;">
+							<!--{ @ ....inputs }-->
+								<!--{ ? .....value }-->
+								<div class="goods_input">
+									<img src="/admin/skin/default/images/common/icon_input.gif" />
+									{?.....title}{.....title}:{ / }
+									<!--{?.....type == 'file'}-->
+									<a href="../order_process/filedown?file={.....value}" target="actionFrame">{.....value}</a>
+									{:}{.....value}{ / }
+								</div>
+								<!--{ / }-->
+							<!--{ / }-->
+							</div>
+							<!--{ / }-->
+						</td>
+					</tr>
+				</table>
+			</td>
+			<td class="right">{....ea}</td>
+			<td class="right">{=get_currency_price(....out_price,4)}</td>
+			<td class="right">{=get_currency_price(....out_price - ....out_sale_price,4)}</td>
+			<td class="right">
+				{=get_currency_price(....out_sale_price,4)}
+				<br/>({=get_currency_price(....sale_price,4)})
+			</td>
+			<td class="right">
+				{=get_currency_price(....out_reserve,4,'','','unit-money')}
+				<!--{ ? ....out_point }-->
+				<br/>{=get_currency_price(....out_point)}<span class="unit-money">P</span>
+				<!--{ / }-->
+			</td>
+			<td class="right">
+				<div>
+					{?..shipping.provider_seq==1}본사{:}{..shipping.provider_name}{/}
+				</div>
+				<div>
+					티켓
+				</div>
+			</td>
+			<td class="right">{....step85}</td>
+
+		</tr>
+
+		<!--{ ?....package_yn == 'y'}-->
+			<!--{ @....packages }-->
+		<tr>
+			<td style="padding-left:45px;">
+				<table border="0" cellpadding="0" cellspacing="0" style="border:0px">
+					<tr>
+						{ ? order_goods_image }
+						<td style="width:50px;border:0px;text-align:center">
+							<img src="{.....image}" style="max-width:50px;max-height:50px;">
+						</td>
+						{ / }
+						<td style="font-size:11px;border:0px;">
+							<span>[실제상품 {.....index_+1}]</span>
+							{.....goods_name}
+							{ ? .....option1!=null }
+							<div style="padding:2px 0px 0px 0px;">
+								- {.....title1}:{.....option1}
+								{ ? .....option2!=null } {.....title2}:{.....option2}{ / }
+								{ ? .....option3!=null } {.....title3}:{.....option3}{ / }
+								{ ? .....option4!=null } {.....title4}:{.....option4}{ / }
+								{ ? .....option5!=null } {.....title5}:{.....option5}{ / }
+							</div>
+							{ / }
+							<!--{ ? order_addinfo }-->
+								<!--{ ? ( order_warehouse && .....whinfo.wh_seq > 0 ) || ( order_goods_code && .....goods_code ) }-->
+							<div style="padding:5px;margin:2px 10px 5px 0;border:1px solid #c5c5c5;background-color:#fff;">
+							<ul>
+									<!--{ ? order_warehouse && .....whinfo.wh_seq > 0 }-->
+								<li>
+										<!--{ ? .....whinfo.wh_name }-->
+								{.....whinfo.wh_name} ({.....whinfo.location_code}) : {=number_format(.....whinfo.ea)}({=number_format(.....whinfo.badea)})
+										<!--{ : }-->
+								해당 창고에 입고된 내역이 없습니다.
+										<!--{ / }-->
+								</li>
+									<!--{ / }-->
+									<!--{ ? order_goods_code && .....goods_code }-->
+								<li>{.....goods_code}</li>
+									<!--{ / }-->
+							</ul>
+							</div>
+								<!--{ / }-->
+							<!--{ / }-->
+							{ ? order_goods_barcode && .....goods_code }
+							<div style="padding:2px 0px 0px 0px;">
+								<!--{=.....barcode_image}-->
+							</div>
+							{ / }
+							{ ? .....inputs }
+							<div style="padding:2px 0px 0px 0px;">
+							{ @ .....inputs }
+								{ ? ......value }
+								<div class="goods_input">
+									<img src="/admin/skin/default/images/common/icon_input.gif" />
+									- {?......title}{......title}:{ / }
+									{?......type=='file'}
+									<a href="../order_process/filedown?file={.....value}" target="actionFrame">{......value}</a>
+									{:}{......value}{ / }
+								</div>
+								{ / }
+							{ / }
+							</div>
+							{ / }
+						</td>
+					</tr>
+				</table>
+			</td>
+			<td class="right">
+				{=number_format(.....unit_ea*....ea)}
+			</td>
+			<td class="right">-</td>
+			<td class="right">-</td>
+			<td class="right">
+				-
+			</td>
+			<td class="right">
+				-
+			</td>
+			<td class="right">
+				-
+			</td>
+		</tr>
+			<!--{ / }-->
+		<!--{ / }-->
+
+		<!--{ / }-->
+		<!--{ / }-->
+	</table>
+	<!--{ / }-->
+	<!--{ / }-->
+	<!--{ @ .shipping_group_items }-->
+	<!--{ ? ..goods_items }-->
+	<div style="height:3px"></div>
+	<table class="delivery_goods_print_info" align="center" width="98%" cellspacing="0" cellpadding="0" border="0">
+		<col />
+		<col width="35" />
+		<col width="70" />
+		<col width="70" />
+		<col width="70" />
+		<col width="50" />
+		<col width="70" />
+		<col width="35" />
+		<col width="35" />
+		<tr>
+			<th>상품명</th>
+			<th>주문</th>
+			<th>판매가</th>
+			<th>할인</th>
+			<th>할인가(단가)</th>
+			<th>적립</th>
+			<th>배송</th>
+			<th>취소</th>
+			<th>주문 접수</th>
+		</tr>
+		<!--{ @ ..goods_items }-->
+		<!--{ @ ...options }-->
+		<tr>
+			<td>
+				<table border="0" cellpadding="0" cellspacing="0" style="border:0px">
+					<tr>
+						<!--{ ? order_goods_image }-->
+						<td style="width:50px;border:0px;text-align:center">
+							<img src="{...image}" style="max-width:50px;max-height:50px;">
+						</td>
+						<!--{ / }-->
+						<td style="font-size:11px;border:0px;">
+							{...goods_name}
+							<!--{ ? ....option1 != null }-->
+							<div style="padding:2px 0px 0px 0px;">
+								- {....title1}:{....option1}
+								{ ? ....option2!=null } {....title2}:{....option2}{ / }
+								{ ? ....option3!=null } {....title3}:{....option3}{ / }
+								{ ? ....option4!=null } {....title4}:{....option4}{ / }
+								{ ? ....option5!=null } {....title5}:{....option5}{ / }
+							</div>
+							<!--{ / }-->
+							<!--{ ? order_addinfo }-->
+								<!--{ ? (( order_warehouse && ....whinfo.wh_seq > 0 ) || ( order_goods_code && ....goods_code )) && ....package_yn != 'y' }-->
+							<div style="padding:5px;margin:2px 10px 5px 0;border:1px solid #c5c5c5;background-color:#fff;">
+							<ul>
+									<!--{ ? order_warehouse && ....whinfo.wh_seq > 0 }-->
+								<li>
+										<!--{ ? ....whinfo.wh_name }-->
+								{....whinfo.wh_name} ({....whinfo.location_code}) : {=number_format(....whinfo.ea)}({=number_format(....whinfo.badea)})
+										<!--{ : }-->
+								해당 창고에 입고된 내역이 없습니다.
+										<!--{ / }-->
+								</li>
+									<!--{ / }-->
+									<!--{ ? order_goods_code && ....goods_code }-->
+								<li>{....goods_code}</li>
+									<!--{ / }-->
+							</ul>
+							</div>
+								<!--{ / }-->
+							<!--{ / }-->
+							<!--{ ? order_goods_barcode && ....goods_code }-->
+							<div style="padding:2px 0px 0px 0px;">
+								<!--{=....barcode_image}-->
+							</div>
+							<!--{ / }-->
+							<!--{ ? ....inputs }-->
+							<div style="padding:2px 0px 0px 10px;">
+							<!--{ @ ....inputs }-->
+								<!--{ ? .....value }-->
+								<div class="goods_input">
+									<img src="/admin/skin/default/images/common/icon_input.gif" />
+									- {?.....title}{.....title}:{ / }
+									<!--{ ? .....type == 'file' }-->
+									<a href="../order_process/filedown?file={.....value}" target="actionFrame">{.....value}</a>
+									{:}{.....value}{ / }
+								</div>
+								<!--{ / }-->
+							<!--{ / }-->
+							</div>
+							<!--{ / }-->
+						</td>
+					</tr>
+				</table>
+			</td>
+			<td class="right">{ ?....package_yn == 'y' }[{/}{....ea}{ ?....package_yn == 'y' }]{/}</td>
+			<td class="right">{=get_currency_price(....out_price,4)}</td>
+			<td class="right">
+				{=get_currency_price(....out_price - ....out_sale_price,4)}
+			</td>
+			<td class="right">
+				{=get_currency_price(....out_sale_price,4)}
+				<br/>({=get_currency_price(....sale_price,4)})
+			</td>
+			<td class="right">
+				{=get_currency_price(....out_reserve,4,'','','unit-money')}
+				<!--{ ? ....out_point }-->
+				<br/>{=get_currency_price(....out_point)}<span class="unit-money">P</span>
+				<!--{ / }-->
+			</td>
+
+			<td class="right">
+				<div class="blue">
+					<!--{ ? ..shipping.provider_seq == 1 }-->
+					본사
+					<!--{ : }-->
+					{..shipping.provider_name}
+					<!--{ / }-->
+				</div>
+
+				<!--{ ? preg_match('/gift/',..shipping.shipping_group) }-->
+						사은품배송
+				<!--{ : }-->
+				<div>
+					<span>{ ? ..shipping.shipping_method_name == '쿠폰' }티켓{ : }{..shipping.shipping_set_name}{ / }</span>
+					{? orders.international_country}<span class="pdl5 lsp-1">{=orders.international_country}</span>{/}
+				</div>
+					<!--{ ? ..shipping.shipping_set_code == 'direct_store' }-->
+				<div class="lsp-1">수령매장 : {..shipping.shipping_store_name}</div>
+					<!--{ : }-->
+				<div >
+					<span class="bold">
+						<!--{ ? ..shipping.shipping_cost > 0 }-->
+						{=get_currency_price(..shipping.shipping_cost,4)}
+						<!--{ : ..shipping.postpaid > 0 }-->
+						{=get_currency_price(..shipping.postpaid,4)}
+						<!--{ : }-->
+						무료
+						<!--{ / }-->
+					</span>
+					{? ..shipping.shipping_cost > 0 || ..shipping.postpaid > 0}
+					{? ..shipping.shipping_pay_type}<span class="lsp-1">({..shipping.shipping_pay_type})</span>{/}
+					{ / } 
+				</div>
+					<!--{ / }-->
+					<!--{ ? ..shipping.reserve_sdate }-->
+				<div>예약배송일 : {..shipping.reserve_sdate}</div>
+					<!--{ : ..shipping.shipping_hop_date }-->
+				<div>희망배송일 : {..shipping.shipping_hop_date}</div>
+					<!--{ / }-->
+				<!--{ / }-->
+
+				<!--{ ? ..shipping.shipping_coupon_sale > 0 }-->
+				<div>-{=get_currency_price(..shipping.shipping_coupon_sale,4)} 쿠폰</div>
+				<!--{ / }-->
+				<!--{ ? ..shipping.shipping_promotion_code_sale  > 0 }-->
+				<div>-{=get_currency_price(..shipping.shipping_promotion_code_sale,4)} 코드</div>
+				<!--{ / }-->
+			</td>
+			<td class="right">{....step85}</td>
+			<td class="right">{....mstep}</td>
+		</tr>
+
+		<!--{ ?....package_yn == 'y' && order_package }-->
+			<!--{ @....packages }-->
+		<tr>
+			<td style="padding-left:45px;">
+				<table border="0" cellpadding="0" cellspacing="0" style="border:0px">
+					<tr>
+						{ ? order_goods_image }
+						<td style="width:50px;border:0px;text-align:center">
+							<img src="{.....image}" style="max-width:50px;max-height:50px;">
+						</td>
+						{ / }
+						<td style="font-size:11px;border:0px;">
+							<span>[실제상품 {.....index_+1}]</span>
+							{.....goods_name}
+							{ ? .....option1!=null }
+							<div style="padding:2px 0px 0px 0px;">
+								- {.....title1}:{.....option1}
+								{ ? .....option2!=null } {.....title2}:{.....option2}{ / }
+								{ ? .....option3!=null } {.....title3}:{.....option3}{ / }
+								{ ? .....option4!=null } {.....title4}:{.....option4}{ / }
+								{ ? .....option5!=null } {.....title5}:{.....option5}{ / }
+							</div>
+							{ / }
+							<!--{ ? order_addinfo }-->
+								<!--{ ? ( order_warehouse && .....whinfo.wh_seq > 0 ) || ( order_goods_code && .....goods_code ) }-->
+							<div style="padding:5px;margin:2px 10px 5px 0;border:1px solid #c5c5c5;background-color:#fff;">
+							<ul>
+									<!--{ ? order_warehouse && .....whinfo.wh_seq > 0 }-->
+								<li>
+										<!--{ ? .....whinfo.wh_name }-->
+								{.....whinfo.wh_name} ({.....whinfo.location_code}) : {=number_format(.....whinfo.ea)}({=number_format(.....whinfo.badea)})
+										<!--{ : }-->
+								해당 창고에 입고된 내역이 없습니다.
+										<!--{ / }-->
+								</li>
+									<!--{ / }-->
+									<!--{ ? order_goods_code && .....goods_code }-->
+								<li>{.....goods_code}</li>
+									<!--{ / }-->
+							</ul>
+							</div>
+								<!--{ / }-->
+							<!--{ / }-->
+							{ ? order_goods_barcode && .....goods_code }
+							<div style="padding:2px 0px 0px 0px;">
+								<!--{=.....barcode_image}-->
+							</div>
+							{ / }
+							{ ? .....inputs }
+							<div style="padding:2px 0px 0px 0px;">
+							{ @ .....inputs }
+								{ ? ......value }
+								<div class="goods_input">
+									<img src="/admin/skin/default/images/common/icon_input.gif" />
+									- {?......title}{......title}:{ / }
+									{?......type=='file'}
+									<a href="../order_process/filedown?file={.....value}" target="actionFrame">{......value}</a>
+									{:}{......value}{ / }
+								</div>
+								{ / }
+							{ / }
+							</div>
+							{ / }
+						</td>
+					</tr>
+				</table>
+			</td>
+			<td class="right">
+				{=number_format(.....unit_ea*....ea)}
+			</td>
+			<td class="right">-</td>
+			<td class="right">-</td>
+			<td class="right">
+				-
+			</td>
+			<td class="right">
+				-
+			</td>
+			<td class="right">-</td>
+			<td class="right">
+				-
+			</td>
+			<td class="right">
+				-
+			</td>
+		</tr>
+			<!--{ / }-->
+		<!--{ / }-->
+
+		<!--{ @ ....suboptions }-->
+		<tr>
+			<td style="padding-left:20px;">
+				<table border="0" cellpadding="0" cellspacing="0" style="border:0px">
+					<tr>
+						<!--{ ? order_goods_image }-->
+						<td style="width:50px;border:0px"></td>
+						<!--{ / }-->
+						<td style="border:0px">
+						<div style="padding-left:10px;">
+						{.....title} : {.....suboption}
+						</div>
+						<!--{ ? order_addinfo }-->
+							<!--{ ? (( order_warehouse && .....whinfo.wh_seq > 0 ) || ( order_goods_code && .....goods_code )) && .....package_yn != 'y' }-->
+						<div style="padding:5px;margin:2px 10px 5px 0;border:1px solid #c5c5c5;background-color:#fff;">
+						<ul>
+								<!--{ ? order_warehouse && .....whinfo.wh_seq > 0 }-->
+							<li>
+									<!--{ ? .....whinfo.wh_name }-->
+							{.....whinfo.wh_name} ({.....whinfo.location_code}) : {=number_format(.....whinfo.ea)}({=number_format(.....whinfo.badea)})
+									<!--{ : }-->
+							해당 창고에 입고된 내역이 없습니다.
+									<!--{ / }-->
+							</li>
+								<!--{ / }-->
+								<!--{ ? order_goods_code && .....goods_code }-->
+							<li>{.....goods_code}</li>
+								<!--{ / }-->
+						</ul>
+						</div>
+							<!--{ / }-->
+						<!--{ / }-->
+						<!--{ ? order_goods_barcode && .....goods_code }-->
+						<div style="padding:2px 0px 0px 0px;">
+							<!--{=.....barcode_image}-->
+						</div>
+						<!--{ / }-->
+						</td>
+					</tr>
+				</table>
+			</td>
+			<td class="right">{ ?.....package_yn == 'y' }[{/}{.....ea}{ ?.....package_yn == 'y' }]{/}</td>
+			<td class="right">{=get_currency_price(.....out_price,4)}</td>
+			<td class="right">
+				{=get_currency_price(.....out_price - .....out_sale_price,4)}
+			</td>
+			<td class="right">
+				{=get_currency_price(.....out_sale_price,4)}
+				<br/>({=get_currency_price(.....sale_price,4)})
+			</td>
+			<td class="right">
+				{=get_currency_price(.....out_reserve,4,'','','unit-money')}
+				<!--{ ? .....out_point }-->
+				<br/>{=get_currency_price(.....out_point)}<span class="unit-money">P</span>
+				<!--{ / }-->
+			</td>
+			<td class="right">-</td>
+			<td class="right">{.....step85}</td>
+			<td>{.....mstep}</td>
+		</tr>
+
+		<!--{ ?.....package_yn == 'y' && order_sub_relation }-->
+			<!--{ @.....packages }-->
+		<tr>
+			<td style="padding-left:65px;">
+				<table border="0" cellpadding="0" cellspacing="0" style="border:0px">
+					<tr>
+						{ ? order_goods_image }
+						<td style="width:50px;border:0px;text-align:center">
+							<img src="{......image}" style="max-width:50px;max-height:50px;">
+						</td>
+						{ / }
+						<td style="font-size:11px;border:0px;">
+							<span>[실제상품]</span>
+							{......goods_name}
+							{ ? ......option1!=null }
+							<div style="padding:2px 0px 0px 0px;">
+								- {......title1}:{......option1}
+								{ ? ......option2!=null } {......title2}:{......option2}{ / }
+								{ ? ......option3!=null } {......title3}:{......option3}{ / }
+								{ ? ......option4!=null } {......title4}:{......option4}{ / }
+								{ ? ......option5!=null } {......title5}:{......option5}{ / }
+							</div>
+							{ / }
+							<!--{ ? order_addinfo }-->
+								<!--{ ? ( order_warehouse && ......whinfo.wh_seq > 0 ) || ( order_goods_code && ......goods_code ) }-->
+							<div style="padding:5px;margin:2px 10px 5px 0;border:1px solid #c5c5c5;background-color:#fff;">
+							<ul>
+									<!--{ ? order_warehouse && ......whinfo.wh_seq > 0 }-->
+								<li>
+										<!--{ ? ......whinfo.wh_name }-->
+								{......whinfo.wh_name} ({......whinfo.location_code}) : {=number_format(......whinfo.ea)}({=number_format(......whinfo.badea)})
+										<!--{ : }-->
+								해당 창고에 입고된 내역이 없습니다.
+										<!--{ / }-->
+								</li>
+									<!--{ / }-->
+									<!--{ ? order_goods_code && ......goods_code }-->
+								<li>{......goods_code}</li>
+									<!--{ / }-->
+							</ul>
+							</div>
+								<!--{ / }-->
+							<!--{ / }-->
+							{ ? order_goods_barcode && ......goods_code }
+							<div style="padding:2px 0px 0px 0px;">
+								<!--{=......barcode_image}-->
+							</div>
+							{ / }
+							{ ? ......inputs }
+							<div style="padding:2px 0px 0px 0px;">
+							{ @ ......inputs }
+								{ ? .......value }
+								<div class="goods_input">
+									<img src="/admin/skin/default/images/common/icon_input.gif" />
+									- {?.......title}{.......title}:{ / }
+									{?.......type=='file'}
+									<a href="../order_process/filedown?file={.....value}" target="actionFrame">{.......value}</a>
+									{:}{.......value}{ / }
+								</div>
+								{ / }
+							{ / }
+							</div>
+							{ / }
+						</td>
+					</tr>
+				</table>
+			</td>
+			<td class="right">
+				{=number_format(......unit_ea*.....ea)}
+			</td>
+			<td class="right">-</td>
+			<td class="right">-</td>
+			<td class="right">
+				-
+			</td>
+			<td class="right">
+				-
+			</td>
+			<td class="right">-</td>
+			<td class="right">
+				-
+			</td>
+			<td class="right">
+				-
+			</td>
+		</tr>
+			<!--{ / }-->
+		<!--{ / }-->
+
+		<!--{ / }-->
+		<!--{ / }-->
+		<!--{ / }-->
+	</table>
+	<!--{ / }-->
+	<!--{ / }-->
+	<div style="height:5px;"></div>
+
+	<table cellpadding="0" cellspacing="0" border="0" align="center" width="696">
+	<colgroup><col width="17%">
+	<col>
+	<col width="17%">
+	<col>
+	<col width="17%">
+	<col>
+	<col width="17%">
+	<col>
+	<col width="17%">
+	</colgroup><tbody><tr>
+		<td style="text-align:right;font-size:12px;">
+			<span>
+			총 상품금액
+			</span>
+		</td>
+		<td style="text-align:center;font-size:12px;"><span>+</span></td>
+		<td style="text-align:right;font-size:12px;">
+			<span>
+				배송비
+				<span>{=get_currency_price(.shipping_tot.goods_shipping_cost + .shipping_tot.shipping_cost,2)}</span>
+			</span>
+		</td>
+		<td style="text-align:center;font-size:12px;"><span>-</span></td>
+		<td style="text-align:right;font-size:12px;">
+			<span>
+				할인
+				<span>{=get_currency_price( .items_tot.event_sale + .items_tot.multi_sale + .items_tot.coupon_sale + .items_tot.member_sale + .items_tot.fblike_sale + .items_tot.mobile_sale + .items_tot.promotion_code_sale + .items_tot.referer_sale + .shipping_tot.shipping_coupon_sale + .shipping_tot.shipping_promotion_code_sale + .order.enuri ,2)}</span>
+
+			</span>
+		</td>
+		<td style="text-align:center;font-size:12px;"><span>-</span></td>
+		<td style="text-align:right;font-size:12px;">
+			<span>
+				사용
+				<span>{=get_currency_price(.order.emoney + .order.cash,2)}</span>
+			</span>
+		</td>
+		<td style="text-align:center;font-size:12px;"><span>=</span></td>
+		<td style="text-align:right;font-size:12px;">
+			<span>
+				총 결제금액
+			</span>
+		</td>
+	</tr>
+	<tr>
+		<td style="text-align:right;font-size:11px;"><span>{=get_currency_price(.items_tot.price,2)}</span></td>
+		<td></td>
+		<td style="text-align:right;font-size:11px;">
+			{ ? .shipping_tot.goods_shipping_cost || .shipping_tot.add_goods_shipping_cost }
+			<div>
+				개별배송
+				{ ? .shipping_tot.goods_shipping_cost }
+				<span>{=get_currency_price(.shipping_tot.goods_shipping_cost,2)}</span>
+				{ / }
+				{ ? .shipping_tot.add_goods_shipping_cost }
+				<br>(도서지역 {=get_currency_price(.shipping_tot.add_goods_shipping_cost,2)} 포함)
+				{ / }
+			</div>
+			{ / }
+			{ ? .shipping_tot.shipping_cost || .shipping_tot.add_goods_shipping_cost }
+			<div>
+				기본배송
+				{ ? .shipping_tot.shipping_cost }
+				<span>{=get_currency_price(.shipping_tot.shipping_cost,2)}</span>
+				{ / }
+				{ ? .shipping_tot.add_shipping_cost }
+				<br>(도서지역 {=get_currency_price(.shipping_tot.add_shipping_cost,2)} 포함)
+				{ / }
+			</div>
+			{ / }
+			{ ? .shipping_tot.postpaid_cost }
+			<div>
+				착불배송
+				<span>{=get_currency_price(.shipping_tot.postpaid_cost,2)}</span>
+				{ ? .shipping_tot.add_postpaid_cost }
+				<br>(도서지역 {=get_currency_price(.shipping_tot.add_postpaid_cost,2)} 포함)
+				{ / }
+			</div>
+			{ / }
+		</td>
+
+		<td></td>
+		<td style="text-align:right;font-size:11px;">
+			{ ? .items_tot.event_sale }
+			<div>
+				이벤트
+				{=get_currency_price(.items_tot.event_sale,2,'','<span>_str_price_</span>')}
+			</div>
+			{ / }
+			{ ? .items_tot.multi_sale }
+			<div>
+				복수구매
+				{=get_currency_price(.items_tot.multi_sale,2,'','<span>_str_price_</span>')}
+			</div>
+			{ / }
+			{ ? .items_tot.coupon_sale }
+			<div>
+				쿠폰
+				<span>{=get_currency_price(.items_tot.coupon_sale,2)}</span>
+			</div>
+			{ / }
+			{ ? .items_tot.promotion_code_sale }
+			<div>
+				코드
+				<span>{=get_currency_price(.items_tot.promotion_code_sale,2)}</span>
+			</div>
+			{ / }
+			{ ? .items_tot.member_sale }
+			<div>
+				등급
+				<span>{=get_currency_price(.items_tot.member_sale,2)}</span>
+			</div>
+			{ / }
+			{ ? .items_tot.mobile_sale }
+			<div>
+				모바일
+				<span>{=get_currency_price(.items_tot.mobile_sale,2)}</span>
+			</div>
+			{ / }
+			{ ? .items_tot.referer_sale }
+			<div>
+				유입경로
+				<span>{=get_currency_price(.items_tot.referer_sale,2)}</span>
+			</div>
+			{ / }
+			{ ? .items_tot.shipping_coupon_sale }
+			<div>
+				배송비쿠폰
+				<span>{=get_currency_price(.shipping_tot.shipping_coupon_sale,2)}</span>
+			</div>
+			{ / }
+			{ ? .items_tot.shipping_promotion_code_sale }
+			<div>
+				배송비코드
+				<span>{=get_currency_price(.shipping_tot.shipping_promotion_code_sale,2)}</span>
+			</div>
+			{ / }
+			{ ? .order.enuri }
+			<div>
+				에누리
+				<span>{=get_currency_price(.order.enuri,2)}</span>
+			</div>
+			{ / }
+		</td>
+		<td></td>
+		<td style="text-align:right;font-size:11px;">
+			{ ? .order.emoney }
+			<div>
+				마일리지
+				<span>{=get_currency_price(.order.emoney,2)}</span>
+			</div>
+			{ / }
+			{ ? .order.cash }
+			<div>
+				예치금
+				<span>{=get_currency_price(.order.cash,2)}</span>
+			</div>
+			{ / }
+		</td>
+		<td></td>
+		<td style="text-align:right;font-size:12px;">
+			<span>{=get_currency_price(.order.settleprice,2)}</span>
+		</td>
+	</tr>
+	</tbody></table>
+
+	<!--{ ? order_centerinfo }-->
+	<div style="padding:10px 5px 0px 5px;">{ order_centerinfo_message }</div>
+	<!--{ / }-->
+
+
+</div>
+<!--{ / }-->
+
+<script type="text/javascript">
+$(document).ready(function() {
+	window.print();
+});
+</script>
+
+</body>
+</html>

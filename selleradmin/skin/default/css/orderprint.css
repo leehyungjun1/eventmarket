@@ -1,0 +1,96 @@
+.pbreak {page-break-after: always;}
+table.order_print_info tr th {
+	padding: 2px;
+	text-align:left;
+	font-size:11px;
+	color:#4d4d4d;
+	font-weight:normal;
+	vertical-align: top;
+}
+table.order_print_info tr td {
+	padding: 2px;
+	text-align:right;
+	font-size:11px;
+}
+table.delivery_print_info { 
+	border-collapse:collapse !important; 
+	border:1px solid #bcbfc1;
+	table-layout: fixed;
+}
+table.delivery_print_info tr th {
+	padding: 2px;
+	font-size:11px;
+	color:#4d4d4d;
+	font-weight:normal;
+}
+table.delivery_print_info tr td {
+	padding: 2px;
+	font-size:11px; 
+}
+table.delivery_goods_print_info { 
+	border-collapse:collapse !important; 
+	border:1px solid #bcbfc1;
+	table-layout: fixed 
+}
+table.delivery_goods_print_info tr th {
+	padding: 2px;
+	font-size:11px;
+	color:#4d4d4d;
+	font-weight:normal; 
+	border-left:1px solid #bcbfc1; 
+	border-top:1px solid #bcbfc1; 
+}
+table.delivery_goods_print_info tr td {
+	padding: 2px;
+	font-size:11px;
+	border-left:1px solid #bcbfc1; 
+	border-top:1px solid #bcbfc1;
+}
+span.title_print_info {
+	font-size:12px; 
+	color:#000000; 
+	font-weight:normal; 
+	letter-spacing:-1px; 
+}
+table.order-sale-summary tr.total-sale-title td {
+	font-size:14px !important; 
+	font-weight:normal !important; 
+	color:#000000 !important;
+}
+tr.detail-sale-summary td div {
+	padding:0px !important; 
+	color:#000000 !important;	
+}
+tr.detail-sale-summary td {
+	color:#000000 !important;	
+}
+tr.detail-sale-summary td span {
+	padding:0px !important;
+	color:#000000;
+}
+tr.total-sale-title td span {
+	padding:0px !important;
+	color:#000000;
+}
+tr.detail-sale-summary td:last-child {
+	padding:0px !important;
+	color:#000000 !important;
+	font-weight:normal !important;
+}
+tr.detail-sale-summary td:last-child span {
+	padding:0px !important;
+	color:#000000 !important;
+	font-size:14px !important;
+	font-weight:normal !important;
+}
+span.unit-money {
+	display:inline-block;width:10px;
+}
+tr { 
+	page-break-inside:avoid; 
+	page-break-after:auto;
+}
+td { 
+	page-break-inside:avoid;
+	page-break-after:auto;
+}

@@ -320,13 +320,12 @@ $(document).ready(function() {
 
 	// 네비게이션 소스 복사
 	function copy_navigation(page_tab){
-		var source_code  = '';
 		var uc_page_type = '';
 
 		switch(page_tab){
 			case 'navigation':
-
-				uc_page_type = '{\=show'+page_type2+'LightNavigation()}';
+				const navigation = navigationType();
+				uc_page_type = '{\=show'+page_type2+navigation+'}';
 				break;
 
 			case 'all_navigation':
@@ -361,4 +360,15 @@ $(document).ready(function() {
 				}
 			}
 		});
+	}
+
+	// 스킨 타입에 따라 template function이 다름
+	function navigationType() {
+		let navigationType = 'Navigation()';
+
+		if (operation_type === 'light') {
+			navigationType = "LightNavigation()";
+		}
+
+		return navigationType;
 	}

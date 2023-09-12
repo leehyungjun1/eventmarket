@@ -523,7 +523,7 @@ class goodslistmodel extends CI_Model
 				if ($bind_keyword) {
 					$aKeywords[] = $bind_keyword;
 				} else {
-					alert('검색어를 2자 이상 입력해주세요.');
+					pageBack('검색어를 2자 이상 입력해주세요.');
 					return false;
 				}
 			}
@@ -547,7 +547,9 @@ class goodslistmodel extends CI_Model
 				if ($bind_keyword) {
 					$aKeywords[] = $bind_keyword;
 				} else {
-					alert('재검색어를 2자 이상 입력해주세요.');
+					$referer	= $this->input->server('HTTP_REFERER');
+                    $url = preg_replace("!re_search(.*?)&!is","",$referer); //query parameter 에서 re_search 제거
+					pageRedirect($url, '재검색어를 2자 이상 입력해주세요.');
 					return false;
 				}
 			}

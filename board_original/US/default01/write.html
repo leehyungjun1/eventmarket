@@ -216,6 +216,7 @@
 				error.appendTo(element.parent());
 			},
 			submitHandler: function(f) {
+				if(readyEditorForm(f)){
 					{? !defined('__ISUSER__') //비회원 개인정보 동의}
 						if($("input[name='agree']:checked").val()!='Y'){						
 							setDefaultText();
@@ -254,6 +255,7 @@
 					submitFlag = true;
 					f.submit();
 				}
+			}
 		});
 	});
 	{? (manager.file_use == 'Y' || filelist) && !ismobile //첨부파일 사용중이거나 첨부파일이 있는 경우  }

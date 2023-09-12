@@ -331,6 +331,38 @@ function set_classification(category_code, location_code) {
 	});
 }
 
+$(function()
+{
+    // 테그 전체에 클릭 이벤트 발생할 경우 현재 scrolltop 획득하여 cookie에 저장
+    $(document).on('click', 'a', function ()
+    {
+        var scrollHeightPosition = (document.documentElement && document.documentElement.scrollTop) || document.body.scrollTop;
+        setCookie("scroll_position", scrollHeightPosition);
+        return true;
+    });
+});
+
+function setCookie(cookieName, cookieValue, cookieExpire, cookiePath, cookieDomain, cookieSecure){
+    var cookieText= encodeURI(cookieName)+'='+ encodeURI(cookieValue);
+    cookieText+=(cookieExpire ? '; EXPIRES='+cookieExpire.toGMTString() : '');
+    cookieText+=(cookiePath ? '; PATH='+cookiePath : '');
+    cookieText+=(cookieDomain ? '; DOMAIN='+cookieDomain : '');
+    cookieText+=(cookieSecure ? '; SECURE' : '');
+    document.cookie=cookieText;
+}
+ 
+function getCookie(cookieName){
+    var cookieValue=null;
+    if(document.cookie){
+        var array=document.cookie.split((encodeURI(cookieName)+'='));
+        if(array.length >= 2){
+            var arraySub=array[1].split(';');
+            cookieValue=encodeURIComponent(arraySub[0]);
+        }
+    }
+    return cookieValue;
+}
+
 function goodsSearch(mode,options) {
 	$("#searchedItemDisplay").html('<div style="height:100px;display:block"></div>');
 	loadingStart("#searchedItemDisplay", { segments: 12, width: 25.5, space: 6, length: 23, color: '#000000', speed: 1.5, valign: 'bottom' });
@@ -392,6 +424,15 @@ function goodsSearch(mode,options) {
 			if (typeof (options) !== "undefined") {
 				if (typeof (options.position_top) !== "undefined") {
 					$("html").scrollTop($("#"+options.position_top).offset().top);
+				}
+			}
+			else
+			{
+				var scrollPosition = getCookie("scroll_position"); // 쿠키의 내용을 불러오는 사용자 정의 함수
+				if (scrollPosition != "" && scrollPosition != 'undefined') {
+					window.scrollTo(0, scrollPosition); // 또는 body.scrollTop(scrollPosition);
+					// 쿠키 내용 초기화
+					setCookie("scroll_position", "");
 				}
 			}
 		}
