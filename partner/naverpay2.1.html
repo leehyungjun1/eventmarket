@@ -44,6 +44,7 @@
 					dataType : 'json',
 					url		: "/order/add?mode=direct&order_mode=npay&skin_version={=skin_version}&no={=goods.goods_seq}",
 					data	: f.serialize(),
+					async	: false,
 					success	: function(result){
 						if(typeof result != "undefined" && result.result != "success") {
 							alert("ERROR:" + result.message);
@@ -67,6 +68,7 @@
 						dataType : 'json',
 						url		: "/order/add?mode=direct&order_mode=npay&skin_version={=skin_version}&no={=goods.goods_seq}",
 						data	: f.serialize(),
+						async	: false,
 						success	: function(result){
 							if(typeof result != "undefined" && result.result != "success") {
 								alert("ERROR:" + result.message);
