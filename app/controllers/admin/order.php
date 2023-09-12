@@ -8880,6 +8880,55 @@ HTML;
 		echo $this->db->affected_rows();
 		exit;
 	}
+
+	/**
+	 * 휴면/탈퇴 회원 주문 조회
+	 */
+	public function personal_info() {
+		$auth = $this->authmodel->manager_limit_act('personal_info_view');
+		if(!$auth){
+			pageBack("관리자 권한이 없습니다.");
+			exit;
+		}
+
+		$this->admin_menu();
+		$this->tempate_modules();
+		$file_path	= $this->template_path();
+
+		$this->load->library('personalinfolibrary');
+		$this->load->model('personalinfomodel');
+		$this->load->helper('xssfilter');
+		xss_clean_filter();
+
+		$record = "";
+		$aGetParams = $this->input->get();
+
+		$sc = $aGetParams;
+
+		$sc['page'] = (!empty($aGetParams['page'])) ? intval($aGetParams['page']) : 0;
+		$sc['perpage'] = (!empty($aGetParams['perpage'])) ?	intval($aGetParams['perpage']) : 10;
+
+		// 검색조건 적용하여 데이터 조회 후 가공
+		$result = $this->personalinfomodel->getPersonalInfoList($sc);
+		$data = $this->personalinfolibrary->dataRebuild($result);
+		$this->template->assign('sc', $sc);
+
+		$record = $data['result'];
+		$sc['searchcount'] = $data['count'];
+
+		$paginlay =  pagingtag($sc['searchcount'] ,$sc['perpage'], './personal_info?', getLinkFilter('',array_keys($sc)) );
+		if(empty($paginlay))$paginlay = '<p><a class="on red">1</a><p>';
+		$this->template->assign('pagin',$paginlay);
+
+		$search_form_path = dirname($this->template_path()).'/_personal_info_form.html';
+		$this->template->define(array('search_form'=>$search_form_path));
+
+		$config_order = config_load('order');
+		$this->template->assign('personalInfoChk', $config_order['separating_personal_info']);
+		$this->template->define(array('tpl'=>$file_path));
+		$this->template->assign(array('record' => $record));
+		$this->template->print_("tpl");
+	}
 }
 /* End of file order.php */
 /* Location: ./app/controllers/admin/order.php */

@@ -7959,6 +7959,46 @@ class ordermodel extends CI_Model
 		$query = $query->get();
 		return $query->result_array();
 	}
+
+	//회원번호로 주문데이터 조회
+	function getOrderForMemberSeq($member_seq, $order_field = '*') {
+		$default_field = ['member_seq', 'order_seq', 'regist_date', 'deposit_date'];
+		if (is_array($order_field)) {
+			$order_field = array_merge($default_field, $order_field);
+		}
+
+		return $this->db->select($order_field)
+				->from('fm_order')
+				->where_in('member_seq', $member_seq)
+				->get()
+				->result_array();
+	}
+
+	// 주문테이블 업데이트 batch
+	function updateOrderData($updateParams, $where) {
+		// where절 검증
+		if (empty($where)) {
+			return false;
+		}
+		foreach ($updateParams as $param) {
+			if (empty($param[$where])) {
+				return false;
+			}
+		}
+
+		return $this->db->update_batch('fm_order', $updateParams, $where);
+	}
+
+	// 주문로그 테이블 업데이트
+	function updateOrderLog($updateParams, $order_seq, $actor='') {
+		if (empty($order_seq)) {
+			return false;
+		}
+
+		$this->db->where('order_seq', $order_seq);
+		$this->db->where('actor', $actor);
+		return $this->db->update('fm_order_log', $updateParams);
+	}
 }
 
 /* End of file ordermodel.php */

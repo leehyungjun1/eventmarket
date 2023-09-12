@@ -802,7 +802,7 @@
 				{ / }
 				</div>
 				<div id="order_log">
-					<textarea style="background-color:#f9f9f9;width:100%;" rows="10" readOnly="readOnly">{ @process_log }[{.regist_date}] [{.actor}] {.add_info} {.title}{=chr(10)}{ / }</textarea>
+					<textarea style="background-color:#f9f9f9;width:100%;" rows="10" readOnly="readOnly">{ @process_log }[{.regist_date}]{?.actor} [{.actor}]{/} {.add_info} {.title}{=chr(10)}{ / }</textarea>
 				</div>
 				<div id="export_log"  class="hide">
 					<textarea style="background-color:#f9f9f9;width:100%;"  rows="10" readOnly="readOnly">

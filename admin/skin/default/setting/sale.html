@@ -1,0 +1,552 @@
+{ #layout_header }
+
+<script type="text/javascript">
+	$(document).ready(function() {
+		<!--{ ? runout }-->
+		$("input[name='runout'][value='{runout}']").attr('checked',true);
+		<!--{ / }-->
+		<!--{ ? cartDuration }-->
+		$("select[name='cartDuration'] option[value='{cartDuration}']").attr('selected',true);
+		<!--{ / }-->
+		<!--{ ? cancelDuration }-->
+		$("select[name='cancelDuration'] option[value='{cancelDuration}']").attr('selected',true);
+		<!--{ / }-->
+		<!--{ ? ableStockStep }-->
+		$("input[name='ableStockStep'][value='{ableStockStep}']").attr('checked',true);
+		<!--{ / }-->
+		<!--{ ? refundDuration }-->
+		$("select[name='refundDuration'] option[value='{refundDuration}']").attr('selected',true);
+		<!--{ / }-->
+
+		$("input[name='ableStockStep']").change(function(){
+			if($(this).is(":checked")){
+				$(".ableStockStepImg").hide();
+				$("#ableStockStep"+$(this).val()).show();
+			}
+		}).change();
+
+		//일반 과세사업자 > 세금계산서설정
+		$("#biztype_tax").click(function(){
+			setPageCont();
+			$("#taxuse").val('1');
+			$(".taxuselay").show();
+			$(".taxuselaynone").hide();
+			$(".webmailDetail").show();
+		});
+
+		//간이/면세사업자 세금계산서불가
+		$("#biztype_taxexe").click(function(){
+			setPageCont();
+			$("#taxuse").val('0');
+			$(".taxuselay").hide();
+			$(".taxuselaynone").show();
+			$(".webmailDetail").hide();
+		});
+
+		//현금영수증
+		$("input[name='cashreceiptuse'], input[name='cashreceiptauto']").click(function(){
+			setPageCont();
+			/*
+			if( $(this).val() == 2 ){//현금영수증만 사용시
+				$("#cashreceiptonlylay").show();
+			}else{
+				$("#cashreceiptonlylay").hide();
+			}
+			*/
+		});
+
+		//
+		$("#hiworks_request").click(function(){
+			<!--{? domain=='firstmall.kr' }-->
+			alert("임시도메인에는 제공되지 않는 기능입니다. 대표 도메인으로 다시 \n접속해 주세요.\n(대표 도메인이 없으시면 먼저 my가비아에서 도메인 연결 신청을\n해주세요.)");
+			return;
+			<!--{ / }-->
+			$.get('hiworks_request', function(data) {
+				$('#popup').html(data);
+				openDialog("하이웍스 신청 <span class='desc'>&nbsp;</span>", "popup", {"width":"800","height":"630"});
+			});
+		});
+
+		<!--{ ? cashreceiptuse }-->
+			$("input[name='cashreceiptuse'][value='{cashreceiptuse}']").attr('checked',true);
+		<!--{ / }-->
+
+		<!--{ ? cashreceiptauto }-->
+			$("input[name='cashreceiptauto'][value='{cashreceiptauto}']").attr('checked',true);
+		<!--{ / }-->
+
+		<!--{ ? biztype }-->
+			$("input[name='biztype'][value='{biztype}']").attr('checked',true);
+			
+			<!--{ ? biztype=="tax" }-->			
+				$(".webmailDetail").show();
+			<!--{:}-->
+				$(".webmailDetail").hide();
+			<!--{ / }-->
+		<!--{ / }-->
+			
+		
+
+		<!--{ ? taxuse }-->
+			$("input[name='taxuse'][value='{taxuse}']").attr('checked',true);
+		<!--{ / }-->
+
+		<!--{ ? hiworks_use }-->
+			$("input[name='hiworks_use'][value='{hiworks_use}']").attr('checked',true);
+		<!--{ / }-->
+
+		<!--{ ? cashreceipt_auto }-->
+			$("input[name='cashreceipt_auto'][value='{cashreceipt_auto}']").attr('checked',true);
+		<!--{ / }-->
+
+
+		<!--{ ? cashreceiptpg }-->
+			$("select[name='cashreceiptpg'] option[value='{cashreceiptpg}']").attr('selected',true);
+		<!--{ / }-->
+
+		<!--{ ? cashreceipt_date }-->
+			$("select[name='cashreceipt_date'] option[value='{cashreceipt_date}']").attr('selected',true);
+		<!--{ / }-->
+
+
+		<!--{ ? sale_reserve_yn }-->
+			$("input[name='sale_reserve_yn']").attr('checked',true);
+		<!--{ / }-->
+
+			<!--{ ? sale_emoney_yn }-->
+			$("input[name='sale_emoney_yn']").attr('checked',true);
+		<!--{ / }-->
+
+
+		$("input[name='hiworks_use'][value='{hiworks_use}']").attr('checked',true);
+
+
+
+
+			/* 저장시 action조정 */
+		<!--{ ? config_system.pgCompany }-->
+		$("#now_operating").html("{config_system.pgCompany}");
+		$(".now_operating2").html("{config_system.pgCompany}");
+		<!--{ / }-->
+
+		$("select[name='cartDuration']").bind("change",function(){
+			change_setting_msg();
+		});
+
+		$("select[name='cancelDuration']").bind("change",function(){
+			change_setting_msg();
+		});
+
+		$("select[name='refundDuration']").bind("change",function(){
+			change_setting_msg();
+		});
+
+		<!--{ ? cutting_price }-->
+		$("select[name='cutting_price'] option[value='{config_system.cutting_price}']").attr('selected',true);
+		<!--{ / }-->
+
+		change_setting_msg();
+
+		setPageCont();
+
+
+		$("#comment").click(function(){
+			openDialog("매출증빙 자료 처리 방법에 대한 설정 안내", "comment_pop", {"width":"750","height":"320","show" : "fade","hide" : "fade"});
+		});
+
+		$("#comment_cash").click(function(){		
+			openDialog("현금영수증 중복발행 유의사항", "comment_cash_pop", {"width":"900","height":"1000","show" : "fade","hide" : "fade"});
+			view_comment_cash_info();
+		});
+
+		
+
+		$("#btn_pg_sales").click(function(){
+			openDialog("국내(한국)PG 과세/비과세 안내", "pg_sales_guide", {"width":"950","height":"590","show" : "fade","hide" : "fade"});
+		});
+
+	});
+
+	function change_setting_msg(){
+		$("#b_layer").html($("select[name='cartDuration']").val());
+		$("#c_layer").html($("select[name='cancelDuration']").val());
+		$("#f_layer").html($("select[name='refundDuration']").val());
+	}
+
+	function setPageCont(){
+		// CARD
+		var pg = "{config_system.pgCompany}";
+		if(!pg){
+			$(".td_card").css("background","#efefef");
+			$(".td_card").css("color","#AAAAAA");
+			$(".td_card input,select").attr("readonly",true);
+			$(".td_card input,select").css("background","#efefef");
+			$(".td_card input,select").css("color","#AAAAAA");
+			$(".td_card input[type='checkbox']").attr("disabled",true);
+		}else{
+			$(".td_card").css("background","#FFFFFF");
+			$(".td_card").css("color","#000000");
+			$(".td_card input,select").attr("readonly",false);
+			$(".td_card input,select").css("background","#FFFFFF");
+			$(".td_card input,select").css("color","#000000");
+			$(".td_card input[type='checkbox']").attr("disabled",false);
+		}
+		// CASH
+		var cash = $("input[name='cashreceiptuse']:checked").val();
+		var cashauto = $("input[name='cashreceiptauto']:checked").val();
+		if(cash!=1){
+			$(".cashreceiptauto").hide();
+		}else{
+			$(".cashreceiptauto").show();
+			if(cashauto!=1){
+				// 의무 발급 안함
+				$(".cashreceiptauto input[type='text']").attr("readonly",true);
+				$(".cashreceiptauto input[type='text']").css("background","#FFFFFF");
+				$(".cashreceiptauto input[type='text']").css("color","#000000");
+			} else {
+				// 의무 발급 함
+				$(".cashreceiptauto input[type='text']").attr("readonly",false);
+				$(".cashreceiptauto input[type='text']").css("background","#FFFFFF");
+				$(".cashreceiptauto input[type='text']").css("color","#000000");
+			}
+		}
+		// TAX
+		var tax = $("input[name='biztype']:checked").val();
+		if(tax!="tax"){
+			$(".td_tax").css("background","#efefef");
+			$(".td_tax").css("color","#AAAAAA");
+			$(".td_tax input,select").attr("readonly",true);
+			$(".td_tax input,select").css("background","#efefef");
+			$(".td_tax input,select").css("color","#AAAAAA");
+			$(".td_tax input[type='checkbox']").attr("disabled",true);
+		}else{
+			$(".td_tax").css("background","#FFFFFF");
+			$(".td_tax").css("color","#000000");
+			$(".td_tax input,select").attr("readonly",false);
+			$(".td_tax input,select").css("background","#FFFFFF");
+			$(".td_tax input,select").css("color","#000000");
+			$(".td_tax input[type='checkbox']").attr("disabled",false);
+		}
+	}
+
+	function viewCont(status){
+		if(status=="show"){
+			$("#h_cont").show();
+		}else{
+			$("#h_cont").hide();
+		}
+	}
+
+	function view_comment_cash_info(obj){
+		var sel = $(obj).val();	
+		$(".comment_cash_info").hide();
+		$(".comment_cash_info_"+sel).show();	
+	}
+
+	
+</script>
+
+
+<form name="settingForm" method="post" enctype="multipart/form-data" action="../setting_process/sale" target="actionFrame">
+
+	<!-- 페이지 타이틀 바 : 시작 -->
+	<div id="page-title-bar-area">
+		<div id="page-title-bar">	
+			{#require_info}
+
+			<!-- 타이틀 -->
+			<div class="page-title">
+				<h2>매출증빙</h2>
+			</div>
+
+			<!-- 우측 버튼 -->
+			<div class="page-buttons-right">
+				<button class="resp_btn active size_L" {? isdemo.isdemo }  type="button" {isdemo.isdemojs1} {:} type="submit" {/}>저장</button>
+			</div>
+		</div>
+	</div>
+	<!-- 페이지 타이틀 바 : 끝 -->
+
+	<!-- 서브 레이아웃 영역 : 시작 -->
+		<!-- 서브메뉴 바디 : 시작-->
+		<div class="contents_dvs">
+			<div class="item-title">
+				세금 계산서
+				<span class="tooltip_btn" onClick="showTooltip(this, '/admin/tooltip/sale', '#tip1')"></span>			
+			</div>
+			<table class="table_basic thl"> 
+				<tr>
+					<th>구분</th>
+					<td>
+						<div class="resp_radio">
+							<label><input type="radio" name="biztype" id="biztype_tax" value="tax" checked="checked" /> 일반 과세사업자</label>								
+							<label><input type="radio" name="biztype" id="biztype_taxexe" value="tax_exempt" /> 간이/면세사업자</label>
+						</div>
+						<input type="hidden" name="taxuse" id="taxuse" value="{? biztype == 'tax' }1{:}0{/}" >
+					</td>
+				</tr>
+
+				<tr class="webmailDetail">
+					<th>
+						하이윅스 연동
+						<span class="tooltip_btn" onClick="showTooltip(this, '/admin/tooltip/sale', '#tip2',)"></span>
+					</th>
+					<td class="clear">
+						<table width="100%" class="table_basic v3 thl">								
+							<tr>
+								<th>하이웍스 개설 오피스주소</th>
+								<td><input type="text" name="webmail_domain" value="{webmail_domain}" size="50" {? isdemo.isdemo } {isdemo.isdemodisabled} {/} ></td>
+							</tr>
+							<tr>
+								<th>사용자 ID</th>
+								<td><input type="text" name="webmail_admin_id" value="{webmail_admin_id}" size="50" {? isdemo.isdemo } {isdemo.isdemodisabled} {/} ></td>
+							</tr>
+							<tr>
+								<th>연동 KEY</th>
+								<td><input type="text" name="webmail_key" value="{webmail_key}" size="50" {? isdemo.isdemo } {isdemo.isdemodisabled} {/} /></td>
+							</tr>
+						</table>
+						
+					</td>
+				</tr>
+			</table>
+			<ul class="bullet_hyphen resp_message">			
+				<li>전자 세금 계산서 신청 및 사용 방법 <a href=" https://www.firstmall.kr/customer/faq/98" class="link_blue_01" target="_blank">자세히 보기</a></li>				
+			</ul>
+		</div>
+
+		<div class="contents_dvs">
+			<div class="item-title">현금 영수증 발행	</div>
+			<table class="table_basic thl"> 
+				<tr>
+					<th>국내 PG 사용 <span class="tooltip_btn" onClick="showTooltip(this, '/admin/tooltip/sale', '#tip5', 'sizeM')"></th>
+					<td>							
+						<!--{ ? config_system.not_use_pg == 'y' }-->
+						미사용
+						<!--{ : }-->
+						사용 중
+						<!--{ / }-->
+					</td>
+				</tr>
+				
+				<tr>
+					<th>현금 영수증 발급</th>
+					<td>
+						<div class="resp_radio">
+							<!--{ ? config_system.not_use_pg != 'y' }-->							
+							<label><input type="radio" name="cashreceiptuse"  id="cashreceiptuse1" value="1" /> 발급</label>
+							<label><input type="radio" name="cashreceiptuse"  id="cashreceiptuse0" value="0" checked="checked"/> 발급 안함</label>
+							<!--{ : }-->
+							미발급
+							<label class="hide"><input type="radio" name="cashreceiptuse"  id="cashreceiptuse0" value="0" checked="checked"/> 발급 안함</label>
+							<!--{ / }-->
+						</div>
+					</td>
+				</tr>
+				
+				<tr class="cashreceiptauto">
+					<th>의무 발행 <span class="tooltip_btn" onClick="showTooltip(this, '/admin/tooltip/sale', '#tip6', 'sizeM')"></th>
+					<td>
+						<div class="resp_radio">
+							<label><input type="radio" name="cashreceiptauto"  id="cashreceiptauto1" value="1" /> 발급</label>
+							( <input type="text" name="cashreceiptautoprice" value="{cashreceiptautoprice}" class="onlynumber" /> 원 이상 시 의무 발행)
+							<label><input type="radio" name="cashreceiptauto"  id="cashreceiptauto0" value="0" checked="checked"/> 발급 안함</label>
+						</div>
+					</td>
+				</tr>
+				
+			</table>
+
+			<ul class="bullet_hyphen resp_message">
+				<li>현금 영수증 중복 발행을 유의해주세요. <span class="tooltip_btn" onClick="showTooltip(this, '/admin/tooltip/sale', '#tip3', '800')"></li>	
+				<li>국내 PG 과세/비과세 안내 <a href="https://www.firstmall.kr/customer/faq/1162" class="link_blue_01" target="_blank">자세히 보기</a></li>	
+				<li>네이버페이 결제형은 네이버페이에서 현금영수증이 발행되므로 의무 발행 대상에서 제외됩니다.</li>
+			</ul>
+		</div>
+
+		<div class="box_style_05 mt20">			
+			<div class="title">안내</div>
+			<ul class="bullet_circle">
+				<li class="mb10">
+					<div class="black">현금 영수증 처리 방법</div>	
+					<ul class="bullet_num black">
+						<li>
+							전자결제(PG) 서비스 연동하여 처리<br/>
+							전자결제 서비스사의 현금영수증 서비스에서 현금영수증 발행을 처리할 수 있습니다. 단, 시스템 연동을 위하여 전자결제(PG) 서비스사에 현금영수증 서비스를 신청 해 주세요.
+							<ul class="bullet_hyphen black">
+								<li>KCP, 토스페이먼츠 : 반드시 해당 PG사의 관리환경에서 현금영수증 서비스를 신청하여야만 현금영수증 이용 가능</li>	
+								<li>이니시스, 이지페이 : PG계약을 완료하면 별도의 신청 없이 현금영수증 서비스 이용 가능</li>
+								<li>KG모빌리언스 : 별도의 신청서류를 작성하여 신청하여야만 현금영수증 이용 가능</li>	
+							</ul>
+						</li>
+						<li>
+							미연동 처리 : 관리자가 알아서 현금영수증을 처리할 수 있습니다. 단, 고객이 발급된 영수증을 MY페이지에서 조회할 수 없습니다.
+						</li>				
+					</ul>
+				</li>
+
+				<li>한국의 경우 부가세율은 10% , 해외 PG의 부가세는 0%가 적용됩니다.</li>						
+				<li>비과세 상품의 경우 매출전표와 현금영수증에서 부가세를 0으로 표시하려면, 국내 PG 사와 계약 시 ‘비과세‘ 또는 ‘복합과세‘ 로 계약하세요.</li>		
+				<li>현금 영수증 발급을 위해서는 <a href="/admin/setting/pg" class="link_blue_01" >전자결제</a>를 설정해야 합니다.</li>	
+				<li>모든 매출증빙 자료는 <a href="/admin/order/sales" class="link_blue_01" >매출증빙리스트</a>에서 확인할 수 있습니다.</li>
+				<li>마일리지, 예치금은 현금 영수증이 발행되지 않습니다.</li>						
+			</ul>						
+		</div>				
+		<!-- 서브메뉴 바디 : 끝 -->	
+	<!-- 서브 레이아웃 영역 : 끝 -->	
+</form>
+
+<div id="tip3" class="hide">
+<div class="tip_wrap">
+	<h1>현금 영수증 중복 발행 유의사항</h1>
+	<ul class="bullet_circle list_01 con_wrap">
+		<li>
+			<b>중복 발행되는 경우 처리 방법 </b>
+			<ul class="bullet_hyphen">
+				<li>
+					구매자가 결제페이지에서 현금영수증 신청하고 결제창에서도 현금영수증 신청하는 경우 현금영수증이 중복발행 됩니다. 따라서, 결제창에서는 현금영수증이 신청되지 않도록 조치해 주시기 바랍니다.<br/>
+					<img src="/admin/skin/default/images/design/pg/img_setting_taxsave_overlap.gif" width="97%" />
+				</li>					
+			</ul>		
+		</li>
+		
+		<li>
+			<b>전자결제(PG)별 결제 창에서의 현금영수증 신청 제어 방법</b><br/>
+
+			<label class="mr15"><input type="radio" name="comment_cash_info" onclick="view_comment_cash_info(this)" value="kcp" checked/> KCP 이용 상점</label>
+			<label class="mr15"><input type="radio" name="comment_cash_info" onClick="view_comment_cash_info(this)" value="inicis"/> 이니시스 이용 상점</label>
+			<label class="mr15"><input type="radio" name="comment_cash_info" onClick="view_comment_cash_info(this)" value="lg"/> 토스페이먼츠 이용 상점</label>
+			<label class="mr15"><input type="radio" name="comment_cash_info" onClick="view_comment_cash_info(this)" value="allat"/> 모빌리언스 이용 상점	</label>
+			<label><input type="radio" name="comment_cash_info" onClick="view_comment_cash_info(this)" value="ksnet" /> KSNET 이용 상점</label>
+						
+			<div class="comment_cash_info comment_cash_info_kcp">
+				<ul class="cash_info_contents">
+					<li>
+						KCP관리자페이지(<a href="https://admin.kcp.co.kr" target="_blank"><span class="blue">https://admin.kcp.co.kr</span></a>)에서 현금영수증 발급 설정을 “사용안함”으로 변경하여 주세요.
+					</li>
+				</ul>
+
+				<div style="padding-top:16px;"></div>
+				<div style="border-top:1px dashed #dddddd;width:100%;"></div>
+				<div style="padding-top:36px;"></div>
+				<div>
+					<img src="/admin/skin/default/images/design/pg/img_setting_taxsave_kcp.gif" />
+				</div>
+			</div>
+
+			<div class="comment_cash_info comment_cash_info_inicis hide">
+				<ul class="cash_info_contents">
+					<li>
+						KG Inicis관리자페이지(<a href="https://iniweb.inicis.com" target="_blank"><span class="blue">https://iniweb.inicis.com</span></a>)에서 현금영수증 사용 설정을 “자진발급”에 체크를 풀어주세요.
+					</li>
+					<li>
+						KG Inicis는 일반결제와 에스크로결제 관리자가 분리되어 있어, 일반결제 관리자 계정과 에스크로관리자 계정에 각각 로그인하여 “자진발급”에 체크를 풀어주셔야 합니다.
+					</li>
+				</ul>
+				<div style="padding-top:16px;"></div>
+				<div style="border-top:1px dashed #dddddd;width:100%;"></div>
+				<div style="padding-top:36px;"></div>
+				<div>
+					<img src="/admin/skin/default/images/design/pg/img_setting_taxsave_inisis.gif" width="100%" />
+				</div>
+			</div>
+
+			<div class="comment_cash_info comment_cash_info_lg hide">
+				<ul class="cash_info_contents">
+					<li>
+						LG U+ 이용 상점은 사용안함으로 자동 설정되어 있기 때문에 별도 설정이 필요하지 않습니다.
+					</li>
+				</ul>
+			</div>
+
+			<div class="comment_cash_info comment_cash_info_allat hide">
+				<ul class="cash_info_contents">
+					<li>
+						모빌리언스 고객센터(1800-0678)에 현금영수증 자진발급 사용 제한을 요청하여 주셔야 합니다.
+					</li>
+				</ul>
+			</div>
+
+			<div class="comment_cash_info comment_cash_info_ksnet hide">
+				<ul class="cash_info_contents">
+					<li>
+						KSNET 이용 상점은 사용안함으로 자동 설정되어 있기 때문에 별도 설정이 필요하지 않습니다.
+					</li>
+				</ul>
+			</div>
+			
+		</li>	
+	</ul>	
+</div>
+</div>
+
+<div id="popup" class="hide"></div>
+
+<div id="comment_pop" class="hide">
+	<div style="background:#efefef;padding:10px;">
+		<table width="100%" cellpadding="0" cellspacing="0">
+			<tr><td height="25"><b>■ 세금계산서 처리 방법은 2가지입니다.</b></td></tr>
+			<tr>
+				<td>
+					1) 하이웍스 전자세금계산서 서비스 연동 : 세금계산서 신청 정보를 하이웍스로 전송하여 전자세금계산서 발행을 처리하는 방법<br>
+					단, 시스템 연동을 위하여 하이웍스 서비스를 신청 해 주세요.<br>
+					2) 미연동 처리 : 관리자가 알아서 세금계산서를 처리합니다. 고객이 발급된 세금계산서를 MY페이지에서 조회할 수 없습니다.
+				</td>
+			</tr>
+			<tr><td height="25"><b>■ 현금영수증 처리 방법은 2가지입니다.</b></td></tr>
+			<tr>
+				<td>
+					1) 전자결제(PG) 서비스 연동하여 처리 : 전자결제(PG) 서비스사의 현금영수증 서비스에서 현금영수증 발행을 처리하는 방법<br>
+					단, 시스템 연동을 위하여 전자결제(PG) 서비스사에 현금영수증 서비스를 신청 해 주세요.<br>
+					- KCP, LG U+ : 받드시 해당 PG사의 관리환경에서 현금영수증 서비스를 신청하여야만 현금영수증 이용 가능<br>
+					- 이니시스 : PG계약을 완료하면 별도의 신청 없이 현금영수증 서비스 이용 가능<br>
+					- 모빌리언스 : 별도의 신청서류를 작성하여 신청하여야만 현금영수증 이용 가능<br>
+					2) 미연동 처리 : 관리자가 알아서 현금영수증을 처리합니다. 고객이 발급된 영수증을 MY페이지에서 조회할 수 없습니다.
+				</td>
+			</tr>
+			<tr><td height="25"><b>■ 카드매출전표 처리 방법은 1가지입니다.</b></td></tr>
+			<tr>
+				<td>
+					1) 전자결제(PG) 서비스 이용(<a href="/admin/setting/pg" target="_blank"><span class=" highlight-link hand">전자결제</span></a>)하면 카드매출전표는 당연히 자동 발행됩니다.
+				</td>
+			</tr>
+		</table>
+	</div>
+</div>
+
+
+
+<!-- 국내(한국)PG 과세/비과세 안내 -->
+<div id="pg_sales_guide" class="hide">
+	<div style="width:903px;">
+		<table width="100%" cellpadding="0" cellspacing="0">
+			<tr>
+				<td>
+					<span style="color:red;letter-spacing:-1px;">
+						현금영수증 및 카드매출전표에서 과세와 비과세를 정확하게 처리하기 위해서는 아래 사항을 필독해 주시길 바랍니다. 통합전자결제 (KCP, LGU+, INICIS, 올앳, KSNET) 및 카카오페이에 해당하는 내용입니다. (세금계산서는 PG를 통하지 않고 발행하므로 해당 사항 없음)
+					</span>
+				</td>
+				<!--<td align="left"><img src="../images/common/img_setting_taxation.gif"></td>-->
+			</tr>
+			<tr><td height="20"></td></tr>
+			<tr>
+				<td><img src="../images/common/img_setting_taxation01.gif"></td>
+			</tr>
+			<tr><td height="20"></td></tr>
+			<tr>
+				<td><img src="../images/common/img_setting_taxation02.gif"></td>
+			</tr>
+			<tr><td height="20"></td></tr>
+			<tr>
+				<td><img src="../images/common/img_setting_taxation03.gif"></td>
+			</tr>
+		</table>
+
+		<div class="mt15" style="width:60px;margin:auto;"><span class="btn large" onclick="closeDialog('pg_sales_guide')"><button type="button">확인</button></span></div>
+
+	</div>
+</div>
+
+
+{ #layout_footer }
+

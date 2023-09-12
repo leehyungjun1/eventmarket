@@ -3459,10 +3459,15 @@ class order_process extends admin_base {
 		echo json_encode($result);
 	}
 	public function batch_temps_orders(){
+		$this->load->model('personalinfomodel');
+
 		$now = date("Y-m-d H:i:s");
 		foreach($_POST['seq'] as $order_seq){
 			$this->db->where('order_seq', $order_seq);
 			$this->db->update('fm_order', array('hidden'=>'T','hidden_date'=>$now));
+
+			// 휴면/탈퇴 회원 주문 조회에서 해당 주문번호 건 삭제
+			$this->personalinfomodel->delete(['order_seq'=>$order_seq]);
 		}
 		echo json_encode($result);
 	}

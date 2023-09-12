@@ -6868,7 +6868,13 @@ class order extends front_base {
 			$typereceipt = "";
 		}
 		// 현금영수증 의무발급 체크 (의무발급 사용, 결제금액>=설정금액, 고객이 현금영수증 신청 안함)
-		if ($sales_config['cashreceiptauto'] == 1 && $taxprice >= $sales_config['cashreceiptautoprice'] && trim($typereceipt) == '') {
+		// 네이버페이 결제형은 네이버페이에서 현금영수증이 발행되므로 의무 발행 대상에서 제외
+		if (
+			$sales_config['cashreceiptauto'] == 1 
+			&& $taxprice >= $sales_config['cashreceiptautoprice'] 
+			&& trim($typereceipt) == '' 
+			&& $pgCompany != 'naverpayment'
+		) {
 			$typereceipt = 2;
 			$cashreceiptauto = 1;
 		}

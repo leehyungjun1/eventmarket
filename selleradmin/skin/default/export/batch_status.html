@@ -17,9 +17,9 @@ var chk_save_msg = '저장할 출고정보가 없습니다. 출고를 검색하�
 { / }
 
 </script>
-<script type="text/javascript" src="/app/javascript/js/admin-batchStatus.js?v={=date('Ymd')}"></script>
-<script type="text/javascript" src="/app/javascript/js/admin-searchForm.js?v={=date('Ymd')}"></script>
-<script type="text/javascript" src="/app/javascript/js/admin-shipping.js?v={=date('Ymd')}"></script>
+<script type="text/javascript" src="/app/javascript/js/admin-batchStatus.js"></script>
+<script type="text/javascript" src="/app/javascript/js/admin-searchForm.js?mm={=date('Ymd')}"></script>
+<script type="text/javascript" src="/app/javascript/js/admin-shipping.js?mm={=date('Ymd')}"></script>
 <script type="text/javascript">
 $( document ).ready(function() {
 	// 검색어 레이어 박스 : start
@@ -62,7 +62,7 @@ $( document ).ready(function() {
 		'left' : "1px",
 		'top' : "1px",
 		'width':$("#search_keyword").width()-1,
-		'height':$("#search_keyword").height()+5
+		'height':$("#search_keyword").height()+3
 	});
 
 	{? _GET.search_type}
@@ -125,7 +125,7 @@ $( document ).ready(function() {
 
 	$("#set_default_setting_button").click(function(){
 		var title = '기본검색 설정<span style="font-size:11px; margin-left:26px;"> - 아래서 원하는 검색조건을 설정하여 편하게 쇼핑몰을 운영하세요</span>';
-		openDialog(title, "search_detail_dialog", {"width":"1220","height":"400"});
+		openDialog(title, "search_detail_dialog", {"width":"1220","height":"350"});
 	});
 
 	var exportBarPositionTop = $("#export-bar").offset().top;
@@ -212,15 +212,10 @@ $( document ).ready(function() {
 	<!--{ / }-->
 });
 </script>
-<!--{ ? scm_cfg['use'] == 'Y' }-->
-<script type="text/javascript" src="/app/javascript/plugin/jquery.fmprogressbar.js"></script>
-<script type="text/javascript" src="/app/javascript/js/scm.common.js?dummy={=date('Ymd')}"></script>
-<!--{ / }-->
 <link rel="stylesheet" type="text/css" href="/admin/skin/default/css/searchform.css?v={=date('Ymd')}" />
 <style>
+body{background-color: #FFF !important;}
 .tip-darkgray {z-index:10000; left:0px; top:0px;}
-div.search-form-container {border-top:1px solid #d6d6d6;color:#333;}
-div.search-form-container table.search-form-table { margin-top:0px;}
 
 /* 출고내역 테이블 */
 table td.info {border:1px solid #ddd;  padding:0px;}
@@ -244,6 +239,7 @@ table.search_export_tbl th {background-color:#efefef;}
 #export-bar {position:relative;border-bottom:0px}
 #export-bar.flying {position:fixed;	width:100%;left:0px;top:0px;z-index:100;background:url('../images/common/tit_bg_rollover.png') repeat-x; }
 #export-bar.flying .export-bar-inner {padding:0 10px;}
+div.search-form-container table.search-form-table .table_search {border-top: 1px solid #dcdce0 !important;}
 
 .ui-combobox {
 	position: relative;
@@ -285,50 +281,33 @@ table.rec-info tr td span.addr {color:#444445;}
 table.rec-info tr td span.memo {color:#fb8200;}
 table.rec-info tr td span.store {color:#999999;}
 
-.warehouse-info-lay { padding:5px;margin:2px 10px 5px 0px;border:1px solid #c5c5c5;background-color:#fff; }
-
 table.table-export-info {border-collapse:collapse;}
 table.table-export-info th {background-color:#EDEDED; height:24px; line-height:24px; border:1px solid #c8c8c8; color:#666; font-weight:normal;}
-table.table-export-info td {padding:5px 0; border-bottom:1px solid #d7d7d7; color:#666}
+table.table-export-info td {padding:5px 0; border-bottom:0px solid #d7d7d7; color:#666}
+
 table.table-export-info th.remain-ea {height:100%; background:url('../images/design/th_bg_orange.gif') repeat-x left top;}
 table.table-export-info td.remain-ea {background-color:#fefbf1 !important;}
+
 table.table-export-info th.export-ea {height:100%; background:url('../images/design/th_bg_blue.gif') repeat-x left top;}
 table.table-export-info th.export-ea {border-top:2px solid #8fbcec;}
 table.table-export-info th.export-ea-left {border-left:2px solid #8fbcec;}
 table.table-export-info th.export-ea:last-child {border-right:2px solid #8fbcec;}
+
 table.table-export-info td.export-ea-left {border-left:2px solid #8fbcec;}
 table.table-export-info td.export-ea:last-child {border-right:2px solid #8fbcec;}
+
 table.table-export-info tr:last-child td.export-ea {border-bottom:2px solid #8fbcec;}
 table.table-export-info td.suboption {background-color:#f6f6f6;height:25px;}
 table.table-export-info th.null {background-color:#fff;height:25px;border-top:0px;border-bottom:0px;}
 table.table-export-info td.null {background-color:#fff;height:25px;border-top:0px;border-bottom:0px;}
+div.search-form-container {margin-bottom: 0 !important;}
 
 
-table.store-stock tr:first-child th {border-top:2px solid black !important;}
-table.store-stock tr:nth-last-child(1) td {	border-bottom:2px solid black !important;}
-table.store-stock tr td:first-child {border-left:2px solid black !important;}
-table.store-stock tr th:first-child {border-left:2px solid black !important;}
-table.store-stock tr td:nth-last-child(2) {	border-left:2px solid red !important;}
-table.store-stock tr td:nth-last-child(1) {	border-right:2px solid red !important;}
-table.store-stock tr:last-child td:nth-last-child(2) {border-bottom:2px solid red !important;}
-table.store-stock tr:last-child td:nth-last-child(1) {border-bottom:2px solid red !important;}
-table.store-stock tr:first-child th:nth-last-child(2) {border-top:2px solid red !important;border-left:2px solid red !important;}
-table.store-stock tr:first-child th:nth-last-child(1) {border-top:2px solid red !important;	border-right:2px solid red !important;}
-table.store-stock tr th,td {line-height:120% !important;}
-table.list-goods-info tr td {border:0px;}
 <!--{? data_search_default.export_detail_view != 'close' }-->
 tr.close-tr {display:none;}
 <!--{ : }-->
 tr.open-tr {display:none;}
 <!--{ / }-->
-
-.table_row_basic {border-top: 0px solid #c5c5c7 !important;border-bottom: 0px solid #c5c5c7 !important;}
-.table_row_basic > thead > tr > th {border-top: 1px solid #c5c5c7 !important;}
-.table_row_basic > tbody > tr > td, .table_row_basic > thead > tr > td {border-bottom: 1px solid #c5c5c7 !important;}
-.table_row_basic > tbody > tr, .table_row_basic > tfoot > tr {border-top: 0px solid #c5c5c7 !important;}
-.table_row_basic > tbody > tr.close-tr > td, .table_row_basic > thead > tr.close-tr > td, .table_row_basic > thead > tr.open-tr > td {border-top: 1px solid #c5c5c7 !important;}
-.table_row_basic > thead > tr > th.null { border-top:0px !important; border-bottom:0px !important; background-color:#fff !important; }
-.table_row_basic > tbody > tr > td.null, .table_row_basic > tbody > tr.close-tr > td.null, .table_row_basic > thead > tr.close-tr > td.null, .table_row_basic > thead > tr.open-tr > td.null {border-bottom:0px !important; border-top:0px !important;}
 
 @media print {
 	html, body, .contents_container {
@@ -354,7 +333,7 @@ tr.open-tr {display:none;}
 <input type="hidden" name="gf_export_code" value="" />
 <input type="hidden" name="each_export_code" value="">
 
-<div style="padding:5px 0px 0px;" align="center">
+<div style="padding:20px 0px 5px;" align="center">
 <table class="export-tab-tbl" style="border-collapse:collapse" border='1'>
 <tr>
 	<td>
@@ -373,7 +352,7 @@ tr.open-tr {display:none;}
 			<th>검색어</th>
 			<td>
 				<div class="relative">
-					<input type="text" name="keyword" id="search_keyword" value="{_GET.keyword}" title="출고번호,주문번호,아이디,주문자,수령자,입금자,이메일,연락처,휴대폰,상품명,상품번호,상품코드" autocomplete="off" size="100"/>
+					<input type="text" name="keyword" id="search_keyword" value="{_GET.keyword}" title="출고번호,주문번호,아이디,주문자,수령자,입금자,이메일,연락처,휴대폰,상품명,상품번호,상품코드" size="100" autocomplete='off'/>
 					<!-- 검색어 입력시 레이어 박스 : start -->
 					<div class="search_type_text hide">{_GET.search_type_text}</div>
 					<div class="searchLayer hide">
@@ -400,147 +379,109 @@ tr.open-tr {display:none;}
 			</td>
 		</tr>
 	</table>
+	<table class="search-form-table search-detail-lay search_detail_form" id="serch_tab" border="0">
+	<tr id="goods_search_form" >
+	<tr>
+		<td>
+			<table class="sf-option-table table_search" border="0" style="table-layout:fixed;">
+			<tr>
+				<th>날짜</th>
+				<td>
+					<select name="date_field" style="width:110px;">
+						<option value="order" {?_GET.date_field=='order'}selected{/}>주문일</option>
+						<option value="export" {?_GET.date_field=='export' || !_GET.date_field}selected{/}>출고일(입력)</option>
+						<option value="regist_date" {?_GET.date_field=='regist_date'}selected{/}>출고일</option>
+						<option value="shipping" {?_GET.date_field=='shipping'}selected{/}>배송완료일</option>
+						<option value="confirm_date" {?_GET.date_field=='confirm_date'}selected{/}>구매확정일</option>
+					</select>
+					<input type="text" name="regist_date[]" value="{_GET.start_search_date}" class="datepicker"  maxlength="10" size="10" />
+					&nbsp;<span class="gray">-</span>&nbsp;
+					<input type="text" name="regist_date[]" value="{_GET.end_search_date}" class="datepicker" maxlength="10" size="10" />
 
-	<table class="search-form-table search-detail-lay search_detail_form " id="serch_tab" border="0">
-		<tr id="goods_search_form" style="display:block;">
-		<tr>
-			<td>
-				<table class="sf-option-table table_search" border="0" style="table-layout:fixed;">
-					<!--{? serviceLimit('H_AD') }-->
-					<tr>
-						<th>배송책임</th>
-						<td>
-							<div class="ui-widget" style="font-size:12px;" id="provider_select">
-								<select name="provider_seq_selector" style="vertical-align:middle;">
-									<option value="0">=배송책임검색=</option>
-									<option value="1">본사(admin)</option>
-									<!--{ @ provider }-->
-									<option value="{.provider_seq}" {?_GET.provider_seq == .provider_seq}selected{/}>{.provider_name}({.provider_id})</option>
-									<!--{ / }-->
-								</select>
-								<input type="hidden" class="provider_seq" name="provider_seq" value="{_GET.provider_seq}" />
-								&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-								<input type="text" name="provider_name" value="" style="width:200px" readonly />
-								&nbsp;&nbsp;
-							</div>
-						</td>
-					</tr>
+					<span class="resp_btn_wrap">
+						<span class="btn small"><input type="button" value="오늘" onclick="set_date_export('{=date('Y-m-d')}','{=date('Y-m-d')}');" class="select_date resp_btn" /></span>
+						<span class="btn small"><input type="button" value="3일간" onclick="set_date_export('{=date('Y-m-d',strtotime('-3 day'))}','{=date('Y-m-d')}');" class="select_date resp_btn" /></span>
+						<span class="btn small"><input type="button" value="일주일" onclick="set_date_export('{=date('Y-m-d',strtotime('-7 day'))}','{=date('Y-m-d')}');" class="select_date resp_btn" /></span>
+						<span class="btn small"><input type="button" value="1개월" onclick="set_date_export('{=date('Y-m-d',strtotime('-1 month'))}','{=date('Y-m-d')}');" class="select_date resp_btn" /></span>
+						<span class="btn small"><input type="button" value="3개월" onclick="set_date_export('{=date('Y-m-d',strtotime('-3 month'))}','{=date('Y-m-d')}');" class="select_date resp_btn"/></span>
+						<span class="btn small"><input type="button" value="전체" onclick="set_date_export('','');" class="select_date resp_btn"/></span>
+					</span>
+				</td>
+			</tr>
+			<tr>
+				<th>출고상태</th>
+				<td >
+					<!--{ @ config_load('export_status')}-->
+					<label class="search_label resp_radio" >
+						<input type="radio" name="status" value="{.key_}" {?_GET.status==.key_}checked{/} />
+						<span class="icon-order-step-{.key_}">{.value_}</span>
+					</label>
 					<!--{ / }-->
-					<tr>
-						<th>날짜</th>
-						<td>
-							<select name="date_field" style="width:100px;">
-								<option value="order" {?_GET.date_field=='order'}selected{/}>주문일</option>
-								<option value="export" {?_GET.date_field=='export' || !_GET.date_field}selected{/}>출고일(입력)</option>
-								<option value="regist_date" {?_GET.date_field=='regist_date'}selected{/}>출고일</option>
-								<option value="shipping" {?_GET.date_field=='shipping'}selected{/}>배송완료일</option>
-								<option value="confirm_date" {?_GET.date_field=='confirm_date'}selected{/}>구매확정일</option>
-							</select>
-							<input type="text" name="regist_date[]" value="{_GET.start_search_date}" class="datepicker"  maxlength="10" size="10" />
-							&nbsp;<span class="gray">-</span>&nbsp;
-							<input type="text" name="regist_date[]" value="{_GET.end_search_date}" class="datepicker" maxlength="10" size="10" />
-							<span class="resp_btn_wrap">
-								<span class="btn small"><input type="button" value="오늘" class="resp_btn select_date" onclick="set_date_export('{=date('Y-m-d')}','{=date('Y-m-d')}');"/></span>
-								<span class="btn small"><input type="button" value="3일간" class="resp_btn select_date" onclick="set_date_export('{=date('Y-m-d',strtotime('-3 day'))}','{=date('Y-m-d')}');" /></span>
-								<span class="btn small"><input type="button" value="일주일" class="resp_btn select_date" onclick="set_date_export('{=date('Y-m-d',strtotime('-7 day'))}','{=date('Y-m-d')}');" /></span>
-								<span class="btn small"><input type="button" value="1개월" class="resp_btn select_date" onclick="set_date_export('{=date('Y-m-d',strtotime('-1 month'))}','{=date('Y-m-d')}');"/></span>
-								<span class="btn small"><input type="button" value="3개월" class="resp_btn select_date" onclick="set_date_export('{=date('Y-m-d',strtotime('-3 month'))}','{=date('Y-m-d')}');"/></span>
-								<span class="btn small"><input type="button" value="전체" class="resp_btn select_date" onclick="set_date_export('','');" /></span>
-							</span>
-						</td>
-					</tr>
 
-					<tr>
-						<th >출고상태</th>
-						<td>
-							<!--{ @ config_load('export_status')}-->
-							<label class="search_label resp_radio" style="display:inline-block;padding:3px 3px 3px 0px;">
-								<input type="radio" name="status" value="{.key_}" {?_GET.status==.key_}checked{/} />
-								<span class="icon-order-step-{.key_}">{.value_}</span></label>
-							</label>
-							<!--{ / }-->
-
-							<!--{? npay_use && false }-->
-							<label class="resp_radio" style="margin-left:20px;display:inline-block;height:26px;vertical-align:middle;line-height:26px;">
-								<input type="checkbox" name="search_npay_order" value='y' {? _GET.search_npay_order == 'y'}checked{/} align="middle"> Npay 주문건</label>
-							<!--{ / }-->
-						</td>
-					</tr>
-					<tr>
-						<th>택배사</th>
-						<td>
-							<div class="src_shipping_delivery_area">
-								<select name="src_shipping_delivery" style="vertical-align:middle;width:100px;height:25px;">
-									<option value="">택배사 전체</option>
-								<!--{ ? delivery_company_array || international_company_array }-->
-									<!--{ @ delivery_company_array }-->
-									<!--{ ? .key_ == _GET.src_shipping_delivery }-->
-									<option value='{.key_}' selected>{.company}</option>
-									<!--{ : }-->
-									<option value='{.key_}'>{.company}</option>
-									<!--{ / }-->
-									<!--{ / }-->
-									<!--{ @ international_company_array }-->
-									<!--{ ? .company == _GET.src_shipping_delivery }-->
-									<option value='{.company}' selected>{=str_replace('선불 > ','',.method)}</option>
-									<!--{ : }-->
-									<option value='{.company}'>{=str_replace('선불 > ','',.method)}</option>
-									<!--{ / }-->
-									<!--{ / }-->
-								<!--{ / }-->
-								</select>
-
-								<input type="text" name="search_delivery_number" size="15" title="운송장번호" class="search_delivery" value="{_GET.search_delivery_number}"  />
-								<label class="resp_checkbox"><input type="checkbox" name="none_search_delivery_number"  value="1" class="search_delivery" {?_GET.none_search_delivery_number}checked{/} /> 없음</label>
-							</div>
-						</td>
-					</tr>
-					<tr>
-						<th>배송방법</th>
-						<td>
-							<div class="resp_checkbox">
-								<label><input type="checkbox" class="allSelectDrop" name="allsearch_shipping_method" {?count(_GET['shipping_method'])==7}checked{/} default_none> <span class="allshipmethod">배송방법 전체</span></label>
-								<!--{ @ ship_set_code }-->
-								<label><input type="checkbox" name="search_shipping_method[]" value="{.key_}" title="{.value_}" {? _GET['shipping_method'][.key_] == .key_}checked{/} default_none> {.value_}</label>
-								<!--{ / }-->
-								<label><input type="checkbox" name="search_shipping_method[]" value="coupon" title="문자/이메일" {? _GET['shipping_method']['coupon'] == 'coupon'}checked{/} default_none> 문자/이메일</label>
-
-								{? npay_use }
-								<label><input type="checkbox" name="search_npay_order" value='y' {? _GET.search_npay_order == 'y'}checked{/}> 네이버페이 주문</label>
-								{ / }
-							</div>
-						</td>
-					</tr>
-					<!--{ ? connectorUse == true && isExportedList == true }-->
-					<tr>
-						<th>오픈마켓</th>
-						<td>
-							<div class="resp_checkbox">
-								<label><input type="checkbox" name="allselectMarkets" class="allSelectDrop" default_none value='y' {? count(marketList) == count(_GET.selectMarkets)}checked{ / }> <span class="allselectMarkets">오픈 마켓 전체</span></label>
-
-								<!--{@ marketList }-->
-								<label><input type="checkbox" class="allCheckMark" name="selectMarkets[]" value="{.key_}" { ? in_array(.key_, _GET.selectMarkets) }checked{ / }/> {.name}</label>
-								<!--{ / }-->
-
-								<label><input type="checkbox" name="search_market_fail" value='y' {? _GET.search_market_fail == 'y'}checked{/}> 송장전송실패 조회</label>
-							</div>
-						</td>
-					</tr>
+					<!--{? npay_use && false }-->
+					<label style="margin-left:20px;display:inline-block;height:26px;vertical-align:middle;line-height:26px;">
+						<input type="checkbox" name="search_npay_order" value='y' {? _GET.search_npay_order == 'y'}checked{/} align="middle"> Npay 주문건
+					</label>
 					<!--{ / }-->
-				</table>
-			</td>
-		</tr>
+				</td>
+			</tr>
+			<tr>
+				<th>택배사</th>
+				<td>
+					<div class="src_shipping_delivery_area">
+						<select name="src_shipping_delivery" style="vertical-align:middle;width:100px;height:25px;">
+							<option value="">택배사 전체</option>
+						<!--{ @ all_delivery }-->
+							<option value="{.key_}" {?_GET.src_shipping_delivery==.key_}selected{/}>{.company}</option>
+						<!--{ / }-->
+						</select>
+						<input type="text" name="search_delivery_number" size="15" title="운송장번호" class="search_delivery" value="{_GET.search_delivery_number}"  />
+						<label class="resp_checkbox"><input type="checkbox" name="none_search_delivery_number"  value="1" class="search_delivery" {?_GET.none_search_delivery_number}checked{/} /> 없음</label>
+					</div>
+				</td>
+			</tr>
+			<tr>
+				<th>배송방법</th>
+				<td>
+					<div class="resp_checkbox">
+						<label><input type="checkbox" class="allSelectDrop" name="allsearch_shipping_method" {?count(_GET['shipping_method'])==7}checked{/} default_none> <span class="allshipmethod fx12">배송방법 전체</span></label>
+						<!--{ @ ship_set_code }-->
+						<label><input type="checkbox" name="search_shipping_method[]" value="{.key_}" title="{.value_}" {? _GET['shipping_method'][.key_] == .key_}checked{/} default_none> {.value_}</label>
+						<!--{ / }-->
+						<label><input type="checkbox" name="search_shipping_method[]" value="coupon" title="문자/이메일" {? _GET['shipping_method']['coupon'] == 'coupon'}checked{/} default_none> 문자/이메일</label>
+						<!--{ ? npay_use }-->
+						<label><input type="checkbox" name="search_npay_order" value='y' {? _GET.search_npay_order == 'y'}checked{/}> 네이버페이 주문</label>
+						<!--{ / }-->
+					</div>
+				</td>
+			</tr>
+			<!--{ ? connectorUse == true && isExportedList == true }-->
+			<tr>
+				<th>오픈마켓</th>
+				<td>
+					<div class="resp_checkbox">
+						<label><input type="checkbox" name="allselectMarkets" class="allSelectDrop" default_none value='y' {? count(marketList) == count(_GET.selectMarkets)}checked{ / }> <span class="allselectMarkets fx12">오픈 마켓 전체</span></label>
+						<!--{@ marketList }-->
+						<label><input type="checkbox" class="allCheckMark" name="selectMarkets[]" value="{.key_}" { ? in_array(.key_, _GET.selectMarkets) }checked{ / }/> {.name}</label>
+						<!--{ / }-->
+						<label><input type="checkbox" name="search_market_fail" value='y' {? _GET.search_market_fail == 'y'}checked{/}> 송장전송실패 조회</label>
+					</div>
+				</td>
+			</tr>
+			<!--{ / }-->
+			</table>
+		</td>
+	<tr>
 	</table>
-
 	<div class="footer search_btn_lay noprint">
 		<div>
 			<span class="sc_edit">
 				<button type="button" id="set_default_setting_button" class="resp_btn v3">기본검색설정</button>
-				<button type="button" id="get_default_button" name="get_default_button" onclick="set_default_search_form();" class="resp_btn v3">기본검색적용</button>
+				<button type="button" id="get_default_button" onclick="set_default_search_form();" class="resp_btn v3">기본검색적용</button>
 			</span>
 			<span class="search">
-				<button type="button" class="resp_btn active" onclick="go_search_export();"><span>검색</span></button>
-				<button type="button" id="btn-reset" onclick="reset_search_form();" class="resp_btn v3">초기화</button>
+				<button type="button" onclick="go_search_export();" class="resp_btn active"><span>검색</span></button>
+				<button type="button" id="search_reset_button" onclick="reset_search_form();" class="resp_btn v3">초기화</button>
 			</span>
 			<span class="detail">
 				<button type="button" id="search_detail_button" class="close resp_btn v3" class="close" value="open">상세검색닫기</button>
@@ -549,14 +490,14 @@ tr.open-tr {display:none;}
 	</div>
 </div>
 
-<div align="center" class="noprint">
-	<div style="position: relative;width:100px;height:20px;">
+<div class="noprint" align="center">
+	<div style="position: relative;width:100px;height:8px;">
 		<div style="position: absolute;z-index:2;top:0px;" id="btn-close-search"><a href="javascript:close_search_form();"><img src="../images/common/search_close.gif" /></a></div>
 		<div style="position: absolute;z-index:2;top:0px;" id="btn-open-search"><a href="javascript:open_search_form();"><img src="../images/common/search_open.gif" /></a></div>
 	</div>
 </div>
 
-<div id="export-bar-area" class="batch_status noprint">
+<div id="export-bar-area" class="noprint">
 	<div id="export-bar">
 		<div class="export-bar-inner pdl10 pdr10">
 			<div  class="pdt5"></div>
@@ -585,16 +526,15 @@ tr.open-tr {display:none;}
 						</div>
 						<div class="pdt5 desc btn_destory">
 							<label class="resp_checkbox"><input type="checkbox" name="allcheck" value="1" onclick="check_all(this);check_bg();" { ?_GET.seq[0] }checked="checked"{ / } /> 전체</label>
-
 							<span class="btn small">
-								<button name="goods_print" type="button" id="25" class="hand resp_btn v3" align="absmiddle" onclick="order_print();">
+								<button class="hand resp_btn v3" align="absmiddle" onclick="order_print();">
 									<img src="/admin/skin/default/images/common/icon_order.png">
 									프린트
 								</button>
 							</span>
 
 							<span class="btn small">
-								<button name="goods_print" type="button" id="25" class="hand resp_btn v3" align="absmiddle" onclick="export_print();">
+								<button class="hand resp_btn v3" align="absmiddle" onclick="export_print();">
 									<img src="/admin/skin/default/images/common/icon_order_2.png">
 									프린트
 								</button>
@@ -615,21 +555,21 @@ tr.open-tr {display:none;}
 							<button type="button" id="goods_export" onclick="export_sumit_for_status55('55');">일괄 마켓 송장 전송</button>
 						</span>
 						<!--{ : }-->
-						<div onmouseover="on_delivery_layer(this)" onmouseout="out_delivery_layer(this)" style="width:100px;">
-							<span class="btn large cyanblue"><button type="button">일괄 출고상태 변경▼</button></span>
-							<div class="relative hide">
-								<div class="absolute" style="background-color:#fff;text-align:left;">
-									<div class="pdt5"></div>
-									<span class="btn large cyanblue" >
-										<button type="button" id="goods_export" onclick="export_sumit_for_status55('55');">일괄 배송중 처리></button>
-									</span>
-									<div class="pdt5"></div>
-									<span class="btn large cyanblue" >
-										<button type="button" id="goods_export" onclick="export_sumit_for_status55('65');">일괄 배송완료 처리></button>
-									</span>
-								</div>
+							<div onmouseover="on_delivery_layer(this)" onmouseout="out_delivery_layer(this)" style="width:100px;">
+									<span class="btn large cyanblue"><button type="button">일괄 출고상태 변경▼</button></span>
+									<div class="relative hide">
+											<div class="absolute" style="background-color:#fff;text-align:left;">
+													<div class="pdt5"></div>
+													<span class="btn large cyanblue" >
+															<button type="button" id="goods_export" onclick="export_sumit_for_status55('55');">일괄 배송중 처리></button>
+													</span>
+													<div class="pdt5"></div>
+													<span class="btn large cyanblue" >
+															<button type="button" id="goods_export" onclick="export_sumit_for_status55('65');">일괄 배송완료 처리></button>
+													</span>
+											</div>
+									</div>
 							</div>
-						</div>
 						<!--{ / }-->
 					<!--{ : _GET.status == '65' }-->
 					<div align="center">
@@ -648,13 +588,12 @@ tr.open-tr {display:none;}
 					</td>
 				</tr>
 			</table>
-			<div class="pd5"></div>
-			<div style="height:1px;border-top:1px solid #e1e1e1;"></div>
+			<div style="height:1px;border-top:1px solid #e1e1e1; margin-top:10px;"></div>
 		</div>
 	</div>
 </div>
 
-<div tabindex="-1" id="export_layer" class="ui-dialog ui-widget ui-widget-content ui-corner-all ui-draggable" style="outline: 0px; left: 13%; top: 30%; width: 930px; height: auto; display: block; position: absolute; z-index: 10000;">
+<div tabindex="-1" id="export_layer" class="ui-dialog ui-widget ui-widget-content ui-corner-all ui-draggable" style="outline: 0px; left: 13%; top: 30%; width: 930px; height: auto; display: block; position: absolute; z-index: 10002;">
 	<div class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix">
 		<span class="ui-dialog-title" id="ui-dialog-title-export_layer">일괄출고처리</span>
 		<a class="ui-dialog-titlebar-close ui-corner-all" href="#" onclick="close_export_popup();"><span class="ui-icon ui-icon-closethick">close</span></a>
@@ -700,7 +639,6 @@ tr.open-tr {display:none;}
 {data_page.html}
 </div>
 <!--{ / }-->
-
 <div class="pdl10 pdr10">
 	<!--{ ? gf_config.goodsflow_step == '1' && batch_goodsflow }-->
 	<div class="right pdt5">
@@ -716,177 +654,168 @@ tr.open-tr {display:none;}
 	<div class="top_orderinfo_barcode">
 		<!-- 주문정보 및 바코드 -->
 		<table width="100%" border="0" style="table-layout: fixed" class="mb5">
-		<tr>
-			<td width="20%">
-			<table cellpadding="0" cellspacing="0" border="0">
 			<tr>
-				<td rowspan="2" width="45">
-					<!--{ ?  ..goods_kind == 'goods' }-->
-						<!--{? hasMarketOrders == false && ..export_status != 'y' && strpos(..linkage_mall_order_id,'ex-') === false //#23611 ycg 2018-12-07 shoplinker n goodsflow linkage }-->
-						<input  class="resp_checkbox check_export_code" type="checkbox" name="export_code[]" disabled="disabled" />
-						<!--{ : }-->
-							<!--{? hasMarketOrders != false && strpos(..linkage_mall_order_id,'ex-') !== false}-->
-								<input  class="resp_checkbox check_export_code" type="checkbox" name="export_code[]" disabled="disabled" />
+				<td width="20%">
+				<table cellpadding="0" cellspacing="0" border="0">
+				<tr>
+					<td rowspan="2" width="35">
+						<!--{ ?  ..goods_kind == 'goods' }-->
+							<!--{? hasMarketOrders == false && ..export_status != 'y' //#23611 ycg 2019-02-07 shoplinker n goodsflow linkage }-->
+							<input type="checkbox" name="export_code[]" disabled="disabled" class="resp_checkbox" />
 							<!--{ : }-->
-							<input class="resp_checkbox check_export_code" type="checkbox" name="export_code[]" class="check_export_code" value="{..export_code}" order_seq="{..order_seq}" {?_GET.seq}checked="checked"{ / } onclick="check_bg();"/>
+							<input type="checkbox" name="export_code[]" class="check_export_code resp_checkbox" value="{..export_code}" order_seq="{..order_seq}" {?_GET.seq}checked="checked"{ / } onclick="check_bg();"/>
 							<input type="hidden" name="shipping_provider_seq[{..export_code}]" value="{..shipping_provider_seq}" />
 							<!--{ / }-->
+						<!--{ : }-->
+						<input type="checkbox" name="export_code[]" disabled="disabled" />
 						<!--{ / }-->
-					<!--{ : }-->
-					<input  class="resp_checkbox check_export_code" type="checkbox" name="export_code[]" disabled="disabled" />
-					<!--{ / }-->
-					{..num}.
-				</td>
-				<td>
-					<table cellpadding="0" cellspacing="0" border="0">
-					<tr>
-						<td>
-							<!--{? ..is_bundle_export == 'Y'}-->
-								<!--{@ ..bundle_order_list}-->
-									<a href="../order/view?no={...value_}" target="_blank"><span class="blue">{...value_}</span></a>
-									<a href="javascript:printOrderView('{...value_}', 'batch_status')"><span class="icon-print-order"></span></a>
-								<!--{ / }-->
+						{..num}.
+					</td>
+					<td >
+						<table cellpadding="0" cellspacing="0" border="0">
+						<tr>
+							<td>
+								{? ..is_bundle_export == 'Y'}
+									{@ ..bundle_order_list}
+										<a href="../order/view?no={...value_}" target="_blank"><span class="blue">{...value_}</span></a>
+										<a href="javascript:printOrderView('{...value_}', 'batch_status')"><span class="icon-print-order"></span></a>
+									{/}
+								{:}
+								<a href="../order/view?no={..order_seq}" target="_blank"><span class="blue">{..order_seq}</span></a>
+								<a href="javascript:printOrderView('{..order_seq}', 'batch_status')"><span class="icon-print-order"></span></a>
+								{/}
+							</td>
+						</tr>
+						<!--{? (npay_use && ..npay_order_id) ||  ..linkage_id == 'connector'}-->
+						<tr>
+							<!--{? ..linkage_id == 'connector' }-->
+							<td><div class="ngreen"><span class="bold">{..linkage_mall_order_id}</span> ({..linkage_mallname_text})</div></td>
 							<!--{ : }-->
-							<a href="../order/view?no={..order_seq}" target="_blank"><span class="blue">{..order_seq}</span></a>
-							<a href="javascript:printOrderView('{..order_seq}', 'batch_status')"><span class="icon-print-order"></span></a>
-							<!--{ / }-->
-						</td>
-					</tr>
-					<!--{? (npay_use && ..npay_order_id) ||  ..linkage_id == 'connector'}-->
-					<tr>
-						<!--{? ..linkage_id == 'connector' }-->
-						<td><div class="ngreen"><span class="bold">{..linkage_mall_order_id}</span> ({..linkage_mallname_text})</div></td>
-						<!--{ : }-->
-						<td><div class="ngreen"><span class="bold">{..npay_order_id}</span> (Npay주문번호)</div></td>
-						<!--{ /  }-->
-					</tr>
-					<!--{ / }-->
-					<tr>
-						<td>
-							<a href="../export/view?no={..export_code}" target="_blank"><span class="blue">{..export_code}</span></a>
-							<a href="javascript:printExportView('{..order_seq}','{..export_code}', 'batch_status')"><span class="icon-print-export"></span></a>
-							{? ..is_bundle_export == 'Y'}<span class="bold red">[합포장]</span>{/}
-							<!--{? serviceLimit('H_AD') }-->
-							<div class="bold">
-								{ ? ..mall_name }{..mall_name} →{ / }
-								{ ? ..provider_seq == ..shipping_provider_seq }
-								{..provider_name}
-								{ : }
-								본사
-								{ / }
-							</div>
-							<!--{ / }-->
-						</td>
-					</tr>
-					</table>
-				</td>
-			</tr>
-			</table>
-			</td>
-			<td align="left">
-			<div class="desc" style="color:#000;">
-				<table class="rec-info">
-					<tr>
-						<td rowspan="2" align="right">
-							<!--{?..member_seq}-->
-							<a href="../member/detail?member_seq={..member_seq}" target="_blank"><span class="member">{..order_user_name}</span></a>
-							<!--{ : }-->
-							<span class="nomember">{..order_user_name}</span>
-							<!--{ / }-->
-							{? ..order_user_name!=..recipient_user_name}
-							<img src="../images/common/order_arrow.png" / >
-							<span class="nomember">{..recipient_user_name}</span>
-							{ / }
-						</td>
-						<td width="25"></td>
-						<td>
-						<!--{ ? ..shipping_method && ..shipping_method != 'coupon' && ..shipping_method != 'direct_store' }-->
-							<span class="addr">
-								<!--{? ..recipient_zipcode}-->
-								{..recipient_zipcode})
-								<!--{ / }-->
-								<!--{? ..recipient_address_type == "street"}-->
-								{ ..recipient_address_street }
-								<!--{ : }-->
-								{ ..recipient_address }
-								<!--{ / }-->
-								{ ..recipient_address_detail }
-							</span>
-						<!--{ : ..shipping_method == 'direct_store' }-->
-							<span class="store"></span>
-						<!--{ : }-->
-							<span class="tel">{..recipient_email }&nbsp;|&nbsp;</span>
-							<span class="tel">{..recipient_cellphone }</span>
-							<span class="memo">{ ..memo }</span>
+							<td><div class="ngreen"><span class="bold">{..npay_order_id}</span> (Npay주문번호)</div></td>
+							<!--{ /  }-->
+						</tr>
 						<!--{ / }-->
-						</td>
-					</tr>
-					<!--{ ? ..shipping_method && ..shipping_method != 'coupon' }-->
-					<tr>
-						<td></td>
-						<td>
-							<span class="tel" style="font-size:11px;">{..recipient_phone }</span>
-							<!--{?..recipient_phone && ..recipient_cellphone  }-->
-							<span class="separator">|</span>
-							<!--{/}-->
-							<span class="tel">{..recipient_cellphone }</span>
-							<!--{ ? ..recipient_cellphone && ..memo  }-->
-							<span class="separator">|</span>
-							<!--{ / }-->
-							<span class="memo">{ ..memo }</span>
-						</td>
-					</tr>
-					<!--{ / }-->
-				</table>
-			</div>
-			</td>
-			<td width="30">
-				<span class="btn-direct-open {? data_search_default.export_detail_view != 'close' }opened{/}" onclick="btn_export_toggle(this);"><span class="hide">열기</span></span>
-			</td>
-			<td width="25%" class="left">
-				<!--{ ? ..goods_kind == 'goods' && ..status < '55' }-->
-				<input type="text" name="barcode[{..export_code}]" class="barcode" style="width:100%;" value="" title="피킹(picking)한 상품의 바코드(상품코드)를 스캔→검수" onkeydown="check_barcode(this)" tabindex="{..num}" {? data_search_default.export_detail_view == 'close' }disabled="disabled"{/} />
-				<!--{ / }-->
-			</td>
-			<td width="8%" align="right">
-				<!--{? _GET.status < '75' && ..goods_kind == 'goods' }-->
-					<!--{? _GET.status == '45' }-->
-				<span class="btn small cyanblue" >
-					<button type="button" id="goods_export" onclick="export_each_popup('{..export_code}');">출고 처리></button>
-				</span>
-					<!--{ : _GET.status == '55' }-->
-						<!--{? hasMarketOrders == true && strpos(..linkage_mall_order_id,'ex-') === false}-->
-						<span class="btn small cyanblue" >
-							<button type="button" id="goods_export" onclick="export_each_submit_for_status55('{..export_code}','55');">마켓 송장 전송</button>
-						</span>
-						<!--{ : }-->
-							<!--{? hasMarketOrders == false && strpos(..linkage_mall_order_id,'ex-') === false //#23611 ycg 2018-12-07 shoplinker n goodsflow linkage }-->
-							<!--{ : }-->
-							<div onmouseover="on_delivery_layer(this)" onmouseout="out_delivery_layer(this)">
-								<span class="btn small cyanblue"><button type="button">출고상태 변경▼</button></span>
-								<div class="relative hide">
-									<div class="absolute left pdl10" style="background-color:#fff;">
-										<div class="pdt5"></div>
-										<span class="btn small cyanblue" >
-											<button type="button" id="goods_export" onclick="export_each_submit_for_status55('{..export_code}','55');">배송중 처리></button>
-										</span>
-										<div class="pdt5"></div>
-										<span class="btn small cyanblue" >
-											<button type="button" id="goods_export" onclick="export_each_submit_for_status55('{..export_code}','65');">배송완료 처리></button>
-										</span>
-									</div>
+						<tr>
+							<td>
+								<a href="../export/view?no={..export_code}" target="_blank"><span class="blue">{..export_code}</span></a>
+								<a href="javascript:printExportView('{..order_seq}','{..export_code}', 'batch_status')"><span class="icon-print-export"></span></a>
+								<div class="bold">
+									{ ? ..mall_name }{..mall_name} →{ / }
+									{ ? ..provider_seq == ..shipping_provider_seq }
+									{..provider_name}
+									{ : }
+									본사
+									{ / }
 								</div>
-							</div>
+							</td>
+						</tr>
+						</table>
+					</td>
+				</tr>
+
+				</table>
+				</td>
+				<td align="left">
+				<div class="desc" style="color:#000;">
+					<table class="rec-info">
+						<tr>
+							<td rowspan="2" align="right">
+								<!--{?..member_seq}-->
+								<a href="../member/detail?member_seq={..member_seq}" target="_blank"><span class="member">{..order_user_name}</span></a>
+								<!--{ : }-->
+								<span class="nomember">{..order_user_name}</span>
+								<!--{ / }-->
+								{? ..order_user_name!=..recipient_user_name}
+								<img src="../images/common/order_arrow.png" / >
+								<span class="nomember">{..recipient_user_name}</span>
+								{ / }
+							</td>
+							<td width="25"></td>
+							<td>
+							<!--{ ? ..domestic_shipping_method && ..domestic_shipping_method != 'coupon' }-->
+								<span class="addr">
+									<!--{? ..recipient_zipcode}-->
+									{..recipient_zipcode})
+									<!--{ / }-->
+									<!--{? ..recipient_address_type == "street"}-->
+									{ ..recipient_address_street }
+									<!--{ : }-->
+									{ ..recipient_address }
+									<!--{ / }-->
+									{ ..recipient_address_detail }
+								</span>
+							<!--{ : }-->
+								<span class="tel">{..recipient_email }&nbsp;|&nbsp;</span>
+								<span class="tel">{..recipient_cellphone }</span>
+								<span class="memo">{ ..memo }</span>
 							<!--{ / }-->
+							</td>
+						</tr>
+						<!--{ ? ..domestic_shipping_method && ..domestic_shipping_method != 'coupon' }-->
+						<tr>
+							<td></td>
+							<td>
+								<span class="tel" style="font-size:11px;">{..recipient_phone }</span>
+								<!--{?..recipient_phone && ..recipient_cellphone  }-->
+								<span class="separator">|</span>
+								<!--{/}-->
+								<span class="tel">{..recipient_cellphone }</span>
+								<!--{ ? ..recipient_cellphone && ..memo  }-->
+								<span class="separator">|</span>
+								<!--{ / }-->
+								<span class="memo">{ ..memo }</span>
+							</td>
+						</tr>
 						<!--{ / }-->
-					<!--{ : _GET.status == '65' }-->
-				<span class="btn small cyanblue" >
-					<button type="button" id="goods_export" onclick="export_each_submit('{..export_code}');">배송완료 처리></button>
-				</span>
+					</table>
+				</div>
+				</td>
+				<td width="30">
+					<span class="btn-direct-open {? data_search_default.export_detail_view != 'close' }opened{/}" onclick="btn_export_toggle(this);"><span class="hide">열기</span></span>
+				</td>
+				<td width="25%" class="left">
+					<!--{ ? ..goods_kind == 'goods' && ..status < '55' }-->
+					<input type="text" name="barcode[{..export_code}]" class="barcode" style="width:100%;" value="" title="피킹(picking)한 상품의 바코드(상품코드)를 스캔→검수" onkeydown="check_barcode(this)" tabindex="{..num}" {? data_search_default.export_detail_view == 'close' }disabled="disabled"{/} />
 					<!--{ / }-->
-				<!--{ / }-->
-			</td>
-		</tr>
+				</td>
+				<td width="8%" align="right">
+					<!--{? _GET.status < '75' && ..goods_kind == 'goods' }-->
+						<!--{? _GET.status == '45' }-->
+						<span class="btn small cyanblue" >
+							<button type="button" id="goods_export" onclick="export_each_popup('{..export_code}');">출고 처리></button>
+						</span>
+						<!--{ : _GET.status == '55' }-->
+                                                    <!--{? hasMarketOrders == true }-->
+                                                    <span class="btn small cyanblue" >
+                                                            <button type="button" id="goods_export" onclick="export_each_submit_for_status55('{..export_code}','55');">마켓 송장 전송</button>
+                                                    </span>
+                                                    <!--{ : }-->
+							<!--{? hasMarketOrders == false}-->
+							<!--{ : }-->
+                                                        <div onmouseover="on_delivery_layer(this)" onmouseout="out_delivery_layer(this)">
+                                                                <span class="btn small cyanblue"><button type="button">출고상태 변경▼</button></span>
+                                                                <div class="relative hide">
+                                                                        <div class="absolute left pdl10" style="background-color:#fff;">
+                                                                                <div class="pdt5"></div>
+                                                                                <span class="btn small cyanblue" >
+                                                                                        <button type="button" id="goods_export" onclick="export_each_submit_for_status55('{..export_code}','55');">배송중 처리></button>
+                                                                                </span>
+                                                                                <div class="pdt5"></div>
+                                                                                <span class="btn small cyanblue" >
+                                                                                        <button type="button" id="goods_export" onclick="export_each_submit_for_status55('{..export_code}','65');">배송완료 처리></button>
+                                                                                </span>
+                                                                        </div>
+                                                                </div>
+                                                        </div>
+							<!--{ / }-->
+                                                    <!--{ / }-->
+						<!--{ : _GET.status == '65' }-->
+						<span class="btn small cyanblue" >
+							<button type="button" id="goods_export" onclick="export_each_submit('{..export_code}');">배송완료 처리></button>
+						</span>
+						<!--{ / }-->
+					<!--{ / }-->
+				</td>
 		</table>
 	</div>
 	<!--// top_orderinfo_barcode END -->
@@ -906,15 +835,10 @@ tr.open-tr {display:none;}
 		<col width="23%"/><!-- 받는방법 -->
 	</colgroup>
 	<thead>
-	<!--{ ? .index_  == 0 && ..index_ == 0}-->
+		<!--{ ? .index_  == 0 && ..index_ == 0}-->
 		<tr>
 			<th>주문상품</th>
-			<th>
-				<div { ? _GET.status != 45 }class="hide"{ / }>
-					{=scmSelectWarehouse(shopSno, scmOptions)}
-				</div>
-				재고
-			</th>
+			<th>재고</th>
 			<th>주문</th>
 			<th>취소</th>
 			<th>보낸수량</th>
@@ -924,19 +848,19 @@ tr.open-tr {display:none;}
 			<th>검수</th>
 			<th>받는방법</th>
 		</tr>
-	</thead>
-	<tbody>
-	<!--{ / }-->
+		</thead>
+		<tbody>
+		<!--{ / }-->
 
 		<!-- 닫힘상태의 정보 시작 -->
 		<tr class="close-tr">
-			<td class="info option left">
+			<td class="info option">
 				<table class="list-goods-info">
 				<tr>
 					<td width="50"><span class="order-item-image"><img src="{..image}" class="small_goods_image" onerror="this.src='../images/common/noimage_list.gif';" /></span></td>
 					<td>
-						{? npay_use && ..npay_product_order_id }<div class="ngray"><span class="bold">{..npay_product_order_id}</span> (Npay상품주문번호)</div>{ / }
 						<div class="goods_name">
+							{? npay_use && ..npay_product_order_id }<div class="ngray"><span class="bold">{..npay_product_order_id}</span> (Npay상품주문번호)</div>{ / }
 							<span class="goods_name1" style="width:100%;color:#000000;">
 								{? ..goods_type == 'gift' }
 								<img src="/admin/skin/default/images/common/icon_gift.gif" />
@@ -953,15 +877,18 @@ tr.open-tr {display:none;}
 								{ / }
 							</span>
 						</div>
-						<!--{? ..option1!=null}-->
+						<!--{?..option1!=null}-->
 						<div class="goods_option">
 							<img src="/admin/skin/default/images/common/icon_option.gif" />
-							{? ..option1!=null}{?..title1}{..title1}:{/}{..option1}{/}
-							{? ..option2!=null}{?..title2}{..title2}:{/}{..option2}{/}
-							{? ..option3!=null}{?..title3}{..title3}:{/}{..option3}{/}
-							{? ..option4!=null}{?..title4}{..title4}:{/}{..option4}{/}
-							{? ..option5!=null}{?..title5}{..title5}:{/}{..option5}{/}
+							{?..option1!=null}{?..title1}{..title1}:{/}{..option1}{/}
+							{?..option2!=null}{?..title2}{..title2}:{/}{..option2}{/}
+							{?..option3!=null}{?..title3}{..title3}:{/}{..option3}{/}
+							{?..option4!=null}{?..title4}{..title4}:{/}{..option4}{/}
+							{?..option5!=null}{?..title5}{..title5}:{/}{..option5}{/}
 						</div>
+						<!--{ / }-->
+						<!--{ ?..opt_goods_code }-->
+						<div class="goods_option fx11 goods_code_icon">[상품코드: {..opt_goods_code}]</div>
 						<!--{ / }-->
 						<!--{ @ ..subinputs }-->
 						<div class="goods_input">
@@ -972,19 +899,11 @@ tr.open-tr {display:none;}
 								{:}{...value}{ / }
 						</div>
 						<!--{ / }-->
-						<!--{ ? ..package_yn != 'y' }-->
-						<div class="warehouse-info-lay">
-							<ul>
-								<li class="wh_info"></li>
-								<li>상품코드 : {..opt_goods_code}</li>
-							</ul>
-						</div>
-						<!--{ / }-->
 					</td>
 				</tr>
 				</table>
 			</td>
-			<td class="info option" align="center"><span class="total_stock_{..export_code}">{=number_format(..tot_stock)}</span></td>
+			<td class="info option" align="center">{=number_format(..tot_stock)}</td>
 			<td class="info option" align="center">{=number_format(..tot_ea)}</td>
 			<td class="info option" align="center">{=number_format(..tot_step85)}</td>
 			<td class="info option" align="center">{=number_format(..tot_sended_ea)}</td>
@@ -994,7 +913,7 @@ tr.open-tr {display:none;}
 			<td class="info option" align="center">-</td>
 
 			<td class="info option delivery-info" align="center"><!-- // 배송방법 정보 -->
-			<!--{? data_search_default.export_detail_view == 'close' }-->
+				<!--{? data_search_default.export_detail_view == 'close' }-->
 				<table border="0" cellpadding="0" cellspacing="0" class="inner-table shipping_info_{..export_code}" width="100%">
 				<tr>
 					<td class="info pdl5" valign="top" width="100%">
@@ -1019,16 +938,13 @@ tr.open-tr {display:none;}
 						<input type="hidden" name="export_shipping_group[{..export_code}]" class="export_shipping_group" value="{..shipping_group}" />
 						<input type="hidden" id="export_shipping_method_{..export_code}" name="export_shipping_method[{..export_code}]" class="export_shipping_method" value="{..shipping_method}" />
 						<input type="hidden" name="export_shipping_set_name[{..export_code}]" class="export_shipping_set_name" value="{..shipping_set_name}" />
-						<!--{? serviceLimit('H_AD') }-->
 						<div>{..provider_name}</div>
-						<!--{ / }-->
 						<div class="blue">
-							<!--{ ? ..pg == 'talkbuy' }-->
-							<span class="hand shipping_set_name_{..export_code}" onclick='openDialog("카카오페이 구매", "talkbuy_delivary_dialog", {"width":"450","height":"150"});'>{..shipping_set_name}</span>
-							<!--{ : }-->
-							<span class="hand shipping_set_name_{..export_code}" onclick="ship_chg_popup('{..export_code}','export','after');">{..shipping_set_name}</span>
-							<!--{ / }-->
-						</div>
+						<!--{ ? ..pg == 'talkbuy' }-->
+						<span class="hand shipping_set_name_{..export_code}" onclick='openDialog("카카오페이 구매", "talkbuy_delivary_dialog", {"width":"450","height":"150"});'>{..shipping_set_name}</span>
+						<!--{ : }-->
+						<span class="hand shipping_set_name_{..export_code}" onclick="ship_chg_popup('{..export_code}','export','after');">{..shipping_set_name}</span>
+						<!--{ / }-->
 
 						<!-- 택배사선택 :: START -->
 						<div class="delivery_lay {?!preg_match('/delivery|postpaid/', ..shipping_method)}hide{/}">
@@ -1036,10 +952,10 @@ tr.open-tr {display:none;}
 							<select name="delivery_company[{..export_code}]" class="deliveryCompany" onchange="check_deliveryCompany('{..export_code}');" style="width:85px;">
 								<!--{ @ ..delivery_company_array }-->
 									<!--{? preg_match('/auto/',...key_) }-->
-										<!--{* ? ..linkage_id == 'connector' && hasMarketOrders == false //#23611 ycg 2018-12-07 shoplinker n goodsflow linkage * }-->
-										<!--{* : //#23611 ycg 2018-12-07 shoplinker n goodsflow linkage *}-->
+										<!--{ * ? ..linkage_id == 'connector' && hasMarketOrders == false //#23611 ycg 2019-02-07 shoplinker n goodsflow linkage * }-->
+										<!--{* : //#23611 ycg 2019-02-07 shoplinker n goodsflow linkage *}-->
 								<option value="{...key_}" url="{...url}" style="background-color:yellow" {?..delivery_company_code == ...key_}selected{/}>{...company}</option>
-										<!--{* / //#23611 ycg 2018-12-07 shoplinker n goodsflow linkage *}-->
+                                                                                <!--{ * / //#23611 ycg 2019-02-07 shoplinker n goodsflow linkage * }-->
 									<!--{ : }-->
 								<option value="{...key_}" url="{...url}" style="background-color:#ffffff" {?..delivery_company_code == ...key_}selected{/}>{...company}</option>
 									<!--{ / }-->
@@ -1053,7 +969,7 @@ tr.open-tr {display:none;}
 							</span>
 							<!--{ / }-->
 							<!--{ ? ..delivery_number && (..shipping_provider_seq==gf_config.provider_seq) }-->
-							<span class="btn small red gf_btn_area"><button type="button" onclick="reset_delnumber('{..export_code}');">초기화</button></span></span>
+							<span class="btn small red gf_btn_area"><button type="button" onclick="reset_delnumber('{..export_code}');"  class="resp_btn v3">초기화</button></span></span>
 							<!--{ / }-->
 						</div>
 						<!-- 택배사선택 :: END -->
@@ -1079,45 +995,36 @@ tr.open-tr {display:none;}
 				<!--{ ? gf_config.goodsflow_step == '1' && gf_config.gf_use == 'Y' }-->
 				<tr class="gf_btn_area {? ..shipping_provider_seq!=gf_config.provider_seq || gf_config.gf_deliveryCode != ..delivery_company_code || !preg_match('/delivery|postpaid/', ..shipping_method)}hide{/}">
 					<td class="info pdl5">
-						<!--{* ? ..linkage_id == 'connector' && hasMarketOrders == false //#23611 ycg 2018-12-07 shoplinker n goodsflow linkage *}-->
-						<!-- #23611 ycg 2018-12-07 shoplinker n goodsflow linkage
-						<span class="btn small gray" >
+						<!--{* ? ..linkage_id == 'connector' && hasMarketOrders == false //#23611 ycg 2019-02-07 shoplinker n goodsflow linkage *}-->
+						<!-- <span class="btn small gray" >
 							<button type="button" onclick="alert('오픈마켓 주문건은 굿스플로 서비스를 이용할 수 없습니다.');">(굿)운송장받기/출력</button>
-						</span>
-						-->
-						<!--{* : //#23611 ycg 2018-12-07 shoplinker n goodsflow linkage *}-->
+						</span> -->
+						<!--{* : //#23611 ycg 2019-02-07 shoplinker n goodsflow linkage *}-->
 						<span class="btn small cyanblue" >
 							<button type="button" onclick="gf_invoice_call('{..export_code}');">(굿)운송장받기/출력</button>
 						</span>
-						<!--{* / //#23611 ycg 2018-12-07 shoplinker n goodsflow linkage *}-->
+						<!--{* / //#23611 ycg 2019-02-07 shoplinker n goodsflow linkage *}-->
 					</td>
 				</tr>
 				<!--{ / }-->
 				</table>
-			<!--{ / }-->
+				<!--{ / }-->
+
 			</td>
 		</tr>
 		<!-- 닫힘상태의 정보 끝 -->
 
 		<!--{ / }-->
 
-
-		<!--{ ? ..option_seq || (..suboption_seq && ..index_ == 0 ) }-->
+		<!--{ ? ..option_seq || (..suboption_seq&& ..index_ == 0) }-->
 		<tr class="open-tr">
-			<td class="info option left">
-
-				<!--{ ? scm_cfg['use'] == 'Y' && ..provider_seq == 1 && ..package_yn != 'y' }-->
-				<input type="hidden" name="optioninfo[{..export_code}][option][{..goods_option_seq}]" class="optioninfo" value="{..goods_seq}option{..goods_option_seq}" />
-				<input type="hidden" name="whSupplyPrice[{..export_code}][option][{..goods_option_seq}]" class="wh_supply_price" value="{..scm_supply_price}" />
-				<input type="hidden" name="goodscode[{..export_code}][option][{..goods_option_seq}]" value="{..opt_goods_code}" />
-				<!--{ / }-->
-
-				<table class="list-goods-info" width="100%">
+		<td class="info option">
+				<table class="list-goods-info">
 				<tr>
 					<td width="50"><span class="order-item-image"><img src="{..image}" class="small_goods_image" onerror="this.src='../images/common/noimage_list.gif';" /></span></td>
 					<td>
-						{? npay_use && ..npay_product_order_id }<div class="ngray"><span class="bold">{..npay_product_order_id}</span> (Npay상품주문번호)</div>{ / }
 						<div class="goods_name">
+						{? npay_use && ..npay_product_order_id }{..npay_product_order_id}<div class="ngray"> (Npay상품주문번호)<span class="bold"></span></div>{ / }
 							<span class="goods_name1" style="width:100%;color:#000000;">
 								{? ..goods_type == 'gift' }
 								<img src="/admin/skin/default/images/common/icon_gift.gif" />
@@ -1131,14 +1038,14 @@ tr.open-tr {display:none;}
 								{..goods_name}
 							</span>
 						</div>
-						{?..option1}
+						{?..option1!=null}
 						<div class="goods_option">
 							<img src="/admin/skin/default/images/common/icon_option.gif" />
-							{?..option1}{?..title1}{..title1}:{/}{..option1}{/}
-							{?..option2}{?..title2}{..title2}:{/}{..option2}{/}
-							{?..option3}{?..title3}{..title3}:{/}{..option3}{/}
-							{?..option4}{?..title4}{..title4}:{/}{..option4}{/}
-							{?..option5}{?..title5}{..title5}:{/}{..option5}{/}
+							{?..option1!=null}{?..title1}{..title1}:{/}{..option1}{/}
+							{?..option2!=null}{?..title2}{..title2}:{/}{..option2}{/}
+							{?..option3!=null}{?..title3}{..title3}:{/}{..option3}{/}
+							{?..option4!=null}{?..title4}{..title4}:{/}{..option4}{/}
+							{?..option5!=null}{?..title5}{..title5}:{/}{..option5}{/}
 						</div>
 						{ / }
 					{ @ ..subinputs }
@@ -1151,14 +1058,12 @@ tr.open-tr {display:none;}
 					</div>
 					{ / }
 
-					<!--{ ? ..package_yn != 'y' }-->
 					<div class="warehouse-info-lay">
-					<ul>
-						<li class="wh_info"></li>
-						<li>상품코드 : {..opt_goods_code}</li>
-					</ul>
-					</div>
-					<!--{ / }-->
+						<ul>
+							<li class="wh_info"></li>
+							<li>상품코드 : {..opt_goods_code}</li>
+						</ul>
+						</div>
 					</td>
 				</tr>
 				</table>
@@ -1168,7 +1073,7 @@ tr.open-tr {display:none;}
 					{ ? ..package_yn == 'y' }
 						실제상품▼
 					{ : }
-						<span class="stock">{=number_format(..stock)}</span>
+						{=number_format(..stock)}
 					{ / }
 				{ : }
 				-
@@ -1204,7 +1109,6 @@ tr.open-tr {display:none;}
 			<td class="null" align="center">→</td>
 			<td class="info option" align="center" >
 				{..ea}
-				<input type="hidden" class="orderEA" value="{..ea}" />
 				<input type="hidden" name="request_ea[{..export_code}][{..bar_goods_code}]" class="line export_ea"  style="text-align:right" size="2" value="{..ea}" onkeydown="reset_barcode_ea(this);">
 			</td>
 			<!--{ ?  ..goods_kind == 'goods' }-->
@@ -1245,9 +1149,7 @@ tr.open-tr {display:none;}
 						<input type="hidden" name="export_shipping_group[{..export_code}]" class="export_shipping_group" value="{..shipping_group}" />
 						<input type="hidden" id="export_shipping_method_{..export_code}" name="export_shipping_method[{..export_code}]" class="export_shipping_method" value="{..shipping_method}" />
 						<input type="hidden" name="export_shipping_set_name[{..export_code}]" class="export_shipping_set_name" value="{..shipping_set_name}" />
-						<!--{? serviceLimit('H_AD') }-->
 						<div>{..provider_name}</div>
-						<!--{ / }-->
 						<div class="blue">
 							<span class="hand shipping_set_name_{..export_code}" onclick="ship_chg_popup('{..export_code}','export','after');">{..shipping_set_name}</span>
 						</div>
@@ -1255,16 +1157,16 @@ tr.open-tr {display:none;}
 						<!-- 택배사선택 :: START -->
 						<div class="delivery_lay {?!preg_match('/delivery|postpaid/', ..shipping_method)}hide{/}">
 							<!--{ ? ..delivery_company_array }-->
-							<select name="delivery_company[{..export_code}]" class="deliveryCompany" onchange="check_deliveryCompany('{..export_code}');" style="width:85px;">
+								<select name="delivery_company[{..export_code}]" class="deliveryCompany" onchange="check_deliveryCompany('{..export_code}');" style="width:85px;">
 								<!--{ @ ..delivery_company_array }-->
-									<!--{? preg_match('/auto/',...key_) }-->
-										<!--{* ? ..linkage_id == 'connector' && hasMarketOrders == false #23611 ycg 2018-12-07 shoplinker n goodsflow linkage *}-->
-										<!--{* : #23611 ycg 2018-12-07 shoplinker n goodsflow linkage *}-->
+								<!--{? preg_match('/auto/',...key_) }-->
+										<!--{* ? ..linkage_id == 'connector' && hasMarketOrders == false //#23611 ycg 2019-02-07 shoplinker n goodsflow linkage * }-->
+										<!--{* : //#23611 ycg 2019-02-07 shoplinker n goodsflow linkage *}-->
 								<option value="{...key_}" url="{...url}" style="background-color:yellow" {?..delivery_company_code == ...key_}selected{/}>{...company}</option>
-										<!--{* / #23611 ycg 2018-12-07 shoplinker n goodsflow linkage *}-->
-									<!--{ : }-->
+                                                                                <!--{* / //#23611 ycg 2019-02-07 shoplinker n goodsflow linkage *}-->
+								<!--{ : }-->
 								<option value="{...key_}" url="{...url}" style="background-color:#ffffff" {?..delivery_company_code == ...key_}selected{/}>{...company}</option>
-									<!--{ / }-->
+								<!--{ / }-->
 								<!--{ / }-->
 							</select>
 							<!--{ / }-->
@@ -1301,17 +1203,15 @@ tr.open-tr {display:none;}
 				<!--{ ? gf_config.goodsflow_step == '1' && gf_config.gf_use == 'Y' }-->
 				<tr class="gf_btn_area {? ..shipping_provider_seq!=gf_config.provider_seq || gf_config.gf_deliveryCode != ..delivery_company_code || !preg_match('/delivery|postpaid/', ..shipping_method)}hide{/}">
 					<td class="info pdl5">
-						<!--{* ? ..linkage_id == 'connector' && hasMarketOrders == false //#23611 ycg 2018-12-07 shoplinker n goodsflow linkage *}-->
-						<!-- #23611 ycg 2018-12-07 shoplinker n goodsflow linkage
-						<span class="btn small gray" >
+						<!--{* ? ..linkage_id == 'connector' && hasMarketOrders == false //#23611 ycg 2019-02-07 shoplinker n goodsflow linkage *}-->
+						<!-- <span class="btn small gray" >
 							<button type="button" onclick="alert('오픈마켓 주문건은 굿스플로 서비스를 이용할 수 없습니다.');">(굿)운송장받기/출력</button>
-						</span>
-						-->
-						<!--{* : //#23611 ycg 2018-12-07 shoplinker n goodsflow linkage *}-->
+						</span> -->
+						<!--{* : //#23611 ycg 2019-02-07 shoplinker n goodsflow linkage *}-->
 						<span class="btn small cyanblue" >
 							<button type="button" onclick="gf_invoice_call('{..export_code}');">(굿)운송장받기/출력</button>
 						</span>
-						<!--{* / //#23611 ycg 2018-12-07 shoplinker n goodsflow linkage *}-->
+						<!--{* / //#23611 ycg 2019-02-07 shoplinker n goodsflow linkage *}-->
 					</td>
 				</tr>
 				<!--{ / }-->
@@ -1323,11 +1223,11 @@ tr.open-tr {display:none;}
 		<!-- 필수옵션 패키지 -->
 		<!--{ @ ..packages }-->
 		<tr class="open-tr">
-			<td class="info option left">
+			<td class="info option">
 				<!--{ ? scm_cfg['use'] == 'Y' && ..shipping_provider_seq == 1 }-->
-				<input type="hidden" name="optioninfo[{..export_code}][option][{...option_seq}]" class="optioninfo" value="{...goods_seq}option{...option_seq}" />
+				<input type="hidden" name="optioninfo[{..export_code}][option][{...option_seq}]" class="optioninfo" value="{...goods_seq}option{..option_seq}" />
 				<input type="hidden" name="whSupplyPrice[{..export_code}][option][{...option_seq}]" class="wh_supply_price" value="{...supply_price}" />
-				<input type="hidden" name="goodscode[{..export_code}][option][{...option_seq}]" value="{...opt_goods_code}" />
+				<input type="hidden" name="goodscode[{..export_code}][option][{...option_seq}]" value="{...goods_code}" />
 				<!--{ / }-->
 				<table class="list-goods-info" width="100%" border="0">
 				<tr>
@@ -1374,7 +1274,7 @@ tr.open-tr {display:none;}
 				</table>
 			</td>
 			<td class="info option" align="center">
-				<span class="stock">{=number_format(...stock)}</span>
+				{=number_format(...stock)}
 			</td>
 			<td class="info option" align="center">
 				{ ? ..opt_ea }
@@ -1437,11 +1337,7 @@ tr.open-tr {display:none;}
 				<!--{ / }-->
 			</td>
 			<td class="info suboption" align="center">
-				<!--{ ? ..subopt_package_yn != 'y' }-->
-				<span class="stock">{=number_format(..stock)}</span>
-				<!--{ : }-->
-				<span class="fx11 dotum">실제상품▼</span>
-				<!--{ / }-->
+				{=number_format(..stock)}
 			</td>
 			<td class="info suboption" align="center">
 				{ ? ..subopt_package_yn == 'y' }[{ / }<span class="ea">{..subopt_ea}</span>{ ? ..subopt_package_yn == 'y' }]{ / }
@@ -1458,18 +1354,15 @@ tr.open-tr {display:none;}
 			<td class="null" align="center">→</td>
 			<td class="info suboption" align="center">
 				{..ea}
-				<input type="hidden" class="orderEA" value="{..ea}" />
 				<input type="hidden" name="request_ea[{..export_code}][{..bar_goods_code}]" class="line export_ea"  style="text-align:right" size="2" value="{..ea}" onkeydown="reset_barcode_ea(this);">
 			</td>
 			<!--{ ?  ..goods_kind == 'goods' }-->
 			<td class="info suboption" align="center">
-				{ ? ..subopt_ea == 0 || ..subopt_package_yn == 'y'  }
-				<span class="fx11 dotum">-</span>
-				{ : }
 				{ ? ..status < 55}
-				<span class="fx11 dotum">대기</span>
+				<span>대기</span>
 				<input type="text" name="barcode_ea[{..export_code}][{..bar_goods_code}]" class="barcode_ea_{..export_code} barcode_ready" value="0" size="2" onblur="check_barcode_ea(this);" />
-				{ / }
+				{ : }
+				-
 				{ / }
 			</td>
 			<!--{ / }-->
@@ -1478,11 +1371,11 @@ tr.open-tr {display:none;}
 		<!-- 추가옵션 패키지 -->
 		<!--{ @ ..packages }-->
 		<tr class="open-tr">
-			<td class="info option left" style="padding-left:70px">
+			<td class="info option" style="padding-left:70px">
 				<!--{ ? scm_cfg['use'] == 'Y' && ..shipping_provider_seq == 1 }-->
 				<input type="hidden" name="optioninfo[{..export_code}][option][{...option_seq}]" class="optioninfo" value="{...goods_seq}option{...option_seq}" />
 				<input type="hidden" name="whSupplyPrice[{..export_code}][option][{...option_seq}]" class="wh_supply_price" value="{...supply_price}" />
-				<input type="hidden" name="goodscode[{..export_code}][option][{...option_seq}]" value="{...opt_goods_code}" />
+				<input type="hidden" name="goodscode[{..export_code}][option][{...option_seq}]" value="{...goods_code}" />
 				<!--{ / }-->
 				<table class="list-goods-info" width="100%">
 				<tr>
@@ -1529,7 +1422,7 @@ tr.open-tr {display:none;}
 				</table>
 			</td>
 			<td class="info option" align="center">
-				<span class="stock">{=number_format(...stock)}</span>
+				{=number_format(...stock)}
 			</td>
 			<td class="info option" align="center">
 				{ ? ..subopt_ea }
@@ -1563,13 +1456,14 @@ tr.open-tr {display:none;}
 			<td class="info option" align="center" >
 				{=number_format(..ea * ...unit_ea)}
 				<span title="해당 판매상품 주문수량 1개일때 해당 실제상품의 발송수량" class="helpicon"></span>
-				<input type="hidden" class="orderEA" value="{..ea * ...unit_ea}" />
-				<input type="hidden" name="request_ea[{..export_code}][{..goods_code}]" class="line export_ea"  style="text-align:right" size="2" value="{..ea * ...unit_ea}" onkeydown="reset_barcode_ea(this);">
 			</td>
 			<!--{ ?  ..goods_kind == 'goods' }-->
 			<td class="info option" align="center">
+				{ ? ..option_seq && ..status < 55}
 				<span>대기</span>
-				<input type="text" name="barcode_ea[{..export_code}][{...goods_code}]" class="barcode_ea_{..export_code} barcode_ready" value="0" size="2" onblur="check_barcode_ea(this);" />
+				{ : }
+				-
+				{ / }
 			</td>
 			<!--{ / }-->
 		</tr>
@@ -1580,17 +1474,15 @@ tr.open-tr {display:none;}
 
 	</tbody>
 	</table>
-	<!--{ / }-->
-</div>
+		<!--{ / }-->
 </form>
-</div>
 
 <!--{?data_page.totalpage>1}-->
 <div class="paging_navigation" style="margin:auto;">
 {data_page.html}
 </div>
 <!--{ / }-->
-
+</div>
 
 <div id="invoice_manual_dialog" class="hide">
 	{#invoice_guide}
@@ -1646,7 +1538,7 @@ tr.open-tr {display:none;}
 
 <!-- 출고지 정보 팝업 :: START -->
 <div id="address_dialog" class="hide">
-	<table class="info-table-style table_basic v7" width="100%" border="0" cellspacing="0" cellpadding="0">
+	<table class="info-table-style" width="100%" border="0" cellspacing="0" cellpadding="0">
 	<colgroup>
 		<col width="75px" />
 		<col width="" />
@@ -1686,5 +1578,4 @@ tr.open-tr {display:none;}
 <br/>
 
 <iframe name="export_frame" width="100%" height="1000" class="hide"></iframe>
-
 { #layout_footer_popup }

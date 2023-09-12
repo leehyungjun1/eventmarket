@@ -9,30 +9,31 @@ class dbpatch extends front_base {
 	{
 		ob_start();
 ?>
--- FMDEV_1319_1_상품옵션별_또는_창고_별_로케이션_재고_및_평균_매입_가_추출_쿼리_수정.sql 실행 쿼리
-ALTER TABLE fm_member ADD INDEX idx_user_name (user_name);
+-- FMDEV_2012_1_휴면탈퇴_회원_주문_분리.sql 실행 쿼리
+-- 개인정보 보호 주문 리스트 테이블 생성
+CREATE TABLE IF NOT EXISTS `fm_personal_info` (
+	`seq` INT(11) NOT NULL AUTO_INCREMENT COMMENT '고유번호',
+	`member_seq` INT(11) NOT NULL COMMENT '회원번호',
+	`userid` VARCHAR(100) NULL COMMENT '사용자아이디',
+	`status` ENUM('withdrawal','dormancy') NOT NULL COMMENT '상태',
+	`order_seq` BIGINT(20) NOT NULL COMMENT '주문번호',
+	`export_code` VARCHAR(255) NULL COMMENT '출고번호',
+	`refund_code` VARCHAR(255) NULL COMMENT '환불번호',
+	`return_code` VARCHAR(255) NULL COMMENT '반품번호',
+	`order_date` DATETIME NOT NULL COMMENT '주문일',
+	`deposit_date` DATETIME NULL COMMENT '결제일',
+	`order_data` JSON NULL COMMENT '주문 개인정보 백업',
+	`return_data` JSON NULL COMMENT '반품 개인정보 백업',
+	`regist_date` DATETIME NULL COMMENT '등록일시',
+	PRIMARY KEY (`seq`),
+	KEY `order_seq` (`order_seq`),
+	KEY `personal_idx` (`userid`,`member_seq`,`status`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='개인정보 보호 주문 리스트';
 
-ALTER TABLE fm_member_dr ADD INDEX idx_user_name (user_name);
 
-
-ALTER TABLE fm_member_business ADD INDEX idx_bname (bname);
-
-ALTER TABLE fm_member_business_dr ADD INDEX idx_bname (bname);
-
-
-
--- FMDEV-608_1_상품_입력옵션에_이모지_입력_안되도록_개선.sql 실행 쿼리
-INSERT IGNORE INTO fm_alert (location, comment, code, alert_type, isTitle, KR_ORI, US_ORI, CN_ORI, JP_ORI, KR, US, CN, JP)
-VALUES ('상품상세', '입력옵션 이모지 체크', 'gv115', 'dialog', 0,
-        '이모지 입력은 불가능합니다. 입력된 이모지는 삭제됩니다.',
-        'Emoji input is not possible. The emoji entered will be deleted.',
-        '不能输入表情符号。 输入的图片将被删除。',
-        'Emoji input is not possible. The emoji entered will be deleted.',
-        '이모지 입력은 불가능합니다. 입력된 이모지는 삭제됩니다.',
-        'Emoji input is not possible. The emoji entered will be deleted.',
-        '不能输入表情符号。 输入的图片将被删除。',
-        'Emoji input is not possible. The emoji entered will be deleted.'
-        );
+-- 휴면/탈퇴 회원 주문 조회 보기 권한
+INSERT INTO `fm_code` (`groupcd`, `codecd`, `value`, `regist_date`) VALUES
+('auth_order', 'personal_info_view', '휴면/탈퇴 회원 주문 조회', '2023-04-12 12:10:10');
 <?
 		$sQuery = ob_get_contents();
 		ob_clean();

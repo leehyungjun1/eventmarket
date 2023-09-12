@@ -761,6 +761,9 @@ class setting_process extends admin_base {
 		config_save('order',array('present_use'=>$aPostParams['present_use']));
 		config_save('order',array('present_seller_use'=>$aPostParams['present_seller_use']));
 
+		// 개인정보보호 대상 주문 설정
+		config_save('order',array('separating_personal_info'=>$aPostParams['separating_personal_info']));
+
 		/* 절사 */
 		config_save('system',array('cutting_sale_use'=>$aPostParams['cutting_sale_use']));
 		config_save('system',array('cutting_sale_price'=>$aPostParams['cutting_sale_price']));

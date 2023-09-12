@@ -1,0 +1,82 @@
+<script type="text/javascript">
+	var keyword = "{=sc.keyword}";
+	var search_type = "{=sc.search_type}";
+</script>
+
+
+<script type="text/javascript" src="/app/javascript/js/admin-searchForm.js?v={=date('Ymd')}"></script>
+<link rel="stylesheet" type="text/css" href="/admin/skin/default/css/searchform.css?v={=date('Ymd')}" />
+
+<table class="table_search">
+	<tr>
+		<th>검색어</th>
+		<td>
+			<select name="keyword_type" style="width:110px;">
+				<option value="userid" {?sc.keyword_type=='userid'}selected{/}>아이디</option>
+				<option value="order_seq" {?sc.keyword_type=='order_seq'}selected{/}>주문번호</option>
+				<option value="export_code" {?sc.keyword_type=='export_code'}selected{/}>출고번호</option>
+				<option value="return_code" {?sc.keyword_type=='return_code'}selected{/}>반품번호</option>
+				<option value="refund_code" {?sc.keyword_type=='refund_code'}selected{/}>환불번호</option>
+			</select>
+			<input type="text" name="keyword" id="search_keyword" value="{=sc.keyword}" size="100" autocomplete='off' />
+		</td>
+	</tr>
+</table>
+
+<!-- 상세검색 시작 -->
+<div class="search-detail-lay ">
+	<table class="search-form-table" id="search_detail_table">
+		<tr>
+			<td>
+				<table class="sf-option-table table_search">
+					<tr>
+						<!-- 날짜 -->
+						<th>날짜</th>
+						<td colspan="5">
+							<input type="hidden" name="regist_date_type" value="{=sc.regist_date_type}" />
+							<select name="date_field" style="width:110px;">
+								<option value="order_date" {?sc.date_field=='order_date'}selected{/}>주문일</option>
+								<option value="deposit_date" {?sc.date_field=='deposit_date'}selected{/}>결제일</option>
+							</select>
+							<input type="text" name="regist_date[]" value="{=sc.regist_date[0]}" class="datepicker" maxlength="10" default_none />
+							&nbsp;<span class="gray">-</span>&nbsp;
+							<input type="text" name="regist_date[]" value="{=sc.regist_date[1]}" class="datepicker" maxlength="10" style="width:90px;" default_none />
+
+							<span class="resp_btn_wrap">
+								<span class="btn small"><input type="button" value="오늘" id="today" class="select_date resp_btn" settarget="regist_date" /></span>
+								<span class="btn small"><input type="button" value="3일간" id="3day" class="select_date resp_btn" settarget="regist_date" /></span>
+								<span class="btn small"><input type="button" value="일주일" id="1week" class="select_date resp_btn" settarget="regist_date" /></span>
+								<span class="btn small"><input type="button" value="1개월" id="1month" class="select_date resp_btn" settarget="regist_date" /></span>
+								<span class="btn small"><input type="button" value="3개월" id="3month" class="select_date resp_btn" settarget="regist_date" /></span>
+								<span class="btn small"><input type="button" value="6개월" id="6month" class="select_date resp_btn" settarget="regist_date" /></span>
+								<span class="btn small"><input type="button" value="1년" id="1year" class="select_date resp_btn" settarget="regist_date" /></span>
+							</span>
+						</td>
+					</tr>
+					<!-- 회원 선택 -->
+					<tr>
+						<th>회원 선택</th>
+						<td>
+							<div class="resp_radio">
+								<label><input type="radio" name="status" value="all" checked/> 전체</label>
+								<label><input type="radio" name="status" value="dormancy" {?sc.status=='dormancy'}checked{/}/> 휴면회원</label>
+								<label><input type="radio" name="status" value="withdrawal" {?sc.status=='withdrawal'}checked{/}/> 탈퇴회원</label>
+							</div>
+						</td>
+					</tr>
+				</table>
+			</td>
+		</tr>
+	</table>
+</div>
+<!-- 상세검색 끝 -->
+
+<div class="footer search_btn_lay">
+	<div>
+		<span class="search">
+			<button type="submit" class="resp_btn active size_XL"><span>검색</span></button>
+			<button type="button" id="search_reset_button" class="resp_btn v3 size_XL">초기화</button>
+		</span>
+	</div>
+</div>
+<!-- 상세검색 끝 -->

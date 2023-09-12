@@ -789,7 +789,9 @@ table.table-export-info td.suboption {background-color:#f6f6f6;height:25px;}
 							<td>
 							<!--{ ? !preg_match('/coupon/',..shipping_method) }-->
 								<span class="addr">
+									<!--{? order[..order_seq].recipient_zipcode}-->
 									({order[..order_seq].recipient_zipcode})
+									<!--{ / }-->
 									<!--{? order[..order_seq].recipient_address_type == "street"}-->
 									{ order[..order_seq].recipient_address_street }
 									<!--{ : }-->

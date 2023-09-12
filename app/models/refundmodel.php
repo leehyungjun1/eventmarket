@@ -3430,4 +3430,13 @@ class Refundmodel extends CI_Model {
 			'result_msg'	=> $resultMsg
 		);
 	}
+
+	// 주문번호로 환불번호 조회
+	public function getRefundCodeForOrderSeq($order_seq){
+		return $this->db->select('refund_code')
+						->from('fm_order_refund')
+						->where('order_seq', $order_seq)
+						->get()
+						->result_array();
+	}
 }

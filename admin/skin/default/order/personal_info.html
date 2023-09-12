@@ -1,0 +1,159 @@
+{ #layout_header }
+
+<style>
+	.table_wrap table td.top {vertical-align:top;}
+</style>
+<script type="text/javascript">
+	/* default search */
+	var default_search_pageid	= "personal_info";
+
+	$(document).ready(function() {
+
+		$("form[name='search-form']").submit(function() {
+			var search_text = $("#search_keyword").val();
+			if( !search_text ) {
+				alert("검색어를 입력해 주세요.");
+				return false;
+			}
+		});
+
+		$(".info").click(function(){
+			document.location.href = "../setting/order#personalInfo";
+		});
+
+		if("{personalInfoChk}" != 'y'){
+			openDialog("휴면/탈퇴 회원 주문 조회", "pop_info", {"width":"430","height":"260","noClose":"true"});
+		}
+	});
+</script>
+<!-- 페이지 타이틀 바 : 시작 -->
+<div id="page-title-bar-area" class="order_catalog_title_bar">
+	<div id="page-title-bar">		
+
+		<!-- 타이틀 -->
+		<div class="page-title">
+			<h2>휴면/탈퇴 회원 주문 조회</h2>
+		</div>
+	</div>
+</div>
+<!-- 페이지 타이틀 바 : 끝 -->
+
+<!-- 주문리스트 검색폼 : 시작 -->
+<div id="order_catalog_search" class="search-form-container-new search_container">
+	<form name="search-form" method="get">
+	<input type="hidden" name="perpage" id="perpage" value="{_GET.perpage}" >
+	{#search_form}
+	</form>
+</div>
+<!-- 주문리스트 검색폼 : 끝 -->
+
+<!-- 주문리스트 테이블 : 시작 -->
+<div class="contents_dvs v2">
+	<div class="table_wrap">
+		<table class="list-table-style table_row_basic pd5" cellspacing="0">
+			<!-- 테이블 헤더 : 시작 -->
+			<colgroup>
+				<col width="130" />
+				<col width="130" />
+				<col width="130" />
+				<col width="180" />
+				<col width="140" />
+				<col width="140" />
+				<col width="140" />
+				<col width="220" />
+				<col/>
+			</colgroup>
+			<thead class="lth">
+				<tr>
+					<th>회원 상태</th>
+					<th>주문일</th>
+					<th>결제일</th>
+					<th>주문번호</th>
+					<th>출고번호</th>
+					<th>반품번호</th>
+					<th>환불번호</th>
+					<th>주문자 정보</th>
+					<th>배송지 정보</th>
+				</tr>
+			</thead>
+			<!-- 테이블 헤더 : 끝 -->
+			<!-- 리스트 : 시작 -->
+			<tbody class="ltb">
+				<form name="listFrm" id="listFrm" method="post" target="actionFrame">
+					<!--{ ? !record }-->
+					<tr class="list-row">
+						<td colspan="9" align="center">검색어가 없거나 검색 결과가 없습니다.</td>
+					</tr>
+					<!--{ : }-->
+					<!--{ @ record }-->
+			
+					<tr class="list-row">
+						<td class="top">
+						<!--{ ? .status == 'dormancy' }-->
+							휴면회원
+						<!--{ : .status == 'withdrawal' }-->
+							탈퇴회원
+						<!--{ / }-->
+						</td>
+						<td class="top">{=substr(.order_date,0,-9)}</td>
+						<td class="top">{=substr(.deposit_date,0,-9)}</td>
+						<td class="top"><a href="/admin/order/view?no={.order_seq}" target="_blank"><span class="hand blue">{.order_seq}</span></a></td>
+						<td class="top">
+							<!--{ @ .export_code }-->
+							<a href="/admin/export/view?no={..value_}" target="_blank"><span class="hand blue">{..value_}</span></a>
+							<!--{ / }-->
+						</td>
+						<td class="top">
+							<!--{ @ .return_code }-->
+							<a href="/admin/returns/view?no={..value_}" target="_blank"><span class="hand blue">{..value_}</span></a>
+							<!--{ / }-->
+						</td>
+						<td class="top">
+							<!--{ @ .refund_code }-->
+							<a href="/admin/refund/view?no={..value_}" target="_blank"><span class="hand blue">{..value_}</span></a>
+							<!--{ / }-->
+						</td>
+
+						<td class="left">
+							<ul style="height:100%;">
+								<!--{ @ .order_info }-->
+								<li>{..value_}</li>
+								<!--{ / }-->
+							</ul>
+						</td>
+						<td class="left">
+							<ul style="height:100%;">
+								<!--{ @ .shipping_info }-->
+								<li>{..value_}</li>
+								<!--{ / }-->
+							</ul>
+						</td>
+					</tr>
+					<!-- 합계 : 끝 -->
+
+					<!--{ / }-->
+					<!--{ / }-->
+				</form>	
+			</tbody>
+			<!-- 리스트 : 끝 -->
+		</table>
+	</div>
+</div>
+
+<!-- 페이징 -->
+<div class="paging_navigation">{pagin}</div>
+
+<div id="pop_info" class="hide">
+	<table style="width:100%">
+	<tbody>
+	<tr><td>휴면/탈퇴 회원 주문 조회를 이용하기 위해서는 먼저 '개인정보보호 대상 주문 설정'을 사용함으로 변경 후 이용 가능합니다.</td></tr>
+	</table>
+	<div style="width:100%;text-align:center;padding-top:10px;">
+	<span class="btn large cyanblue"><button class="info">바로가기</button></span>
+	</div>
+</div>
+
+<!-- 기본검색설정 -->
+<script type="text/javascript" src="/app/javascript/js/admin-searchDefaultConfig.js?dummy={=date('Ymd')}"></script>
+
+{ #layout_footer }
