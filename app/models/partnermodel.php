@@ -881,8 +881,7 @@ class Partnermodel extends CI_Model {
 
 			// 렌탈상품
 			if($data_goods['product_flag'] == '렌탈' && $data_goods['rental_period']) {
-				$data_goods['rental_info'] = $data_goods['price'].'^'.$data_goods['rental_period'];
-				$data_goods['price'] = $data_goods['price'] * $data_goods['rental_period'];
+				$data_goods['rental_info'] = ($data_goods['price'] * $data_goods['rental_period']).'^'.$data_goods['rental_period'];
 			}
 
 			// 모바일 할인가 계산
