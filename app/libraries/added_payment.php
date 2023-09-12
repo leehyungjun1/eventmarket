@@ -58,10 +58,14 @@ class added_payment extends CI_Model
 			return false;
 		}
 
+		$host = php_uname('n');
+		$ips = gethostbynamel($host);
+		$clientIp = end($ips);
+
 		$aRequestData['type'] = "Extra";
 		$aRequestData['paymethod'] = "Inquiry";
 		$aRequestData['timestamp'] = date("YmdHis");
-		$aRequestData['clientIp'] = $_SERVER['SERVER_ADDR'];
+		$aRequestData['clientIp'] = $clientIp;
 		$aRequestData['mid'] = $aPgCfg['mallCode'];
 		if (preg_match('/escrow/', $payment)) { // 에스크로 결제인 경우
 			$aRequestData['mid'] = $aPgCfg['escrowMallCode'];

@@ -740,7 +740,7 @@ function openDialog(title, layerId, customOptions, callback){
 //		"hide" : "fade",
 		"modal" : true,
 		"resizable" : false,
-		"draggable" : true,
+		"draggable" : false,
 		"noClose" : false
 	};
 
@@ -846,7 +846,7 @@ function openDialogNew(title, layerId, customOptions, callback){
 //		"hide" : "fade",
 		"modal" : true,
 		"resizable" : false,
-		"draggable" : true,
+		"draggable" : false,
 		"noClose" : false
 	};
 

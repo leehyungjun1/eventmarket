@@ -115,15 +115,29 @@ class KakaoClient extends Client
 
 	// 배송지 조회
 	public function getShippingAddress() {
-		$shipping_data = $this->instance->getShippingAddress();
+		$params = [
+			'scopes' => json_encode(['shipping_address'])
+		];
+		$addressData = null;
 
-		// 기본 배송지 항목만 리턴
-		foreach($shipping_data['shipping_addresses'] as $kakaoAdrress) {
-			if($kakaoAdrress['is_default'] === true) {
-				$addressData = $kakaoAdrress;
+		// 사용자 동의 내역 확인하기 (배송지 정보)
+		$user_scopes = $this->instance->getScopes($params);
+
+		if (!empty($user_scopes) && isset($user_scopes['scopes'][0])) {
+			$addressScope = $user_scopes['scopes'][0];
+
+			if ($addressScope['using'] && $addressScope['agreed']) {
+				$shipping_data = $this->instance->getShippingAddress();
+
+				// 기본 배송지 항목만 리턴
+				foreach($shipping_data['shipping_addresses'] as $kakaoAdrress) {
+					if($kakaoAdrress['is_default'] === true) {
+						$addressData = $kakaoAdrress;
+						break; // 기본 배송지를 찾았으므로 루프 탈출
+					}
+				}
 			}
 		}
-
 		return $addressData;
 	}
 

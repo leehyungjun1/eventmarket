@@ -1,0 +1,206 @@
+{ #layout_header }
+<script type="text/javascript" src="/app/javascript/jquery/jquery.ajax.form.js"></script>
+<script type="text/javascript" src="/app/javascript/js/ajaxFileUpload.js"></script>
+<script type="text/javascript">
+
+// 구버전 업로드 폼
+function open_old_excel_upload(){
+	openDialog("상품 엑셀 등록/수정", "export_upload", {"width":"800","height":"580","show" : "fade","hide" : "fade"});
+}
+
+// 업로드 폼 submit
+function excel_upload(){
+	if	(!$("input#goods_excel_file").val()){
+		openDialogAlert('업로드할 파일이 없습니다.', 400, 150);
+		return false;
+	}
+
+	loadingStart();
+	$("form#excelUpload").submit();
+}
+
+// upload 시 승인여부 선택
+function chg_provider_choice(){
+	if	($("input[name='provider_choice']").eq(0).attr('checked')){
+		$('table.provider_choice').find('tr').eq(1).find('td').addClass('provider_seltd');
+		$('table.provider_choice').find('tr').eq(2).find('td').addClass('provider_seltd');
+		$('table.provider_choice').find('tr').eq(3).find('td').removeClass('provider_seltd');
+		$('table.provider_choice').find('tr').eq(4).find('td').removeClass('provider_seltd');
+	}else{
+		$('table.provider_choice').find('tr').eq(1).find('td').removeClass('provider_seltd');
+		$('table.provider_choice').find('tr').eq(2).find('td').removeClass('provider_seltd');
+		$('table.provider_choice').find('tr').eq(3).find('td').addClass('provider_seltd');
+		$('table.provider_choice').find('tr').eq(4).find('td').addClass('provider_seltd');
+	}
+}
+
+// log 파일 다운로드
+function download_log_file(obj){
+	var f	= $(obj).text();
+	if	(!f){
+		openDialogAlert('로그파일명이 없습니다.', 400, 150);
+		return false;
+	}
+
+	actionFrame.location.replace('../goods_process/download_excel_log?f=' + f);
+}
+
+// 설명 sample 엑셀 다운로드
+function download_sample(){
+	window.open('https://interface.firstmall.kr/excel_sample/20230811/couponexcel.seller.sample.xlsx');
+}
+$(function(){
+	changeFileStyle();
+});
+</script>
+<!-- 페이지 타이틀 바 : 시작 -->
+<div id="page-title-bar-area">
+	<div id="page-title-bar">
+
+		<!-- 타이틀 -->
+		<div class="page-title">
+			<h2>티켓 상품 일괄 등록/수정</h2>
+		</div>	
+
+		<!-- 우측 버튼 -->
+		<ul class="page-buttons-right">
+			<li><button type="button" onclick="excel_upload();" class="resp_btn active">업로드</button></li>
+		</ul>
+
+			<!-- 좌측 버튼 -->
+			<ul class="page-buttons-left">
+				<li><button type="button" onclick="location.href='social_catalog';" class="resp_btn v3">리스트 바로가기</button></li>
+			</ul>
+	</div>
+</div>
+<!-- 페이지 타이틀 바 : 끝 -->
+
+<div class="contents_dvs v2">
+	
+	<div class="item-title"><span>상품 일괄 등록/수정</span></div>
+
+	<form name="excelUpload" id="excelUpload" method="post" action="/cli/excel_up/create_goods" enctype="multipart/form-data"  target="actionFrame">
+	<input type="hidden" name="goods_kind" value="{kind}" />
+	<div class="seller-goods-status-lay">
+		<table class="table_basic thl">
+		<tr>
+			<th>수정 시 업데이트 항목</th>
+			<td>
+				<div class="resp_radio">
+					<label><input type="radio" name="provider_choice" value="N" onclick="chg_provider_choice();" checked /> 상품 상태, 노출 (승인 여부 유지)</label>
+					<label><input type="radio" name="provider_choice" value="Y" onclick="chg_provider_choice();" /> 상태, 노출을 제외한 모든 항목 (상품은 미승인으로 변경)</label>
+				</div>
+				<ul class="bullet_hyphen">
+					<li>신규 상품 등록 시엔 모든 항목을 업데이트</li>
+					<li>업데이트 항목에 대한 안내 <a href="https://www.firstmall.kr/customer/faq/1454" target="_blank"><span class="underline blue">자세히 보기 &gt;</span></a></li>
+				</ul>
+			</td>
+		</tr>
+		<tr>
+			<th>파일 업로드</th>
+			<td>
+				<div class="displayTabMakeImages">
+					<input type="file" name="goods_excel_file" id="goods_excel_file" size="60" mode="new" class="hide" iclass="resp_text pointer" />
+				</div>
+			</td>
+		</tr>
+		
+		</table>
+	</div>
+	</form>
+</div>
+
+<div class="contents_dvs v2">
+	<div class="item-title"><span>처리 로그 (최근 10개)</span></div>
+	<div>
+		<table class="table_basic v7">
+			<colgroup>
+				<col width="160" />
+				<col width="130" />
+				<col />
+				<col />
+				<col />
+				<col />
+			</colgroup>
+			<thead>
+			<tr>
+				<th>처리 일시</th>
+				<th>아이피</th>
+				<th>처리자</th>
+				<th>업로드 된 파일</th>
+				<th>실패 로그</th>
+				<th>성공 로그</th>
+			</tr>
+			</thead>
+			<tbody>
+			<!--{ @ logs }-->
+			<tr>
+				<td>{.upload_date}</td>
+				<td>{.uploader_ip}</td>
+				<td>{.uploader}</td>
+				<td>{.upload_filename}</td>
+				<td class="hand" onclick="download_log_file(this);">{.result_failed}</td>
+				<td class="hand" onclick="download_log_file(this);">{.result_success}</td>
+			</tr>
+			<!--{ : }-->
+			<tr>
+				<td colspan="6" style="text-align:center;">처리 로그 내역이 없습니다.</td>
+			</tr>
+			<!--{ / }-->
+			</tbody>
+		</table>
+	</div>	
+</div>
+
+<div class="box_style_05 mt20">
+	<div class="title">안내</div>
+	<ul class="bullet_hyphen">					
+		<li>설명용 샘플 파일 <span onclick="download_sample();" class="underline blue hand">엑셀 다운로드</span></li>
+		<li class="red">상품 업로드 전 반드시 주의 사항을 확인해주세요. <a href="https://www.firstmall.kr/customer/faq/1521" target="_blank"><span class="underline blue">자세히 보기 &gt;</span></a></li>
+		<li class="red">엑셀은 반드시 Excel 통합문서 (.xlsx)로 저장 후 업로드해주세요.</li>
+		<li>등록된 상품 엑셀 다운로드 및 업로드 방법 <a href="https://www.firstmall.kr/customer/faq/130" target="_blank"><span class="underline blue">자세히 보기 &gt;</span></a></li>
+		<!--{ ? scm_cfg['use'] != 'Y' }-->
+		<li>(구) 다운로드 파일 등록 <button type="button" class="resp_btn v2" onclick="open_old_excel_upload();">엑셀 등록</button></li>
+		<!--{ / }-->
+	</ul>
+</div>
+
+
+<div id="export_upload" class="hide">
+	<div class="content">
+	<form name="excelRegist" id="excelRegist" method="post" action="../goods_process/excel_upload" enctype="multipart/form-data"  target="actionFrame">
+		<table class="table_basic">
+			<colgroup>
+				<col width="25%" />
+				<col width="75%" />
+			</colgroup>
+			<tr>
+				<th>파일 업로드</th>
+				<td>
+					<input type="file" name="excel_file" id="excel_file" mode="new" class="hide" iclass="resp_text pointer" />
+				</td>
+			</tr>
+		</table>
+		<div class="box_style_05 mt20">
+			<div class="title">안내</div>
+			<ul class="bullet_hyphen">
+				<li>
+					상품을 일괄 등록하거나 수정할 때 엑셀 양식을  먼저 다운로드 받은 후에 이용하면 됩니다.<br />
+					( <span class="red">필독! 엑셀파일 저장시 확장자가 XLS 인 엑셀 97~2003 양식으로 저장해 주세요</span> ) <br/>
+				</li>
+				<li>일괄 등록과 수정의 구분은 고유값 필드에 있는 값의 유무로 판단합니다.(고유값 필드에 값이 있으면 수정, 없으면 등록입니다.)</li>
+				<li>상품 옵션은 옵션마다 1개의 행을 차지합니다.(옵션을 등록한 이후에 엑셀을 다운로드 받아서 보면 이해하기 편합니다.)</li>
+				<li>옵션 항목에는 옵션값만 입력해야 하며 상품 공통 정보를 입력하면 안됩니다. 상품 공통 정보 항목도 옵션값을 입력하면 안됩니다.</li>
+				<li>대표카테고리와 추가카테고리가 병합되었습니다. 맨마지막 카테고리번호가 대표카테고리로 등록됩니다.</li>
+				<li>대표브랜드와 추가브랜드가 병합되었습니다. 맨마지막 브랜드번호가 대표브랜드로 등록됩니다.</li>
+			</ul>
+		</div>
+	</div>
+	<div class="footer">
+		<button id="upload_submit" class="resp_btn active size_XL">저장</button>
+		<button type="button" class="resp_btn v3 size_XL" onClick="closeDialog('export_upload')">닫기</button>
+	</div>
+	</form>
+</div>
+
+{ #layout_footer }

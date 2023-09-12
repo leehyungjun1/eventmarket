@@ -1567,7 +1567,7 @@ class batch_process extends admin_base {
 		//sendDirectMail($mailArr, $aParmasPost['send_email'], $aParmasPost['title'], $aParmasPost['contents']);
 		require_once $_SERVER['DOCUMENT_ROOT']."/app/libraries/Email_send.class.php";
 		$mail 	= new Mail(isset($params));
-		$bodys 	= adjustEditorImages($aParmasPost['contents']);
+		$bodys 	= adjustEditorImages($this->input->post('contents', false));
 
 
 		$sendCnt 	= 0;

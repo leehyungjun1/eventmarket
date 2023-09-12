@@ -3619,12 +3619,10 @@ class setting extends admin_base {
 
 				foreach($detail_list as $subdatarow){
 					if($subdatarow["sale_use"] == "Y"){
-						$subdata[$group["group_seq"]]["sale_use"]				= get_currency_price($subdatarow["sale_limit_price"],2)." 이상 구매";
-					}else{
-						$subdata[$group["group_seq"]]["sale_use"]				= "조건없음";
+						$subdata[$group["group_seq"]]["sale_use"]				= $subdatarow["sale_limit_price"];
 					}
 
-					$subdata[$group["group_seq"]]["sale_price"]				= get_currency_price($subdatarow["sale_price"]);
+					$subdata[$group["group_seq"]]["sale_price"]				= $subdatarow["sale_price"];
 
 					if($subdatarow["sale_price_type"] == "PER"){
 						$subdata[$group["group_seq"]]["sale_price_type"]	= "% 할인";
@@ -3632,7 +3630,7 @@ class setting extends admin_base {
 						$subdata[$group["group_seq"]]["sale_price_type"]	= $this->config_system['basic_currency']." 할인";
 					}
 
-					$subdata[$group["group_seq"]]["sale_option_price"] 		= get_currency_price($subdatarow["sale_option_price"]);
+					$subdata[$group["group_seq"]]["sale_option_price"] 		= $subdatarow["sale_option_price"];
 
 					if($subdatarow["sale_option_price_type"] == "PER"){
 						$subdata[$group["group_seq"]]["sale_option_price_type"]		= "% 할인";
@@ -3640,12 +3638,8 @@ class setting extends admin_base {
 						$subdata[$group["group_seq"]]["sale_option_price_type"]	= $this->config_system['basic_currency']." 할인";
 					}
 
-					$subdata[$group["group_seq"]]["point_use"]				= $subdatarow["point_use"];
-
 					if($subdatarow["point_use"] == "Y"){
-						$subdata[$group["group_seq"]]["point_use"]				= $subdatarow["point_limit_price"]."원 이상 구매";
-					}else{
-						$subdata[$group["group_seq"]]["point_use"]				= "조건없음";
+						$subdata[$group["group_seq"]]["point_use"]				= $subdatarow["point_limit_price"];
 					}
 
 					$subdata[$group["group_seq"]]["point_price"]			= $subdatarow["point_price"];

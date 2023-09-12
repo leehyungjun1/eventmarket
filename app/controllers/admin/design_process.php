@@ -4655,16 +4655,16 @@ $(function() {\n\r
 		if($params['banner_seq']){
 			$resultMsg = "배너가 변경되었습니다.";                         
 			if($params['direct']){
-				$resultCallback = "top.document.location.reload();document.location.href='about:blank';";
+				$resultCallback = "top.document.location.reload(true);document.location.href='about:blank';";
 			}else{
 				$resultCallback = "top.DM_window_banner_insert('{$params['template_path']}');";
-				$resultCallback = "parent.document.location.reload();document.location.href='about:blank';";
+				$resultCallback = "parent.document.location.reload(true);document.location.href='about:blank';";
 			}
 		}else{
 			// [반응형스킨] direct 새로고침 추가 :: 2018-11-08 pjw
 			$resultMsg = "배너가 저장되었습니다.";
 			if($params['direct']){
-				$resultCallback = "top.document.location.reload();document.location.href='about:blank';";
+				$resultCallback = "top.document.location.reload(true);document.location.href='about:blank';";
 			}else{
 				$resultCallback = "top.DM_window_banner_insert('{$params['template_path']}');";
 			}

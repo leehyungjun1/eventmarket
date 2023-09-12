@@ -3245,7 +3245,7 @@ class member_process extends admin_base {
 		//sendDirectMail($mailArr, $aParams['send_email'], $aParams['title'], $aParams['contents']);
 		require_once $_SERVER['DOCUMENT_ROOT']."/app/libraries/Email_send.class.php";
 		$mail = new Mail(isset($params));
-		$body = adjustEditorImages($aParams['contents']);
+		$body = adjustEditorImages($this->input->post('contents', false));
 
 		if(filter_var($aParams['email'],FILTER_VALIDATE_EMAIL) !== false){
 			$headers['From']		= $basic['companyEmail'] ?? 'gabia@gabia.com';
