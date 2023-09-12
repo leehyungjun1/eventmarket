@@ -422,9 +422,9 @@ class Goodsmodel extends CI_Model {
 			$goods['multi_discount_policy']			= json_encode($discountPolicy);
 		}
 		// 에디터 이미지 경로 재정의 :: 2016-04-21 lwh -> 네임태그/정식도메인 개선 @2016-12-21
-		$contents			= adjustEditorImages($_POST['contents'], "/data/editor/");
+		$contents			= ($_POST['mobile_deploymentId']) ? $_POST['contents'] : adjustEditorImages($_POST['contents'], "/data/editor/");
 		$common_contents	= adjustEditorImages($_POST['commonContents'], "/data/editor/");
-		$mobile_contents	= adjustEditorImages($_POST['mobile_contents'], "/data/editor/");
+		$mobile_contents	= ($_POST['mobile_deploymentId']) ? $_POST['mobile_contents'] : adjustEditorImages($_POST['mobile_contents'], "/data/editor/");
 
 		$_POST['goodsName']	= preg_replace("!<iframe(.*?)<\/iframe>!is","",$_POST['goodsName']);
 		$_POST['goodsNameLinkage']	= preg_replace("!<iframe(.*?)<\/iframe>!is","",$_POST['goodsNameLinkage']);
@@ -818,6 +818,13 @@ class Goodsmodel extends CI_Model {
 
 		// 선물하기
 		$goods['present_use'] = ($this->input->post('present_use') === '1') ? '1' : '0';
+
+		// 제디터 발행번호
+		$mobile_deploymentId = $this->input->post('mobile_deploymentId');
+
+		if ($mobile_deploymentId) {
+			$goods['mobile_deploymentId'] = $mobile_deploymentId;
+		}
 
 		return $goods;
 	}

@@ -1176,13 +1176,16 @@ class goods_process extends admin_base {
 			}
 
 			// 에디터 이미지 경로 변경 업데이트 :: 2016-05-09 lwh
-			$aPostParams[$upcolumn] = $_POST['view_textarea'];
+			$aPostParams[$upcolumn] = trim($_POST['view_textarea']);
 			$imgRes	= $this->goodsmodel->set_goodImages($goodsSeq, $aPostParams);
 			$editor['contents']			= $imgRes['contents'];
 			$editor['mobile_contents']	= $imgRes['mobile_contents'];
 			$editor['common_contents']	= $imgRes['common_contents'];
+
 			if(!empty($imgRes['result_imagehosting'])) $result_imagehosting = $imgRes['result_imagehosting'];
-			
+
+			$editor['mobile_contents_hidden']	= $imgRes['mobile_contents'];
+
 			if($upcolumn == 'common_contents'){
 				// 공용정보
 				if($info_seq) $addset = ", info_seq = '".$info_seq."'";
@@ -1228,15 +1231,17 @@ class goods_process extends admin_base {
 				$editor['contents'] = $editor['mobile_contents'];
 
 				// 기존 프로세스에 영향을 주지 않고 상품설명을 직접 저장
-				$query = "update fm_goods set `contents` = ?, `mobile_contents` = ? ".$addset." where `goods_seq` = ? ";
-				$this->db->query($query,array( $editor['contents'], $editor['mobile_contents'] , $goodsSeq ));
+				$query = "update fm_goods set `mobile_deploymentId` = NULL ,`contents` = ?, `mobile_contents` = ? ".$addset." where `goods_seq` = ? ";
+
+				$this->db->query($query,array($editor['contents'], $editor['mobile_contents'] , $goodsSeq ));
 				$contents_type = 'mobile_contents';
 				$upcolumn = 'mobile_contents';
-
+				$hidden_upcolumn = 'mobile_contents_hidden';
+				$delete_id = 'mobile_deploymentId';
+				$delete_upcolumn = 'geditor_mobile_contents';
 			}else if($mode != "info_only_update"){
-
 				// 기존 저장 프로세스
-				$query = "update fm_goods set `".$upcolumn."` = ? ".$addset." where `goods_seq`=?";
+				$query = "update fm_goods  set `mobile_deploymentId` = NULL ,`".$upcolumn."` = ? ".$addset." where `goods_seq`=?";
 				$this->db->query($query,array($editor[$upcolumn],$goodsSeq));
 
 			}
@@ -1248,9 +1253,11 @@ class goods_process extends admin_base {
 				}
 				echo "parent.$('#".$contents_type."_view').html('".addslashes($editor[$upcolumn])."');";
 				echo "parent.$('#".$contents_type."').text('".addslashes($editor[$upcolumn])."');";
-				echo "</script>";
+				echo "parent.$('#".$hidden_upcolumn."').text('".addslashes($editor[$hidden_upcolumn])."');";
+				echo "parent.$('#".$delete_id."').val('');";
+				echo "parent.$('#".$delete_upcolumn."_view').html('');";
 
-				$callback = "";
+				echo "</script>";
 			}else{
 				$callback	= "parent.location.reload();";
 			}
@@ -5254,6 +5261,35 @@ class goods_process extends admin_base {
 		}
 		
 		echo json_encode($res);
+	}
+
+	public function setDeploymentId() 
+	{
+		$params = $this->input->post();
+
+		$this->validation->set_data($params);
+		$this->validation->set_rules('service_key', '인증키','trim|required|xss_clean');
+		$this->validation->set_rules('deploymentId', '발행번호','trim|numeric|required|xss_clean');
+
+		if ($this->validation->exec() === false){
+			$output = [
+				'result' => 'fail',
+				'key' => $this->validation->error_array['key'],
+				'message' => $this->validation->error_array['value'],
+			];
+
+			$this->output->set_status_header(400)
+			->set_content_type('text/json')
+			->set_output(json_encode($output));
+			return;
+		}
+
+		// 제디터 발행 후 html 가져옴
+		$this->load->library('geditorlib');
+		$response = $this->geditorlib->getGeditorHtml($params['deploymentId']);
+		
+		echo $response;
+		return;
 	}
 }
 

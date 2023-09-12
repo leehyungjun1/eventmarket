@@ -47,11 +47,16 @@ class GoodsHandlermodel extends CI_Model {
 		if($inGoodsSeq > 0) {
 			$goodsSeq	= $inGoodsSeq;
 			$mode		= 'modify';
+			
+			// 수정시에는 이미지 관련 작업이 실시간 처리됨 :: 2016-05-09 lwh, 
+			// 제디터일 경우 실시간 업데이트가 아니기떄문에 해당 처리 필요없음 에디터에 경우 실시간 처리임으로 필요
+			if ($goods['mobile_deploymentId'] == '') {
+				unset($goods['contents']);
+				unset($goods['mobile_contents']);
+				unset($goods['common_contents']);	
+			}
 
-			// 수정시에는 이미지 관련 작업이 실시간 처리됨 :: 2016-05-09 lwh
-			unset($goods['contents']);
-			unset($goods['mobile_contents']);
-			unset($goods['common_contents']);
+
 			//unset($goods['info_seq']);	// contents는 unset 하지만, info_seq 는 저장해야함
 
 			$goods['update_date']	= date("Y-m-d H:i:s",time());

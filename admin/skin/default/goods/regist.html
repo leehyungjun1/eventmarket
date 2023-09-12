@@ -77,6 +77,50 @@
 	function getNoServiceAlert(){
 		{=serviceLimit('A1')}
 	}
+
+	// 제디터 안내
+	$(function() { 
+
+		// 본사상품, 입점사 상품 선택
+		$("input[name='goods_gubun']").on("click",function(e,provider_seq){
+			console.log();
+			if (gl_operation_type == 'light') {
+				if(typeof provider_seq == 'undefined') provider_seq = '';
+				if($(this).val() == "provider"){
+					$('#editorWrap').hide();
+					$('#tabCon1').addClass('hide');
+					$('#editorBtn').text("등록");
+					$('#tabCon2').removeClass('hide');
+					$('.geditorInfo').addClass('hide');
+					$('.editorInfo').removeClass('hide');
+				} else {
+					$('#editorWrap').show();
+					$('#tabCon1').removeClass('hide');
+					$('#editorBtn').text("에디터");
+					$('#tabCon2').addClass('hide');
+					$('.geditorInfo').removeClass('hide');
+					$('.editorInfo').addClass('hide');
+				}
+			}
+		});
+
+		// 제디터 사용하다가 에디터 수정시 발행내용 날라가는 점 안내 얼럿 필요
+		$('#editorWrap > li > a').on('click',function(e){
+			const deploymentId = $('input[name="mobile_deploymentId"]').val();
+			const nowTab = $(this).attr('data-showcontent');
+
+			if (nowTab === 'tabCon2') {
+				$('.editorInfo').removeClass('hide');
+				$('.geditorInfo').addClass('hide');
+			} else {
+				$('.geditorInfo').removeClass('hide');
+				$('.editorInfo').addClass('hide');
+			}
+		});
+	});
+	
+
+
 </script>
 
 
@@ -1066,7 +1110,9 @@
 
 					<div class="mt5 wp95 contents_view">
 						<textarea class="hide" name="contents" id="goodscontents"  style="width:100%; height:150px;" contentHeight="450px" readonly>{goods.contents}</textarea>
-						<div id="goodscontents_view">{goods.contents}</div>
+						<div id="goodscontents_view">
+							{goods.contents}
+						</div>
 					</div>
 
 					<ul class="bullet_hyphen resp_message">
@@ -1094,6 +1140,8 @@
 			</tr>
 			<!--{ / }-->
 			<tr>
+
+				<!-- 모바일 아니면 반응형스킨인 경우-->
 				<th class="left"><!--{ ? config_system.operation_type == 'light' }-->상품 설명<!--{:}-->모바일 상품 설명<!--{/}--></th>
 				<td>
 					<!--{ ? config_system.operation_type != 'light' }-->
@@ -1105,26 +1153,97 @@
 
 					<div class="mobileContentView mt5">
 						<div id="mobilecontentsbtn">
-							<button type="button" class="resp_btn v2" onclick="view_editor_pop('mobile_contents','save');">등록</button>
+							<!--{ ? config_system.operation_type == 'light' }-->
+							<ul id="editorWrap" class="tab_01 v2 w160 tabEvent" style=" {? provider_seq != 1 } display:none; {/}">
+								<li><a data-showcontent="tabCon1" {? (goods.mobile_deploymentId && goods.goods_seq) || !goods.goods_seq } class="current" {/}>
+									제디터
+									<span class="tooltip_btn" onClick="showTooltip(this, '/admin/skin/default/tooltip/editor.html', '#tip1')"></span>
+								</a>
+								</li>
+								<li>
+									<a data-showcontent="tabCon2" {? !goods.mobile_deploymentId && goods.goods_seq } class="current" {/}>
+										일반 에디터
+									</a>					
+								</li>												
+							</ul>							
+							<!-- 제디터 영역 조건문 발행번호로 변경 필요 -->
+							<table class="table_basic thl {? !goods.mobile_deploymentId && goods.goods_seq } hide {/} " id="tabCon1" style="table-layout:fixed;">
+								<tr>
+									<td colspan="1"> 
+										<a href="{geditorUrl}" target="_blank"class="resp_btn v2">
+											에디터
+										</a>	
+									</td>
+									<td  colspan="1" style="float: right; border-bottom: none !important;">
+										<input type="hidden" name="service_key" value="{serviceKey}" />
+										<input type="text" id="mobile_deploymentId" name="mobile_deploymentId" placeholder="발행번호" value="{goods.mobile_deploymentId}"/>
+										<button type="button" class="resp_btn active size_M" onclick="setGeditorDeploymentId()">등록</button>
+									</td>
+								</tr>
+								<tr>
+									<td id="geditor" colspan="2">
+										<div class="noContnets {? goods.mobile_deploymentId && goods.goods_seq} hide {/}">
+											<img class="icon_geditor" src="../images/icon_geditor.png">
+											<span>제디터로 완성도 있는 콘텐츠를 쉽게 작성하세요!</span>
+										</div>
+										<input type="hidden" name="geditorExcute" value="false" />
+										<!-- g에디터 contents 여기에 숨기기-->
+										<!-- 발행번호가 존재하고 콘텐츠도 존재할 떄??? pc와 모바일 내용이 동일할때  -->										
+										<div class="contents_view mt5 {? (goods.mobile_contents_copy != '' && goods.mobile_contents_copy != 'N') || !goods.mobile_deploymentId }hide{/}" id="geditor_mobile_contents_view">{goods.mobile_contents}</div>
+									</td>
+								</tr>							
+							</table>
+							
+							<!-- 에디터  반응형일 경우 -->
+							<table class="table_basic thl tablednd {? (goods.mobile_deploymentId && goods.goods_seq) || !goods.goods_seq } hide {/} v7" id="tabCon2" style="table-layout:fixed;">
+								<tr>
+									<td>
+										<button type="button" id="editorBtn" class="resp_btn v2" onclick="view_editor_pop('mobile_contents','save');">
+											{? provider_seq == 1} 에디터 {:} 등록 {/}
+										</button>
+									</td>
+								</tr>
+								<tr>
+									<td>
+										<!-- 상세설명 저장후 비교를 위해-->
+										<textarea class="hide" id="mobile_contents_hidden" name="mobile_contents_hidden">{goods.mobile_contents}</textarea>
+										<textarea class="hide" name="mobile_contents" id="mobile_contents" class="contents_view mt5" readonly>
+											{goods.mobile_contents}
+										</textarea>
+										<div class="contents_view mt5 {? goods.mobile_contents_copy != '' && goods.mobile_contents_copy != 'N' }hide{/}" id="mobile_contents_view">
+											{goods.mobile_contents}											
+										</div>
+									</td>
+								</tr>							
+							</table>						
 						</div>
-
-						<textarea class="hide" name="mobile_contents" id="mobile_contents" class="contents_view mt5" readonly>{goods.mobile_contents}</textarea>
-						<div class="contents_view mt5 {? goods.mobile_contents_copy != '' && goods.mobile_contents_copy != 'N'}hide{/}" id="mobile_contents_view">{goods.mobile_contents}</div>
+						<!--{:}-->
+						<button type="button" class="resp_btn v2" onclick="view_editor_pop('mobile_contents','save');">등록</button>
 					</div>
+
+					<textarea class="hide" name="mobile_contents" id="mobile_contents" class="contents_view mt5" readonly>{goods.mobile_contents}</textarea>
+					<div class="contents_view mt5 {? (goods.mobile_contents_copy != '' && goods.mobile_contents_copy != 'N') || (goods.mobile_deploymentId && config_system.operation_type == 'light') }hide{/}" id="mobile_contents_view">{goods.mobile_contents}</div>
+						<!--{/}-->
+					</div>
+
 					<!--{ ? config_system.operation_type == 'light' }-->
 					<ul class="bullet_hyphen resp_message">
+						<li class="geditorInfo {? (!goods.mobile_deploymentId && goods.goods_seq)} hide {/}" >
+							제디터는 가비아 통합 회원 ID로 로그인 가능하며 사용하고 계신 쇼핑몰 연동 후 이용 가능합니다.
+							<a href="https://firstmall.kr/customer/faq/22301" target="_blank" class="resp_btn v2">제디터 설정 방법</a>
+						</li>
 						<!--{ ? serviceLimit('H_FR') }-->
-						<li>
+						<li class="editorInfo {?(provider_seq == 1 && !goods.goods_seq) || (goods.provider_seq == 1 && goods.goods_seq && goods.mobile_deploymentId)} hide {/}">
 							등록된 워터마크가 있을 경우 워터마크가 자동 적용됩니다.
 							<span class="{=serviceLimit('C1')}"><button type="button" class="resp_btn v2" onclick="{=serviceLimit('A1')}">워터마크 설정</button></span>
 						</li>
 						<!--{ : }-->
-						<li>
+						<li class="editorInfo {?(provider_seq == 1 && !goods.goods_seq) || (goods.provider_seq == 1 && goods.goods_seq && goods.mobile_deploymentId)} hide {/}">
 							등록된 워터마크가 있을 경우 워터마크가 자동 적용됩니다.
 							<button type="button" class="resp_btn v2 waterMarkImageSetting">워터마크 설정</button>
 						</li>
 						<!--{ / }-->
-						<li>
+						<li class="editorInfo {?(provider_seq == 1 && !goods.goods_seq) || (goods.provider_seq == 1 && goods.goods_seq && goods.mobile_deploymentId)} hide {/}">
 						<!--{ ? serviceLimit('H_EXAD') }-->
 							오픈마켓(11번가, G마켓, 옥션 등)에 판매 시 서버분산을 통한 안정된 운영을 위해 이미지호스팅 서비스를 권장합니다.
 						<!--{ : }-->
