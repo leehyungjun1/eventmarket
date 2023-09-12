@@ -1808,6 +1808,30 @@ class goods extends selleradmin_base {
 			foreach($eventRows as $k=>$v) {
 				if(is_array($v)) {
 					foreach($v as $ek=>$ev) {
+						if ($ek != 'common') {
+							// 이벤트 대상 입점사 리스트 체크
+							$in_provider_list = array_values(array_filter(explode('|', $ev['provider_list'])));
+
+							$provider_match = false;
+							if ($in_provider_list) {
+								foreach($in_provider_list as $ps) {
+									if($ps == $provider_seq) {
+										$provider_match = true;
+										continue;
+									}
+								}
+							} else {
+								if ($provider_seq == 1){
+									$provider_match = true;
+								}
+							}
+
+							if (!$provider_match) {
+								unset($eventRows[$k]);
+								continue;
+							}
+						}
+
 						# reset
 						$weekday = array();
 

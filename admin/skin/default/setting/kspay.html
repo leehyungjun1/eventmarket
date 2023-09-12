@@ -1,0 +1,483 @@
+<script type="text/javascript">
+var onInterestSettingButtonIndex = 0;
+
+/* 모바일/pc플랫폼 테이블간의 높의 조절 */
+function sync_height(){
+	$("div.inputPgSetting table.info-table-style").eq(1).height( $("div.inputPgSetting table.info-table-style").eq(0).height() );
+}
+
+$(document).ready(function() {
+	/* 무이자 할부기간 선택팝업 */
+	$("button.nonInterestSettingButton").each(function(idx){
+		$(this).bind("click",function(){
+			onInterestSettingButtonIndex = idx;
+			openDialog("무이자할부 <span class='desc'>무이자할부 정보를 설정합니다.</span>", "nonInterestPopup", {"width":"390","height":"310"});
+		});
+	});
+
+	/* 무이자 할부기간 삭제 */
+	$("button.nonInterestSettingDelete").live("click",function(){
+		$(this).parent().remove();
+	});
+
+	/* 무이자 할부기간 추가 */
+	$("button#nonInterestAddButton").bind("click",function(){
+		var arrPlaform = new Array();
+		arrPlaform[0] = "pc";
+		arrPlaform[1] = "mobile";
+		var codeName = arrPlaform[onInterestSettingButtonIndex] + "CardCompanyCode[]";
+		var termsName =  arrPlaform[onInterestSettingButtonIndex] + "CardCompanyTerms[]";
+		var opt_text = $("select[name=cardCompany] option:selected").html();
+		var opt_value = $("select[name=cardCompany] option:selected").val();
+		var mons = "";
+		$("input[type='checkbox'][name='nonInterestTerms[]']:checked").each(function(){
+			 mons += ',' + $(this).val();
+		});
+		if(mons == "") return false;
+		$("input[name='"+codeName+"']").each(function(){
+			if($(this).val() == opt_value) $(this).parent().remove();
+		});
+		mons = mons.substring(1);
+		var tag = '<div style="margin-bottom: 3px"> - ' + opt_text + ' ' + mons + " 개월";
+		tag += '<input type="hidden" name="' + codeName + '" value="' + opt_value + '">';
+		tag += '<input type="hidden" name="' + termsName + '" value="' + mons + '">';
+		tag += ' <button type="button" class="resp_btn nonInterestSettingDelete" style="padding: 2px 4px !important">삭제</button></div>';
+		$("button.nonInterestSettingButton").eq(onInterestSettingButtonIndex).next().next().append(tag);
+	});
+
+
+	/* 세팅값 출력 */
+	<!--{ @ payment }-->
+	$("input[name='payment[]'][value='{.value_}']").attr('checked',true);
+	<!--{ / }-->
+	<!--{ @ escrow }-->
+	$("input[name='escrow[]'][value='{.value_}']").attr('checked',true);
+	<!--{ / }-->
+
+	{ ? interestTerms != '' }
+	$("select[name='interestTerms'] option[value='{interestTerms}']").attr('selected',true);
+	{ / }
+	{ ? nonInterestTerms != '' }
+	$("select[name='nonInterestTerms'] option[value='{nonInterestTerms}']").attr('selected',true);
+	{ / }
+	$("input[name='cashReceipts'][value='{cashReceipts}']").attr('checked',true);
+	<!--{ @ mobilePayment }-->
+	$("input[name='mobilePayment[]'][value='{.value_}']").attr('checked',true);
+	<!--{ / }-->
+	<!--{ @ mobileEscrow }-->
+	$("input[name='mobileEscrow[]'][value='{.value_}']").attr('checked',true);
+	<!--{ / }-->
+	{ ? mobileInterestTerms != '' }
+	$("select[name='mobileInterestTerms'] option[value='{mobileInterestTerms}']").attr('selected',true);
+	{ / }
+	{ ? mobileNonInterestTerms != '' }
+	$("select[name='mobileNonInterestTerms'] option[value='{mobileNonInterestTerms}']").attr('selected',true);
+	{ / }
+
+	$("input[name='mobileCashReceipts'][value='{mobileCashReceipts}']").attr('checked',true);
+
+	/* 인풋박스 타이틀 표기 */
+	setDefaultText();
+
+	/* 모바일/pc플랫폼 테이블간의 높의 조절 */
+	sync_height();
+	
+	/* 파일업로드버튼 ajax upload 적용 */
+	var opt			= {};
+	var callback	= function(res){
+		var that		= this;
+		var result		= eval(res);
+
+		if(result.status){
+			$(that).closest('.webftpFormItem').find('.webftpFormItemPreview').attr('src', result.filePath + result.fileInfo.file_name);
+			$(that).closest('.webftpFormItem').find('.webftpFormItemPreview').css('display', 'block');
+			$(that).closest('.webftpFormItem').find('.webftpFormItemInput').val( result.filePath +result.fileInfo.file_name);
+		}else{
+			alert(result.msg);
+		}
+	};
+
+	// ajax 이미지 업로드 이벤트 바인딩
+	$('#escrowMarkUploadButton').createAjaxFileUpload(opt, callback);
+	$('#escrowMarkMobileUploadButton').createAjaxFileUpload(opt, callback);
+
+	/* 플래시 복사 제거 pjw 2019-06-20 */
+	$("#escrow_mark_copy_btn").click(function(){
+		clipboard_copy('\{=escrow_mark()\}');
+		alert('복사되었습니다.\nHTML소스의 원하시는 위치에 Ctrl+V로 붙여넣기 하세요.');
+	});
+
+	/* 플래시 복사 제거 pjw 2019-06-20 */
+	$("#escrow_mark_copy_mobile_btn").click(function(){
+		clipboard_copy('\{=escrow_mark_mobile()\}');
+		alert('복사되었습니다.\nHTML소스의 원하시는 위치에 Ctrl+V로 붙여넣기 하세요.');
+	});
+	
+	$("select[name='nonInterestTerms']").bind("change",function(){
+		check_nonInterest();
+	});
+	
+	check_nonInterest();
+	
+	$("select[name='mobileNonInterestTerms']").bind("change",function(){
+		check_nonInterest_mobile();
+	});
+	
+	check_nonInterest_mobile();	
+	
+	$("input[name='payment[]'],input[name='mobilePayment[]'],input[name='escrow[]'],input[name='mobileEscrow[]']").bind("change",function(){
+		check_use_payment();
+	});
+	check_use_payment();
+
+	$("input[name='virtual_info'][value='"+$("select[name='pgCompany']").val()+"']").attr("checked",true);
+});
+
+function check_use_payment(){	
+	$("input[name='payment[]'],input[name='mobilePayment[]'],input[name='escrow[]'],input[name='mobileEscrow[]']").each(function(){
+		if( !$(this).is(":checked") ){
+			$(this).closest("td").find("input,select").not(this).attr('disabled',true);
+		}else{
+			$(this).closest("td").find("input,select").not(this).removeAttr('disabled');			
+		}
+	});
+}
+
+function check_nonInterest()
+{ 
+	$("select[name='nonInterestTerms'] option").each(function(){		
+		if( $(this).attr('selected') ){
+			if( $(this).val() == 'automatic' ){
+				$(this).parent().next().hide().next().find("span:eq(0)").show();
+				$(this).parent().next().next().find("span:eq(1)").hide();
+				$(this).parent().next().next().next().hide();
+			}else{
+				$(this).parent().next().show().next().find("span:eq(1)").show();
+				$(this).parent().next().next().find("span:eq(0)").hide();
+				$(this).parent().next().next().next().show();
+			}
+		}
+	});
+}
+
+function check_nonInterest_mobile()
+{ 
+	$("select[name='mobileNonInterestTerms'] option").each(function(){		
+		if( $(this).attr('selected') ){
+			if( $(this).val() == 'automatic' ){
+				$(this).parent().next().hide().next().find("span:eq(0)").show();
+				$(this).parent().next().next().find("span:eq(1)").hide();
+				$(this).parent().next().next().next().hide();
+			}else{
+				$(this).parent().next().show().next().find("span:eq(1)").show();
+				$(this).parent().next().next().find("span:eq(0)").hide();
+				$(this).parent().next().next().next().show();
+			}
+		}
+	});
+}
+
+</script>
+<div class="clearbox inputPgSetting">
+	<div style="float:left;width:50%;border-right: 1px solid #e8e8e8; box-sizing: border-box;">
+	<table width="100%" class="table_basic v7 v10" style="table-layout:fixed;">
+		<col width="15%" /><col width="21%" /><col/>
+		<tr>
+			<th class="its-th center bold" colspan="3" height="20">PC</th>
+		</tr>
+		<tr>
+			<th class="its-th" style="min-width:100px;">결제통화</th>
+			<td class="its-td" style="min-width:120px;">통화설정</td>
+			<td class="its-td">결제수단 공통 설정 : KRW</td>
+		</tr>
+		<tr>
+			<th class="its-th" rowspan="6" style="min-width:100px;">일반</th>
+			<td class="its-td">결제 모듈</td>
+			<td class="its-td">
+				[NON-ActiveX] KSPAY
+				<input type="hidden" name="nonActiveXUse" value="Y"/>
+			</td>
+		</tr>		
+		<tr>
+			<td class="its-td" style="min-width:120px;">세팅 정보 등록</td>
+			<td class="its-td">
+				<div><input type="text" name="mallId" class="line" value="{mallId}" title="상점ID" /></div>
+				<div class="desc">상점 아이디는 <span class="bold black">23, 25, 26, 28</span>로 시작하는 표준코드만 입력이 가능합니다.</div>
+				<div style="padding-top:5px;"><input type="password" class="line" name="mallPass" size="40" value="{mallPass}" title="상점비밀번호" /></div>
+			</td>
+		</tr>
+		<tr>
+			<td class="its-td">신용카드</td>
+			<td class="its-td">
+				<div><label class="resp_checkbox"><input type="checkbox" name="payment[]" value="card" /> 사용</label></div>
+				<div style="padding-top:5px;">
+					할부기간 :
+					<select name="interestTerms">
+						<option value="0">일시불</option>
+						<option value="2">2개월</option>
+						<option value="3">3개월</option>
+						<option value="4">4개월</option>
+						<option value="5">5개월</option>
+						<option value="6">6개월</option>
+						<option value="7">7개월</option>
+						<option value="8">8개월</option>
+						<option value="9">9개월</option>
+						<option value="10">10개월</option>
+						<option value="11">11개월</option>
+						<option value="12">12개월</option>
+					</select>
+					<span class="desc">할부가 가능한 최대기간을 선택</span>
+				</div>
+				<div style="padding-top:5px;">
+					무이자 할부기간 :
+					<select name="nonInterestTerms">
+						<option value="automatic">자동</option>
+						<option value="manual">수동</option>
+					</select>
+					<button type="button" class="nonInterestSettingButton resp_btn">설정하기</button>
+					<div class="desc">
+					<span class='red'>무이자할부 수수료를 PG사에서 부담 (권장)</span>
+					<span class='red'>무이자할부 수수료를 쇼핑몰에서 부담(PG사와 협의)</span>
+					</div>
+					<div>
+					<!--{ @ pcCardCompanyCode }-->
+					<div>
+					- {arrKspayCompany[.value_]} {pcCardCompanyTerms[.index_]} 개월
+					<input type="hidden" name="pcCardCompanyCode[]" value="{.value_}">
+					<input type="hidden" name="pcCardCompanyTerms[]" value="{pcCardCompanyTerms[.index_]}">
+					<button type="button" class="nonInterestSettingDelete resp_btn">삭제</button>
+					</div>
+					<!--{ / }-->
+					</div>
+				</div>
+			</td>
+		</tr>
+		<tr>
+			<td class="its-td">계좌이체</td>
+			<td class="its-td"><label class="resp_checkbox"><input type="checkbox" name="payment[]" value="account" /> 사용</label></td>
+		</tr>
+		<tr>
+			<td class="its-td">가상계좌</label></td>
+			<td class="its-td">
+				<div>
+					<label class="resp_checkbox">
+						<input type="checkbox" name="payment[]" value="virtual" />
+						사용
+					</label>
+					<button type="button" class="button_virtual_info resp_btn">입금 확인 URL 설정</button>
+				</div>
+				<div>
+					<div class="desc">아래의 가상계좌 입금확인 URL을 반드시 세팅 하십시오.</div>
+					<div class="desc">세팅하지 않으시면 자동으로 입금확인 되지 않습니다!</div>
+					<div>http://<span class="red">쇼핑몰도메인입력</span>/payment/kspay_return</div>
+				</div>
+			</td>
+		</tr>
+		<tr>
+			<td class="its-td">핸드폰</td>
+			<td class="its-td">
+				<label class="resp_checkbox"><input type="checkbox" name="payment[]" value="cellphone" /> 사용</label>
+			</td>
+		</tr>
+		<tr>
+			<th class="its-th" rowspan="2">에스크로
+			<span class="helpicon" title="에스크로(구매대금예치)는 구매자를 보호하는 제도로써 소비자가 지불한 물품대금을<br/>에스크로사업자(은행 등 공신력있는 제3자)가 맡아 가지고 있다가 배송이 정상적으로<br/>완료되면 판매자 계좌로 입금하는 결제대금 예치제도입니다"></span></th>
+			<td class="its-td">가상계좌</td>
+			<td class="its-td">
+				<div><label class="resp_checkbox"><input type="checkbox" name="escrow[]" value="virtual" /> 사용</label></div>
+				<div>구매자가 <input type="text" name="escrowVirtualLimit" class="line onlynumber" size="6" value="{escrowVirtualLimit}" />원 이상의 금액을 결제할 때 계좌이체 에스크로 결제수단을 선택할 수 있습니다.</div>
+			</td>
+		</tr>
+		<tr>
+			<td class="its-td">
+			인증마크용<br/>치환코드
+			<span class="helpicon" title="쇼핑몰 하단에 에스크로 인증마크를 노출함으로써 소비자에게<br/>쇼핑몰의 에스크로 여부를 정확하게 알릴 수 있습니다."></span>
+			</td>
+			<td class="its-td" style="word-break:break-all;max-width:370px;">
+				<div>인증마크가 노출되어야 하는 영역에 치환코드를 삽입하세요! 삽입 후 인증마크를 클릭하면 인증여부를 확인할 수 있습니다</div>
+				<div class="webftpFormItem clearbox" style="padding-top:5px;">
+					<div class="fl">
+						{ ? escrowMark }
+						<img src="/data/icon/escrow_mark/{escrowMark}" class="webftpFormItemPreview" style="max-width:300px" style="max-width:300px;"/>
+						{ / }
+					</div>
+					<div class="fl pdl10">
+						<div>
+							&#123;=escrow_mark()&#125;<span class="btn small" id="escrow_mark_copy"><input type="button" id="escrow_mark_copy_btn" value="복사" /></span>
+						</div>
+						<div class="pdt10">
+							<input type="text" name="newEscrowMark" value="" size="15" class="webftpFormItemInput line" readonly="readonly" />
+							<input type="text" name="oriEscrowMarkFilename" class="webftpFormItemInputOriName hide" />
+							<input id="escrowMarkUploadButton" type="file" value="" class="uploadify" />
+						</div>
+					</div>					
+				</div>
+			</td>
+		</tr>
+
+	</table>
+	</div>
+	<div style="float:left;width:50%">
+	<table width="100%" class="table_basic v7 v10 inputPgSetting" style="table-layout:fixed;">
+		<col width="15%" /><col width="21%" /><col />
+		<tr>
+			<th class="its-th center bold" colspan="3" height="20">모바일</th>
+		</tr>
+		<tr>
+			<th class="its-th" style="min-width:100px;">결제통화</th>
+			<td class="its-td" style="min-width:120px;">통화설정</td>
+			<td class="its-td">PC와 동일</td>
+		</tr>
+		<tr>
+			<th class="its-th" rowspan="4" style="min-width:100px;">일반</th>
+			<td class="its-td" style="min-width:120px;">세팅 정보 등록</td>
+			<td class="its-td" valign="middle" height="60">
+				PC 플랫폼과 동일
+			</td>
+		</tr>
+		<tr>
+			<td class="its-td">신용카드</td>
+			<td class="its-td">
+				<div><label class="resp_checkbox"><input type="checkbox" name="mobilePayment[]" value="card" /> 사용</label></div>
+				<div style="padding-top:5px;">
+					할부기간 :
+					<select name="mobileInterestTerms">
+						<option value="0">일시불</option>
+						<option value="2">2개월</option>
+						<option value="3">3개월</option>
+						<option value="4">4개월</option>
+						<option value="5">5개월</option>
+						<option value="6">6개월</option>
+						<option value="7">7개월</option>
+						<option value="8">8개월</option>
+						<option value="9">9개월</option>
+						<option value="10">10개월</option>
+						<option value="11">11개월</option>
+						<option value="12">12개월</option>
+					</select>
+					<span class="desc">할부가 가능한 최대기간을 선택</span>
+				</div>
+				<div style="padding-top:5px;">
+					무이자 할부기간 :
+					<select name="mobileNonInterestTerms">
+						<option value="automatic">자동</option>
+						<option value="manual">수동</option>
+					</select>
+					<button type="button" class="nonInterestSettingButton resp_btn">설정하기</button>
+					<div class="desc">
+					<span class='red'>무이자할부 수수료를 PG사에서 부담 (권장)</span>
+					<span class='red'>무이자할부 수수료를 쇼핑몰에서 부담(PG사와 협의)</span>
+					</div>
+					<div>
+					<!--{ @ mobileCardCompanyCode }-->
+					<div>
+					- {arrKspayCompany[.value_]} {mobileCardCompanyTerms[.index_]} 개월
+					<input type="hidden" name="mobileCardCompanyCode[]" value="{.value_}">
+					<input type="hidden" name="mobileCardCompanyTerms[]" value="{mobileCardCompanyTerms[.index_]}">
+					<button type="button" class="nonInterestSettingDelete resp_btn">삭제</button>
+					</div>
+					<!--{ / }-->
+					</div>
+				</div>
+			</td>
+		</tr>
+		<tr>
+			<td class="its-td">가상계좌</label></td>
+			<td class="its-td">
+				
+				<div>
+					<label class="resp_checkbox">
+						<input type="checkbox" name="mobilePayment[]" value="virtual" />
+						사용
+					</label>
+					<button type="button" class="button_virtual_info resp_btn">입금 확인 URL 설정</button>
+				</div>
+				<div>
+					<div class="desc">아래의 가상계좌 입금확인 URL을 반드시 세팅 하십시오.</div>
+					<div class="desc">세팅하지 않으시면 자동으로 입금확인 되지 않습니다!</div>
+					<div>http://<span class="red">쇼핑몰도메인입력</span>/payment/kspay_return</div>
+				</div>
+			</td>
+		</tr>
+		<tr>
+			<td class="its-td">핸드폰</td>
+			<td class="its-td">
+				<label class="resp_checkbox"><input type="checkbox" name="mobilePayment[]" value="cellphone" /> 사용</label>
+			</td>
+		</tr>
+		<tr>
+			<th class="its-th" rowspan="2">에스크로
+			<span class="helpicon" title="에스크로(구매대금예치)는 구매자를 보호하는 제도로써 소비자가 지불한 물품대금을<br/>에스크로사업자(은행 등 공신력있는 제3자)가 맡아 가지고 있다가 배송이 정상적으로<br/>완료되면 판매자 계좌로 입금하는 결제대금 예치제도입니다"></span></th>
+			<td class="its-td">가상계좌</td>
+			<td class="its-td">
+				<div><label class="resp_checkbox"><input type="checkbox" name="mobileEscrow[]" value="virtual" /> 사용</label></div>
+				<div>구매자가 <input type="text" name="mobileEscrowVirtualLimit" class="line onlynumber" size="6" value="{mobileEscrowVirtualLimit}" />원 이상의 금액을 결제할 때 계좌이체 에스크로 결제수단을 선택할 수 있습니다.</div>
+			</td>
+		</tr>
+		<tr>
+			<td class="its-td">
+			인증마크용<br/>치환코드
+			<span class="helpicon" title="쇼핑몰 하단에 에스크로 인증마크를 노출함으로써 소비자에게<br/>쇼핑몰의 에스크로 여부를 정확하게 알릴 수 있습니다."></span>
+			</td>
+			<td class="its-td" valign="top" style="word-break:break-all;max-width:370px;">
+				<div>인증마크가 노출되어야 하는 영역에 치환코드를 삽입하세요! 삽입 후 인증마크를 클릭하면 인증여부를 확인할 수 있습니다</div>
+				<div class="webftpFormItem clearbox" style="padding-top:5px;">
+					<div class="fl">
+						{ ? escrowMarkMobile }
+						<img src="/data/icon/escrow_mark/{escrowMarkMobile}" class="webftpFormItemPreview" style="max-width:300px" style="max-width:300px;"/>
+						{ / }
+					</div>
+					<div class="fl pdl10">
+						<div>
+							&#123;=escrow_mark_mobile()&#125;<span class="btn small" id="escrow_mark_copy_mobile"><input type="button" id="escrow_mark_copy_mobile_btn" value="복사" /></span>
+						</div>
+						<div class="pdt10">
+							<input type="text" name="newEscrowMarkMobile" value="" size="15" class="webftpFormItemInput line" readonly="readonly" />
+							<input type="text" name="oriEscrowMarkMobileFilename" class="webftpFormItemInputOriName hide" />
+							<input id="escrowMarkMobileUploadButton" type="file" value="" class="uploadify" />
+						</div>
+					</div>					
+				</div>
+			</td>
+		</tr>
+	</table>
+	</div>
+</div>
+</form>
+<div id="nonInterestPopup" style="display: none">
+	<input type="hidden" name="nonInterestSettingButtonIndex" value="0" />
+	<div style="margin-bottom: 0.5rem">
+	<select name="cardCompany">
+		<!--{ @ arrKspayCompany }-->
+		<option value="{.key_}">{.value_}</option>
+		<!--{ / }-->
+	</select>
+	</div>
+	<div>
+	<label class="resp_checkbox"><input type="checkbox" name="nonInterestTerms[]" value="2" /> 2개월</label>
+	<label class="resp_checkbox"><input type="checkbox" name="nonInterestTerms[]" value="3" /> 3개월</label>
+	<label class="resp_checkbox"><input type="checkbox" name="nonInterestTerms[]" value="4" /> 4개월</label>
+	<label class="resp_checkbox"><input type="checkbox" name="nonInterestTerms[]" value="5" /> 5개월</label>
+	<label class="resp_checkbox"><input type="checkbox" name="nonInterestTerms[]" value="6" /> 6개월</label>
+	<label class="resp_checkbox"><input type="checkbox" name="nonInterestTerms[]" value="7" /> 7개월</label>
+	<label class="resp_checkbox"><input type="checkbox" name="nonInterestTerms[]" value="8" /> 8개월</label>
+	<label class="resp_checkbox"><input type="checkbox" name="nonInterestTerms[]" value="9" /> 9개월</label>
+	<label class="resp_checkbox"><input type="checkbox" name="nonInterestTerms[]" value="10" /> 10개월</label>
+	<label class="resp_checkbox"><input type="checkbox" name="nonInterestTerms[]" value="11" /> 11개월</label>
+	<label class="resp_checkbox"><input type="checkbox" name="nonInterestTerms[]" value="12" /> 12개월</label>
+	</div>
+	<div style="padding:10px 0 0 0" align="center"><span class="btn medium"><button type="button" id="nonInterestAddButton">추가</button></span></div>
+</div>
+<script type="text/javascript">
+$(".helpicon").poshytip({
+	className: 'tip-darkgray',
+	bgImageFrameSize: 8,
+	alignTo: 'target',
+	alignX: 'right',
+	alignY: 'center',
+	offsetX: 10,
+	allowTipHover: false,
+	slide: false,
+	showTimeout : 0
+});
+</script>

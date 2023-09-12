@@ -447,8 +447,6 @@ class OrderLibrary
 		$this->CI->db->insert('fm_order_item', $filter_params);
 		$nowItemSeq	= $this->CI->db->insert_id();
 
-		$this->order_item_category($params['goods_seq'], $nowItemSeq);
-
 		return $nowItemSeq;
 	}
 
@@ -1662,9 +1660,7 @@ class OrderLibrary
 		$post = $this->CI->input->post();
 
 		// 주문 당시 배송정책 존재여부
-		$order_shipping_row = $this->CI->ordermodel->get_shipping($order_seq);
-		list($shipping_group_seq, $shipping_set_seq, $shipping_set_code) = explode('_', $order_shipping_row[0]['shipping_group']);
-
+		list($shipping_group_seq, $shipping_set_seq, $shipping_set_code, $shipping_method) = $this->CI->shipping->getOrderShippingInfo($order_seq);
 		if(!$this->CI->shippingmodel->shipping_group_exists($shipping_group_seq)) { // 배송그룹 존재 유무
 			if ($mode == 'json') {
 				echo json_encode(['state' => '999', 'error_message' => getAlert('mo147')]);

@@ -1,0 +1,312 @@
+{ #layout_header }
+<style type="text/css">
+.info-table-style td { vertical-align:top; }
+.info-table-style .code_area div { display:inline-block; }
+.desc_code { font-size:8px; color:#a6a6a6}
+.code_area { background-color:#ebf2fa; }
+</style>
+<!--{ ? page_tab == 'banner' || page_tab == 'navigation' || page_tab == 'all_navigation' }-->
+<script type="text/javascript" src="/app/javascript/plugin/editor/js/editor_loader.js"></script>
+<script type="text/javascript" src="/app/javascript/plugin/editor/js/daum_editor_loader.js?dummy={=date('YmdH')}"></script>
+<!--{ / }-->
+<script type="text/javascript" src="/app/javascript/js/admin/page_manager.js?v={=date('Ymd')}"></script>
+<script type="text/javascript">
+	var width			= null;
+	var height			= null;
+	var cmd				= '{=page_type}';
+	var page_type		= '{=page_type}';
+	var page_type2		= '{=ucfirst(page_type)}';
+	var page_tab		= '{=page_tab}';
+	var grp_extra_txt	= '{=grp_ctrl_txt}';
+	var operation_type	= '{=operation_type}';
+</script>
+
+<!-- 페이지 타이틀 바 : 시작 -->
+<div id="page-title-bar-area">
+	<div id="page-title-bar">
+
+		<!-- 타이틀 -->
+		<div class="page-title">
+			<h2>{=page_name} 페이지</h2>
+		</div>
+
+		<!-- 좌측 버튼 -->
+		<ul class="page-buttons-left">
+			<li><a href="../{=page_type}/catalog" target="_blank" class="resp_btn v3 size_L">{=page_name} 바로가기</a></li>
+		</ul>
+
+		<!-- 우측 버튼 -->
+		<ul class="page-buttons-right">
+			<li>&nbsp;</li>
+		</ul>
+
+	</div>
+</div>
+<!-- 페이지 타이틀 바 : 끝 -->
+
+<!-- 페이지 구분 Tab Mane : 시작 -->
+<div style="margin:20px 0;">
+	{#tab_menu}
+</div>
+
+<div class="contents_dvs v2">
+	<!-- 페이지 관리 검색바 : 시작 -->
+	<!--{? tab_menu_sub_use == 'y' }-->
+	<div style="margin:0px 0;">
+	{#tab_menu_sub}
+	</div>
+	<!--{/}-->
+	<!-- 페이지 관리 검색바 : 끝 -->
+
+	<!-- 안내문구 :: 시작 -->
+	<div class="fl pdl10 pdb10 hide">
+	{=page_desc}
+	</div>
+	<!-- 안내문구 :: 끝 -->
+
+	<!-- 페이지 관리 테이블 : 시작 -->
+	<!--{? is_extra_top || grp_extra_txt }-->
+	<div class="fr pdb5 pdr10 mt10">
+		{? is_extra_top }
+		<button type="button" class='resp_btn {=extra_top_class}' onclick="extraTopCtrlBtn()" >{= extra_top_txt}</button>
+		{ / }
+		{? grp_extra_txt }
+		<button type="button" class='resp_btn {=grp_extra_class}' onclick="extraCtrlBtn()" >{= grp_extra_txt}</button>
+		{ / }
+	</div>
+	<!--{ / }-->
+	<table class="mt20 table_basic v10">
+		<!-- 테이블 헤더 : 시작 -->
+		<colgroup>
+		<!--{? is_extra_col}-->
+			<col width="20%" /><!--1차-->
+			<col width="20%" /><!--2차-->
+			<col width="20%" /><!--3차-->
+			<col width="20%" /><!--4차-->
+			<col width="20%" /><!--추가필드-->
+		<!--{ : }-->
+			<col width="25%" /><!--1차-->
+			<col width="25%" /><!--2차-->
+			<col width="25%" /><!--3차-->
+			<col width="25%" /><!--4차-->
+		<!--{ / }-->
+		</colgroup>
+		<thead class="lth">
+		<tr>
+			<th class="its-th-align left">
+				<span class="pdl30" style='line-height:30px'>1차</span>
+				<!--{? grp_ctrl_yn}--><div class="fr pdr10"><button type="button" class='resp_btn active ' onclick="setCtrlBtn('1')" >{=grp_ctrl_txt}</button></div><!--{/}-->
+			</th>
+			<th class="its-th-align left">
+				<span class="pdl30" style='line-height:30px'>2차</span>
+				<!--{? grp_ctrl_yn}--><div class="fr pdr10"><button type="button" class='resp_btn active' onclick="setCtrlBtn('2')" >{=grp_ctrl_txt}</button></div><!--{/}-->
+			</th>
+			<th class="its-th-align left">
+				<span class="pdl30" style='line-height:30px'>3차</span>
+				<!--{? grp_ctrl_yn}--><div class="fr pdr10"><button type="button" class='resp_btn active' onclick="setCtrlBtn('3')" >{=grp_ctrl_txt}</button></div><!--{/}-->
+			</th>
+			<th class="its-th-align left">
+				<span class="pdl30" style='line-height:30px'>4차</span>
+				<!--{? grp_ctrl_yn}--><div class="fr pdr10"><button type="button" class='resp_btn active' onclick="setCtrlBtn('4')" >{=grp_ctrl_txt}</button></div><!--{/}-->
+			</th>
+			<!--{? is_extra_col}-->
+			<th class="its-th-align left">
+				<span class="pdl30" style='line-height:30px'>{=grp_extra_col}</span>
+				<!--{? grp_extra_txt}--><div class="fr pdr10"><button type="button" class='resp_btn v2' onclick="extraCtrlBtn()" >{=grp_extra_txt}</button></div><!--{/}-->
+			</th>
+			<!--{ / }-->
+		</tr>
+		</thead>
+		<!-- 테이블 헤더 : 끝 -->
+	
+		<!-- 리스트 : 시작 -->
+		<tbody class="ltb" id="ajax_main_body">
+		</tbody>
+		<!-- 리스트 : 끝 -->
+	</table>
+	<!-- 페이지 관리 테이블 : 끝 -->
+	
+	<!-- 페이지 관리 설정 -->
+	<div id="setCtrlLayer" class="hide"></div>
+	<!-- 페이지 관리 뷰어 -->
+	<div id="getCtrlLayer" class="hide"></div>
+	<!--{ ? page_tab == 'access_limit' }-->
+	<!-- 페이지접속제한 리스트 일괄 수정 팝업 -->
+	<div id="popModifyLayer_access_limit" class="hide">
+		<form name="targerSettingForm" id="targerSettingForm" class="hx100">
+		<input type="hidden" name="mode" value="" />
+		<input type="hidden" name="page_type" value="{=page_type}" />
+		<div class="content">
+			<div class="item-title">접속 제한</div>
+			<!--<div class="pdb5 chk_layer">선택 : <span class="chk_cnt">0</span>개</div>-->
+			<div class="hide" id="sel_chk"></div>
+			<table class="table_basic thl">
+			<colgroup>
+				<col width="25%" />
+				<col width="75%" />
+			</colgroup>
+			<tr>
+				<th>회원 등급</th>
+				<td>
+				<!--{ @ member_group }-->
+					<label class='resp_checkbox pdr5'><input type="checkbox" name="memberGroup[]" value="{.group_seq}"> {.group_name}</label>
+				<!--{ / }-->
+				</td>
+			</tr>
+			<tr>
+				<th>회원 유형</th>
+				<td>
+				<!--{ @ member_type }-->
+					<label class='resp_checkbox pdr5'><input type="checkbox" name="userType[]" value="{=.key_}"> {=.value_}</label>
+				<!--{ / }-->
+				</td>
+			</tr>
+			</table>
+			<ul class="bullet_hyphen resp_message">
+				<li>접속자 제한을 미선택 시, 모든 사용자가 접속 가능합니다.</li>		
+			</ul>
+
+			<div class="item-title">기간 제한</div>
+			<table class="table_basic thl">
+			<colgroup>
+				<col width="25%" />
+				<col width="75%" />
+			</colgroup>
+			<tr>
+				<th>기간 설정</th>
+				<td>
+					<label class="resp_radio mr10"><input type="radio" name="catalog_allow" value="show" checked /> 제한 없음</label>
+					<label class="resp_radio mr10"><input type="radio" name="catalog_allow" value="period" /> 허용 기간</label>
+					<label class="resp_radio"><input type="radio" name="catalog_allow" value="none" /> 모두 제한</label>
+				</td>
+			</tr>
+			<tr class='hide period'>
+				<th>기간 입력</th>
+				<td>
+					<input type="text" name="catalog_allow_sdate" class="datepicker" size="11" maxlength="10" /> ~ 
+					<input type="text" name="catalog_allow_edate" class="datepicker" size="11" maxlength="10" /> 허용
+				</td>
+			</tr>
+			</table>
+		</div>
+		<div class="footer">
+			<button type="button" class="saveAccessLimit resp_btn active size_XL" onclick="submit_target_update($(this).closest('#targerSettingForm'),'modify');">저장</button>
+			<button type="button" class="btnLayClose resp_btn v3 size_XL" onClick='closeDialog("popModifyLayer_access_limit")'>닫기</button>
+		</div>
+		</form>
+	</div>
+	<!--{ : page_tab == 'banner' }-->
+	<!-- 페이지배너 리스트 일괄 수정 팝업 -->
+	<div id="popModifyLayer_banner" class="hide">
+		<form name="targerbannerForm" id="targerbannerForm" method="post" enctype="multipart/form-data" action="../page_manager_process/modify_banner" target="actionFrame">
+		<div class="hide" id="sel_chk"></div>
+		<input type="hidden" name="mode" value="" />
+		<input type="hidden" name="page_type" value="{=page_type}" />
+		<div class='hide'><div class="pdb5 chk_layer">선택 : <span class="chk_cnt">0</span>개</div></div>
+		<div class="content">
+			<div id="top_html_layer"></div>
+		</div>
+		<div class="footer">
+			<button type="button" class="saveAccessLimit resp_btn active size_XL" onclick="submit_target_update($(this).closest('#targerbannerForm'),'modify');">저장</button>
+			<button type="button" class="btnLayClose resp_btn v3 size_XL" onClick='closeDialog("popModifyLayer_banner")'>취소</button>
+		</div>
+		</form>
+	</div>
+	<!--{ : page_tab == 'recommend' }-->
+	<!-- 페이지추천상품 리스트 일괄 수정 팝업 -->
+	<div id="popModifyLayer_recommend" class="hide">
+		<div class="pdb5 chk_layer hide">선택 : <span class="chk_cnt">0</span>개</div>
+		<form name="targerrecommendForm" id="targerrecommendForm" method="post" enctype="multipart/form-data" action="../page_manager_process/modify_recommend" target="actionFrame">
+		<div class="hide" id="sel_chk"></div>
+		<input type="hidden" name="mode" value="" />
+		<input type="hidden" name="page_type" value="{=page_type}" />
+		<div class="content">
+			<div id="top_html_layer"></div>
+			<div style="padding:10px;" class="center">
+				<span class="btn large black"><button type="button" class="saveAccessLimit" onclick="submit_target_update($(this).closest('#targerrecommendForm'),'modify');">저장</button></span>
+			</div>
+		</div>
+		<div class="footer">
+			<button type="button" class="saveAccessLimit resp_btn active size_XL" onclick="submit_target_update($(this).closest('#targerrecommendForm'),'modify');">저장</button>
+			<button type="button" class="btnLayClose resp_btn v3 size_XL" onClick='closeDialog("popModifyLayer_recommend")'>닫기</button>
+		</div>
+		</form>
+	</div>
+	<!--{ :page_tab == 'navigation' || page_tab == 'all_navigation' }-->
+	<!-- 전체 네비게이션 일괄 수정 팝업 -->
+	<div id="popModifyLayer_extra_{= page_tab}" class="pd20 hide">
+		<form name="targerExtraForm" id="targerExtraForm" method="post" action="../page_manager_process/extra_{= page_tab}" target="actionFrame">
+			<div id="sel_chk_extra" class="hide"></div>
+			<input type="hidden" name="mode" value="" />
+			<input type="hidden" name="page_type" value="{=page_type}" />
+			<div id="top_html_layer"></div>
+		<div class="content">
+		<div class="footer">
+			<button type="button" class="saveAccessLimit resp_btn active size_XL" onclick="submit_target_update($(this).closest('#targerExtraForm'),'modify');">저장</button>
+			<button type="button" class="btnLayClose resp_btn v3 size_XL" onClick='closeDialog("popModifyLayer_extra_{= page_tab}")'>닫기</button>
+		</div>
+		</form>
+		<div id="popModifyLayer_{= page_tab}" class="pd20 hide">
+			{ #_navigation_popup }
+		</div>
+	</div>
+	
+	<div id="popSource_{=page_tab}" class="hide">
+		<div class="wx200 fr right">
+			네비게이션 안내<span class="helpicon2 detailDescriptionLayerBtn" title="네비게이션 안내"></span>
+			<div class="detailDescriptionLayer hide">네비게이션(가로형/세로형) 생성</div>
+		</div>
+		<table class="info-table-style cboth" width="100%" cellspacing="0" cellpadding="0">
+			<colgroup>
+				<col width="30%"/>
+				<col width="30%"/>
+				<col width="*"/>
+			</colgroup>
+			<tbody>
+			<tr>
+				<th class="its-th">타입</th>
+				<th class="its-th">영역</th>
+				<th class="its-th">소스복사</th>
+			</tr>
+			<tr>
+				<td>{=page_name}</td>
+				<td>{=tab_name}</td>
+				<td>
+					<a href="javascript:;" onclick="copy_navigation('{= page_tab}');">소스복사</a>
+				</td>
+			</tr>
+			</tbody>
+		</table>
+	</div>
+	<!--{ : page_tab == 'image' }-->
+	<div id="popSource_{=page_tab}" class="hide">
+		<div class="content">
+			<script type="text/javascript" src="/app/javascript/jquery/jquery.ajax.form.js"></script>
+			<script type="text/javascript" src="/app/javascript/js/ajaxFileUpload.js"></script>
+			<script type="text/javascript">
+			$('#btn_image_best').createAjaxFileUpload(uploadConfig, uploadCallback);
+			{?best_icon } imgUploadEvent("#btn_image_best", "", "", "{best_icon}"){/}	
+
+			</script>
+			<div class="ajaxImageForm">
+				<div class="webftpFormItem">									
+					<label class="resp_btn v2"><input type="file" id="btn_image_best" clasee="uploadify" accept="image/*">파일선택</label>
+					<input type="hidden" class="webftpFormItemInput" name="tmp_image_best" value="{best_icon}" size="30" maxlength="255" />
+					<div class="preview_image"></div>							
+				</div>
+			</div>
+		</div>
+		<div class="footer">
+			<button type="button" class='resp_btn active size_XL' onclick="set_bestbrand_img();" >저장</button>
+			<button type="button" class='resp_btn v3 size_XL' onclick="closeDialog('popSource_image');" >취소</button>
+		</div>
+	</div>
+	<!--{ / }-->
+	
+</div>
+
+
+<div id="suckPopup" class="successPopup hide">
+	<div class="box"><i class="far fa-check-circle"></i><div style="height: 5px"></div><span>저장 완료</span></div>
+</div>
+{ #layout_footer }

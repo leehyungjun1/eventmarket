@@ -1855,7 +1855,7 @@ class statsmodel extends CI_Model {
 				WHERE
 					s.deposit_ymd BETWEEN '".$sDate."' AND '".$eDate."'
 					".$where."
-				GROUP BY s.goods_seq ORDER BY s.price DESC
+				GROUP BY goods_seq ORDER BY price DESC
 				LIMIT ".$limit."
 			";
 		}

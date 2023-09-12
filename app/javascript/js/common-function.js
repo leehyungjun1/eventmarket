@@ -296,9 +296,10 @@ function setDatepicker(selector){
 /*
 * datepicker 날짜 선택 제한
 */
-function fnDatepicker(mode,day=0) {
+function fnDatepicker(mode,day) {
+	if(typeof day == 'undefined') day = 0;
 	var options = new Array();
-	
+
 	if(mode == 'min'){
 		options['minDate'] = day;
 	}else if (mode == 'max'){

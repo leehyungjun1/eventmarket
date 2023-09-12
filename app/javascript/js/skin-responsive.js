@@ -331,7 +331,7 @@ function set_classification(category_code, location_code) {
 	});
 }
 
-function goodsSearch(mode) {
+function goodsSearch(mode,options) {
 	$("#searchedItemDisplay").html('<div style="height:100px;display:block"></div>');
 	loadingStart("#searchedItemDisplay", { segments: 12, width: 25.5, space: 6, length: 23, color: '#000000', speed: 1.5, valign: 'bottom' });
 
@@ -389,7 +389,11 @@ function goodsSearch(mode) {
 				});
 			}
 			loadingStop("#searchedItemDisplay", true);
-			$("html").scrollTop($("#goodsSearchForm").offset().top);
+			if (typeof (options) !== "undefined") {
+				if (typeof (options.position_top) !== "undefined") {
+					$("html").scrollTop($("#"+options.position_top).offset().top);
+				}
+			}
 		}
 	});
 }
@@ -425,5 +429,8 @@ function setFilterBrandPath() {
 
 function goodsSearchPage(page) {
 	$('form#goodsSearchForm input[name="page"]').val(page);
-	goodsSearch('auto');
+	var options = {
+		'position_top' : 'goodsSearchForm',
+	};
+	goodsSearch('auto',options);
 }

@@ -314,8 +314,8 @@ class Partnermodel extends CI_Model {
 			unset($loop);
 			$loop[] = "<<<begin>>>"; // 시작
 			$loop[] = "<<<mapid>>>".$data_goods['goods_seq']; // 상품번호
-			if($data_goods['consumer_price'] && $data_goods['consumer_price'] != $data_goods['price'])
-				$loop[] = "<<<lprice>>>".$data_goods['consumer_price']; // 원판매가
+			if($data_goods['consumer_price'] != '0.00' && $data_goods['consumer_price'] != $data_goods['price'])
+				$loop[] = "<<<lprice>>>".(int)$data_goods['consumer_price']; // 원판매가
 			$loop[] = "<<<price>>>".$data_goods['price']; // 할인적용가
 			if($mobile_price) $loop[] = "<<<mpric>>>".$mobile_price; // 모바일할인적용가
 			if($mode == 'summary'){
@@ -341,7 +341,7 @@ class Partnermodel extends CI_Model {
 			if($noint)$loop[] = "<<<pcard>>>".$noint; // 무이자 할부
 			if($data_goods['reserve'] > 0){
 				$reserve_unit = iconv('UTF-8', 'euc-kr',"원");
-				$loop[] = "<<<point>>>".$data_goods['reserve'].$reserve_unit; // 포인트/마일리지
+				$loop[] = "<<<point>>>".(int)$data_goods['reserve'].$reserve_unit; // 포인트/마일리지
 			}
 
 			// 배송비 재개선 :: 2017-02-24 lwh

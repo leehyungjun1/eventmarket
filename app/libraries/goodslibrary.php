@@ -87,6 +87,11 @@ class goodsLibrary
             $sc['sellerId'] = $sc['sellerId'];
         }
 
+		// 입점사 검색
+		if ($sc['provider_seq_selector']) {
+			$sc['provider_seq'] = $sc['provider_seq_selector'];
+		}
+
         return $sc;
     }
 

@@ -1,0 +1,209 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=euc-kr">
+<title>텔레콤 eCredit서비스 결제테스트</title>
+<script language="javascript" src="//xpay.lgdacom.net/xpay/js/xpay_crossplatform.js" type="text/javascript"></script>
+<script type="text/javascript">
+/*
+* iframe으로 결제창을 호출하시기를 원하시면 iframe으로 설정 (변수명 수정 불가)
+*/
+	var LGD_window_type = "submit";
+/*
+* 수정불가
+*/
+function launchCrossPlatform(){
+	{? _POST['mobilenew'] == 'y' }
+	if (document.getElementById("payprocessing") != null){
+		 document.getElementById("payprocessing").style.display = "none";
+	}
+	{ / }
+	window.scrollTo(0,0);
+	lgdwin = open_paymentwindow(document.getElementById('LGD_PAYINFO'), '<?= $CST_PLATFORM ?>', LGD_window_type);
+}
+/*
+* FORM 명만  수정 가능
+*/
+function getFormObject() {
+        return document.getElementById("LGD_PAYINFO");
+}
+/*
+* 일반용 수정가능(함수명은 수정 불가)
+*/
+function setLGDResult(){
+
+	document.getElementById('LGD_RESPCODE').value = lgdwin.document.getElementById('LGD_RESPCODE').value;
+	document.getElementById('LGD_RESPMSG').value = lgdwin.document.getElementById('LGD_RESPMSG').value;
+	if(lgdwin.document.getElementById('LGD_PAYKEY') != null){
+		document.getElementById('LGD_PAYKEY').value = lgdwin.document.getElementById('LGD_PAYKEY').value;
+	}
+
+	if(document.getElementById('LGD_RESPCODE').value == '0000' ){
+		getFormObject().target = "_self";
+		getFormObject().action = "payres";
+		getFormObject().submit();
+	} else {
+		alert(document.getElementById('LGD_RESPMSG').value);
+		{? _POST['mobilenew'] == 'y' }
+		//결제 취소시 주문서로 돌아가기
+		reverse_pay_layer();
+		{ / }
+	}
+
+}
+/*
+* 스마트폰용 수정가능(함수명은 수정 불가)
+*/
+
+function doSmartXpay(){
+
+        var LGD_RESPCODE        = dpop.getData('LGD_RESPCODE');       //결과코드
+        var LGD_RESPMSG         = dpop.getData('LGD_RESPMSG');        //결과메세지
+
+        if( "0000" == LGD_RESPCODE ) { //인증성공
+            var LGD_PAYKEY      = dpop.getData('LGD_PAYKEY');         //LG유플러스 인증KEY
+            document.getElementById('LGD_PAYKEY').value = LGD_PAYKEY;
+            getFormObject().submit();
+        } else { //인증실패
+            alert("인증이 실패하였습니다. " + LGD_RESPMSG);
+			{? _POST['mobilenew'] == 'y' }
+			//결제 취소시 주문서로 돌아가기
+			reverse_pay_layer();
+			{ / }
+        }
+
+}
+
+</script>
+</head>
+<body onload="launchCrossPlatform();" style="display:none;">
+
+
+<form method="post"  id="LGD_PAYINFO" action="">
+
+<table width="100%">
+    <tr>
+        <td>구매자 이름 </td>
+        <td>{LGD_BUYER}</td>
+    </tr>
+    <tr>
+        <td>상품정보 </td>
+        <td>{LGD_PRODUCTINFO}</td>
+    </tr>
+    <tr>
+        <td>결제금액 </td>
+        <td>{LGD_AMOUNT}</td>
+    </tr>
+    <tr>
+        <td>구매자 이메일 </td>
+        <td>{LGD_BUYEREMAIL}</td>
+    </tr>
+    <tr>
+        <td>주문번호 </td>
+        <td>{LGD_OID}</td>
+    </tr>
+
+    <tr>
+        <td colspan="2"></td>
+    </tr>
+    <tr>
+        <td colspan="2" align="center">
+		<input  type="button" value="인증요청" onclick="launchCrossPlatform();"/>
+        </td>
+    </tr>
+</table>
+<br>
+<br>
+
+
+<!--{ ? payment == 'card' }-->
+<input type="hidden" name="LGD_CUSTOM_USABLEPAY" value="SC0010">
+<!--{ / }-->
+<!--{ ? payment == 'account' || payment == 'escrow_account'}-->
+<input type="hidden" name="LGD_CUSTOM_USABLEPAY" value="SC0030">
+<!--{ / }-->
+
+<input type="hidden" name="LGD_MTRANSFERNOTEURL"  		value="{LGD_KVPMISPNOTEURL}">			   <!-- 비동기 ISP(ex. 안드로이드) 승인결과를 받는 URL -->
+<input type="hidden" name="LGD_MTRANSFERWAPURL"  			value="{LGD_KVPMISPWAPURL}">			   <!-- 비동기 ISP(ex. 안드로이드) 승인완료후 사용자에게 보여지는 승인완료 URL -->
+<input type="hidden" name="LGD_MTRANSFERCANCELURL"  		value="{LGD_KVPMISPCANCELURL}">		   <!-- ISP 앱에서 취소시 사용자에게 보여지는 취소 URL -->
+
+<!--{ ? payment == 'virtual' || payment == 'escrow_virtual'}-->
+<input type="hidden" name="LGD_CUSTOM_USABLEPAY" value="SC0040">
+<!--{ / }-->
+<!--{ ? payment == 'cellphone' }-->
+<input type="hidden" name="LGD_CUSTOM_USABLEPAY" value="SC0060">
+<!--{ / }-->
+
+<!--{ ? substr_count(payment,'escrow')  > 0 }-->
+<input type="hidden" name="LGD_ESCROW_USEYN" value="Y">
+<!--{ : }-->
+<input type="hidden" name="LGD_ESCROW_USEYN" value="N">
+<!--{ / }-->
+
+<input type="hidden" name="CST_PLATFORM"                value="{CST_PLATFORM}">                   <!-- 테스트, 서비스 구분 -->
+<input type="hidden" name="CST_MID"                     value="{CST_MID}">                        <!-- 상점아이디 -->
+<input type="hidden" name="LGD_MID"                     value="{LGD_MID}">                        <!-- 상점아이디 -->
+<input type="hidden" name="LGD_OID"                     value="{LGD_OID}">                        <!-- 주문번호 -->
+<input type="hidden" name="LGD_BUYER"                   value="{LGD_BUYER}">           			<!-- 구매자 -->
+<input type="hidden" name="LGD_PRODUCTINFO"             value="{LGD_PRODUCTINFO}">     			<!-- 상품정보 -->
+<input type="hidden" name="LGD_AMOUNT"                  value="{LGD_AMOUNT}">                     <!-- 결제금액 -->
+<input type="hidden" name="LGD_BUYEREMAIL"              value="{LGD_BUYEREMAIL}">                 <!-- 구매자 이메일 -->
+<input type="hidden" name="LGD_CUSTOM_SKIN"             value="{LGD_CUSTOM_SKIN}">                <!-- 결제창 SKIN -->
+<input type="hidden" name="LGD_CUSTOM_PROCESSTYPE"      value="{LGD_CUSTOM_PROCESSTYPE}">         <!-- 트랜잭션 처리방식 -->
+<input type="hidden" name="LGD_TIMESTAMP"               value="{LGD_TIMESTAMP}">                  <!-- 타임스탬프 -->
+<input type="hidden" name="LGD_HASHDATA"                value="{LGD_HASHDATA}">                   <!-- MD5 해쉬암호값 -->
+<input type="hidden" name="LGD_RETURNURL"   			value="{LGD_RETURNURL}">      			<!-- 응답수신페이지-->
+<input type="hidden" name="LGD_VERSION"         		value="PHP_SmartXPay_1.0">				   	    <!-- 버전정보 (삭제하지 마세요) -->
+<input type="hidden" name="LGD_CUSTOM_FIRSTPAY"  		value="{LGD_CUSTOM_FIRSTPAY}">								    <!-- 디폴트 결제수단 -->
+<input type="hidden" name="LGD_TAXFREEAMOUNT"          	value="{LGD_TAXFREEAMOUNT}">					<!-- 비과세금액 -->
+<input type="hidden" name="LGD_INSTALLRANGE"          	value="{LGD_INSTALLRANGE}">					<!-- 할부기간 -->
+{?LGD_CLOSEDATE}
+<input type="hidden" name="LGD_CLOSEDATE"          		value="{=LGD_CLOSEDATE}">	<!-- 마감시간 -->
+{/}
+
+<input type="hidden" name="LGD_ENCODING_NOTEURL"        value="UTF-8">  <!-- note_url 인코딩 -->
+
+<!--{ ? payment == 'account' || payment == 'virtual' || payment == 'escrow_account' || payment == 'escrow_virtual' }-->
+<input type="hidden" name="LGD_CASHRECEIPTYN"          	value="N">									<!-- 결제창에서 현금영수증 입력폼 사용여부 -->
+<!--{ / }-->
+
+
+<!-- 가상계좌(무통장) 결제연동을 하시는 경우  할당/입금 결과를 통보받기 위해 반드시 LGD_CASNOTEURL 정보를 LG 텔레콤에 전송해야 합니다 . -->
+<input type="hidden" name="LGD_CASNOTEURL"          	value="{LGD_CASNOTEURL}">			<!-- 가상계좌 NOTEURL -->
+
+<!--
+****************************************************
+* 안드로이드폰 신용카드 ISP(국민/BC)결제에만 적용 (시작)*
+****************************************************
+
+(주의)LGD_CUSTOM_ROLLBACK 의 값을  "Y"로 넘길 경우, LG U+ 전자결제에서 보낸 ISP(국민/비씨) 승인정보를 고객서버의 note_url에서 수신시  "OK" 리턴이 안되면  해당 트랜잭션은  무조건 롤백(자동취소)처리되고,
+LGD_CUSTOM_ROLLBACK 의 값 을 "C"로 넘길 경우, 고객서버의 note_url에서 "ROLLBACK" 리턴이 될 때만 해당 트랜잭션은  롤백처리되며  그외의 값이 리턴되면 정상 승인완료 처리됩니다.
+만일, LGD_CUSTOM_ROLLBACK 의 값이 "N" 이거나 null 인 경우, 고객서버의 note_url에서  "OK" 리턴이  안될시, "OK" 리턴이 될 때까지 3분간격으로 2시간동안  승인결과를 재전송합니다.
+-->
+
+<input type="hidden" name="LGD_CUSTOM_ROLLBACK"         value="">				   	   				   <!-- 비동기 ISP에서 트랜잭션 처리여부 -->
+<input type="hidden" name="LGD_KVPMISPNOTEURL"  		value="{LGD_KVPMISPNOTEURL}">			   <!-- 비동기 ISP(ex. 안드로이드) 승인결과를 받는 URL -->
+<input type="hidden" name="LGD_KVPMISPWAPURL"  			value="{LGD_KVPMISPWAPURL}">			   <!-- 비동기 ISP(ex. 안드로이드) 승인완료후 사용자에게 보여지는 승인완료 URL -->
+<input type="hidden" name="LGD_KVPMISPCANCELURL"  		value="{LGD_KVPMISPCANCELURL}">		   <!-- ISP 앱에서 취소시 사용자에게 보여지는 취소 URL -->
+<input type="hidden" name="LGD_KVPMISPAUTOAPPYN"  		value="{LGD_KVPMISPAUTOAPPYN}">
+<!--
+****************************************************
+* 안드로이드폰 신용카드 ISP(국민/BC)결제에만 적용    (끝) *
+****************************************************
+-->
+
+<!-- input type="hidden" name="LGD_KVPMISPAUTOAPPYN"         value="Y"> -->
+<!-- Y: 아이폰에서 ISP신용카드 결제시, 고객사에서 'App To App' 방식으로 국민, BC카드사에서 받은 결제 승인을 받고 고객사의 앱을 실행하고자 할때 사용-->
+
+
+<!-- 수정 불가 ( 인증 후 자동 셋팅 ) -->
+<input type="hidden" name="LGD_RESPCODE" id="LGD_RESPCODE">
+<input type="hidden" name="LGD_RESPMSG" id="LGD_RESPMSG">
+<input type="hidden" name="LGD_PAYKEY"  id="LGD_PAYKEY">
+
+{? _POST['mobilenew'] == 'y' }
+<!-- 사용자 정의 -->
+<input type="hidden" name="mobilenew"  id="mobilenew" value="{=_POST['mobilenew']}">
+{ / }
+</form>
+</body>
+</html>

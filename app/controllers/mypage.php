@@ -419,13 +419,13 @@ class mypage extends board
 		$this->template->assign(array('cfg_order'	=> $this->cfg_order));
 
 		// 주문 당시 배송정책 존재여부
-		$order_shipping_row = $this->ordermodel->get_shipping($order_seq);
-		list($shipping_group_seq, $shipping_set_seq, $shipping_set_code) = explode('_', $order_shipping_row[0]['shipping_group']);
+		$this->load->library('shipping');
+		list($shipping_group_seq, $shipping_set_seq, $shipping_set_code, $shipping_method) = $this->shipping->getOrderShippingInfo($order_seq);
 		$shipping_group_exists = $this->shippingmodel->shipping_group_exists($shipping_group_seq);
 		$shipping_group_set_exists = $this->shippingmodel->shipping_group_set_exists($shipping_group_seq, $shipping_set_seq, $shipping_set_code);
 		$orders['shipping_group_exists'] = $shipping_group_exists ? 'Y' : 'N';
 		$orders['shipping_group_set_exists'] = $shipping_group_set_exists ? 'Y' : 'N';
-		$orders['shipping_method'] = $orders['shipping_method'] ? $orders['shipping_method'] : $order_shipping_row[0]['shipping_method'];
+		$orders['shipping_method'] = $orders['shipping_method'] ? $orders['shipping_method'] : $shipping_method;
 
 		// 배송가능 해외국가 추출
 		$ship_gl_arr	= $this->shippingmodel->get_gl_shipping();
@@ -439,7 +439,7 @@ class mypage extends board
 
 
 		// ### NEW 배송 그룹 정보 추출 ### :: START -> shipping library 계산
-		$this->load->library('shipping');
+		
 		$nation = $this->shippingmodel->get_gl_nation($orders['nation_name_eng']);
 		$ini_info = $this->shipping->set_ini(array('nation' => $nation, 'nation_key' => $orders['nation_key']));
 

@@ -227,26 +227,12 @@ class dailystatsmodel extends CI_Model {
 		return $age;
 	}
 
+	// 해당 날짜가 속한 일요일~토요일 기간 계산
 	public function getWeekStartEndDate($date = null){
 		if(!$date) $date = $this->now_date;
-		$dateArr	= explode('-',$date);
-		$y			= $dateArr[0];
-		$m			= $dateArr[1];
-		$d			= $dateArr[2];
-		$week		= floor($d/7) +1;
-		$week_start	= $dateArr[2]%7;
-		$no			= date('w', mktime(0, 0, 0, $m, $d, $y));
-		$no++;
-		if	($week_start>$no)
-			$week++;
-		sscanf(date('tw',mktime(0,0,0,$m,1,$y)),'%2d%d',$t,$w);
-		$tweek = ceil(($t+$w)/7);
-
-		$sun = (1-$w)+7*($week-1);
-
-		$s_d = date('Y-m-d',mktime(0,0,0,$m,$sun,$y));
-		$e_d = date('Y-m-d',mktime(0,0,0,$m,$sun+6,$y));
-
+		$dayOftheWeek = date("w",strtotime($date));
+		$s_d = date('Y-m-d',strtotime("$date - ".$dayOftheWeek." day"));		// 일요일
+		$e_d = date('Y-m-d',strtotime("$date + ".(6-$dayOftheWeek)." day"));	// 토요일
 		return array('start_date'=>$s_d,'end_date'=>$e_d);
 	}
 
@@ -260,8 +246,8 @@ class dailystatsmodel extends CI_Model {
 		$view_table = ($custom_view_table)?$custom_view_table:$this->view_table;
 				
 		foreach($view_table as $kind => $table){
-		if	($table == 'fm_goods') continue;
-		$sql		= "
+			if	($table == 'fm_goods') continue;
+			$sql		= "
 						select
 							daily_goods_seq,daily_goods_name,sum(daily_price) as daily_price,sum(daily_price_sale) as daily_price_sale,sum(daily_ea) as daily_ea,sum(daily_pc) as daily_pc,sum(daily_mobile) as daily_mobile,sum(daily_payment_1) as daily_payment_1,sum(daily_payment_2) as daily_payment_2,sum(daily_payment_3) as daily_payment_3,sum(daily_payment_4) as daily_payment_4,sum(daily_payment_5) as daily_payment_5,sum(daily_payment_6) as daily_payment_6,sum(daily_payment_7) as daily_payment_7,sum(daily_payment_8) as daily_payment_8,sum(daily_payment_9) as daily_payment_9,sum(daily_payment_10) as daily_payment_10,sum(daily_member_mem) as daily_member_mem,sum(daily_member_biz) as daily_member_biz,sum(daily_member_none) as daily_member_none,sum(daily_sex_male) as daily_sex_male,sum(daily_sex_female) as daily_sex_female,sum(daily_sex_none) as daily_sex_none,sum(daily_age_10) as daily_age_10,sum(daily_age_20) as daily_age_20,sum(daily_age_30) as daily_age_30,sum(daily_age_40) as daily_age_40,sum(daily_age_50) as daily_age_50,sum(daily_age_60) as daily_age_60,sum(daily_age_70) as daily_age_70,sum(daily_age_none) as daily_age_none,sum(daily_mall_own) as daily_mall_own,sum(daily_mall_other) as daily_mall_other,sum(daily_score_5) as daily_score_5,sum(daily_score_4) as daily_score_4,sum(daily_score_3) as daily_score_3,sum(daily_score_2) as daily_score_2,sum(daily_score_1) as daily_score_1,sum(daily_score_0) as daily_score_0,
 							count(daily_seq) as daily_cnt
@@ -274,7 +260,7 @@ class dailystatsmodel extends CI_Model {
 					";
 			$rs		= mysqli_query($this->db->conn_id,$sql);
 
-			if(mysqli_num_rows($rs)){
+			if($rs->num_rows > 0){
 				$del_sql = "delete from ".$table." where daily_date = '".$unique."'";
 				mysqli_query($this->db->conn_id,$del_sql);
 				while($pprs = mysqli_fetch_assoc($rs)){

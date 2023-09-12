@@ -1630,8 +1630,7 @@ class order extends front_base {
 					$param['goods']						= $goods;
 					$this->sale->set_init($param);
 					$sales								= $this->sale->calculate_sale_price($applypage);
-
-					$subdata['price'] = $sales['result_price'];
+					$subdata['price'] 					= $sales['one_result_price'];
 				}
 
 				$cart_options[$k] = $cart_opt;

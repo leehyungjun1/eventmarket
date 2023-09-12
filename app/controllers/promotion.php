@@ -591,6 +591,7 @@ class promotion extends front_base {
 					exit;
 				}
 			}
+			$promotion_able = false;
 			foreach($cart['list'] as $key => $data){
 				$cart_seq = $data['cart_seq'];
 
@@ -633,7 +634,6 @@ class promotion extends front_base {
 
 				$cart['list'][$key]['cart_options'] = array_reverse($cart['list'][$key]['cart_options']);
 				$cartopttotal += count($cart['list'][$key]['cart_options']);
-				$promotion_able = false;
 				foreach($cart['list'][$key]['cart_options'] as $k1 => $cart_option) {
 					$cart_option_seq = $cart_option['cart_option_seq'];
 					if( strstr($promotioncode['type'],'promotion') ){//일반코드인경우

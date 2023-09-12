@@ -1869,7 +1869,7 @@ class order_process extends selleradmin_base {
 	// 일괄 상품 준비
 	public function batch_goods_ready(){
 
-		$nomatch_order_seq = $npay_order = array();
+		$totalcnt = $returnstepcnt = 0;
 		foreach($_POST['seq'] as $order_seq){
 			$totalcnt++;
 			$this->db->trans_begin();
@@ -1893,10 +1893,8 @@ class order_process extends selleradmin_base {
 			// 변경한 옵션(추가옵션) 하나도 없었다면 rollback 처리함
 			if( count($options) + count($suboptions) == 0 ) {
 				$rollback = true;
-			}
-
-			$returnstep = $this->ordermodel->set_order_step($order_seq);
-			if( $returnstep == '35' ) {
+			} else {
+				$this->ordermodel->set_order_step($order_seq);
 				$log_str = "관리자가 상품준비를 하였습니다.";
 				$this->ordermodel->set_log($order_seq,'process',$this->providerInfo['provider_name'],'상품준비',$log_str);
 			}
@@ -1914,7 +1912,7 @@ class order_process extends selleradmin_base {
 
 		$msg = "선택된 주문건의 결제확인 주문수량이 → 상품준비로 <br />";
 		$msg .= "총 ".number_format($totalcnt)."건 요청 → 성공 ".number_format($returnstepcnt)."건";
-		$msg .= " ,실패".number_format($totalcnt-$returnstepcnt)."건";
+		$msg .= " , 실패".number_format($totalcnt-$returnstepcnt)."건 ";
 		$msg .= "변경되었습니다.";
 		echo $msg;
 	}

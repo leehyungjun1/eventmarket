@@ -207,9 +207,25 @@ $(document).ready(function(){
 		var nation		= $("select[name='shipping_method'] option:selected").attr('nation');
 		var set_seq		= $("select[name='shipping_method'] option:selected").val();
 		var prepay_info	= $("#shipping_prepay_info").val();
+		const shipping_set_code = $("select[name='shipping_method'] option:selected").attr('shipping_set_code');
+		let direct_store = 'N';
+
+		if (shipping_set_code === 'direct_store') {
+			direct_store = 'Y';
+		}
+		
+		const shipping_detail_info = {
+			grp_seq: grp_seq, 
+			set_seq: set_seq,
+			nation: nation,
+			goods_seq: gl_goods_seq,
+			prepay_info: prepay_info,
+			direct_store: direct_store,
+		}
+
 		$.ajax({
 			'url' : '/goods/shipping_detail_info',
-			'data' : {'grp_seq':grp_seq,'set_seq':set_seq,'nation':nation,'goods_seq':gl_goods_seq,'prepay_info':prepay_info},
+			'data' : shipping_detail_info ,
 			'success' : function(html){
 				if(html){
 					if (typeof gl_operation_type != 'undefined' && gl_operation_type == 'light') {
@@ -234,9 +250,25 @@ $(document).ready(function(){
 		var nation		= $("select[name='shipping_method'] option:selected").attr('nation');
 		var set_seq		= $("select[name='shipping_method'] option:selected").val();
 		var prepay_info	= $("#shipping_prepay_info").val();
+		const shipping_set_code = $("select[name='shipping_method'] option:selected").attr('shipping_set_code');
+		let direct_store = 'N';
+
+		if (shipping_set_code === 'direct_store') {
+			direct_store = 'Y';
+		}
+		
+		const shipping_detail_info = {
+			grp_seq: grp_seq, 
+			set_seq: set_seq,
+			nation: nation,
+			goods_seq: gl_goods_seq,
+			prepay_info: prepay_info,
+			direct_store: direct_store,
+		}
+
 		$.ajax({
 			'url' : '/goods/shipping_detail_info',
-			'data' : {'grp_seq':grp_seq,'set_seq':set_seq,'nation':nation,'goods_seq':gl_goods_seq,'prepay_info':prepay_info},
+			'data' : shipping_detail_info,
 			'success' : function(html){
 				if(html){
 				   $("#shipping_detail_lay .title").find("span").html(getAlert('gv053'));

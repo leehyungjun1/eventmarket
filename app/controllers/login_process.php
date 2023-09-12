@@ -827,6 +827,9 @@ class login_process extends front_base {
 				// 필요한 params만 넘김
 				unset($member_params);
 				$member_params['password'] = $mbrow['passwd'];
+				$member_params['passwd'] = $mbrow['passwd'];
+				$member_params['userid'] = $mbrow['userid'];
+				$member_params['user_name'] = $mbrow['user_name'];
 
 				$commonSmsData = array();
 				$commonSmsData['findpwd']['phone'][] = $cellphone;

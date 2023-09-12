@@ -1,0 +1,199 @@
+
+<script type="text/javascript">
+	var arrGoodsImage = new Array();
+	<!--{ @goodsImageSize }-->
+	arrGoodsImage[{.index_}] = '{.key_}';
+	<!--{ / }-->
+	
+	var _mockdata;
+	var imageSortLayId 	= "set_popup_image_sort_lay";
+	var goodsImageTableObj = $('#goodsImageTable .goodsImageDetail');
+	
+	$(function(){
+		// 기본 이미지정보 추출 :: 2016-05-03 lwh
+		var img_flag = false;
+		$("input[name='viewGoodsImage[]']",goodsImageTableObj).each(function(idx,obj){
+			var img_view	= $(obj).val();
+			var cut_number	= idx + 1;
+			var img_list 	= '<tr>';
+			var checked		= '';
+			if(idx == 0 ) checked = 'checked';
+			img_list += '<td class="center"><img src="../images/common/icon_move.png"></td>';
+			img_list += '<td class="center"><label class="resp_radio"><input type="radio" name="cut_first" value="'+cut_number+'" '+checked+'></label></td>';
+			img_list += '<td class="center"><img src="'+img_view+'" height="30px" ></td>';
+			img_list += '<td class="center">'+img_view+'</td>';
+			img_list += '<td class="center">';
+			img_list += '<input type="hidden" name="cut_number[]" size=2 value="'+cut_number+'" />';
+			img_list += '<button type="button" class="resp_btn v3 goodsImageDel">삭제</button>';
+			img_list += '</td>';
+			img_list += '</tr>';
+			img_flag = true;
+			$("#"+imageSortLayId+" #img_body").append(img_list);
+		});
+		if(img_flag) $("#noimg").remove();
+		// 상품컷 순서변경 :: 2016-05-03 lwh
+		$("#"+imageSortLayId+" #img_body").sortable({
+			items:'tr',
+			out: function( event, ui ) {
+	
+			}
+		});
+	
+		// 상품컷 삭제 :: 2016-05-03 lwh
+		$("#"+imageSortLayId+" .goodsImageDel").on("click",function(){
+			var del_cut = $(this).closest('tr').find("input[name='cut_number[]']").val();
+			$(this).closest('tr').remove();
+			$("#"+imageSortLayId+" #sort_img_frm").append('<input type="hidden" name="del_cut[]" value="'+del_cut+'" />');
+		});
+	
+		/* 이미지 및 설정 최종저장 :: 2016-04-29 lwh */
+		$("#"+imageSortLayId+" #saveGoodsImg").on('click',function(){
+			var goodsSeq	= "{=goodsSeq}";
+	
+			// seq가 넘어왔을땐 실시간 저장
+			if(goodsSeq){
+				var serialize	= $("form#sort_img_frm").serialize();
+				$.ajax({
+					type: "post",
+					url: "../goods_process/goods_img_sort",
+					dataType : 'json',
+					data: serialize,
+					success: function(result){
+						if(result.result){
+							sortable_parent(result.cut_number,goodsImageTableObj);
+							default_img();
+							alert('상품컷 정보가 재설정되었습니다.');
+							closeDialog(imageSortLayId);
+							//window.self.close();
+						}else{
+							alert('상품컷 정보 재설정이 실패하였습니다.');
+							//window.self.close();
+						}
+					}
+				});
+			}else{
+				var cut_arr = new Array();
+				$("#"+imageSortLayId+" input[name='cut_number[]']").each(function(i){cut_arr[i] = $(this).val();});
+				sortable_parent(cut_arr,goodsImageTableObj);
+				default_img();
+				alert('상품컷 정보가 재설정되었습니다.');
+				closeDialog(imageSortLayId);
+				//window.self.close();
+			}
+		});
+	});
+	
+	// 상품 사진 상세 순서 재지정 :: LastModify 2020-10-22 pjm
+	function sortable_parent(obj,goodsImageTableObj){
+
+		var cutnum_clone 	= null;
+		var now_obj 		= null;
+		var newcutnum 		= null;
+		var cut_number 		= new Array();
+		var newRow 			= new Array();
+
+		$.each(obj, function( i, val) { cut_number[i] = val; });
+
+		// 순서 변경 및 삭제 후 남은 사진이 있다면 노출 순처 재지정
+		var delCutNum = 0;
+		var newCutNum = 0;
+		var delCount = 0;
+		var delCutNumCheck = new Array();
+
+		// 삭제된 사진 cut number 체크
+		$.each(cut_number, function( i, cut_number_check) {
+			delCutNumCheck[cut_number_check-1] = true;
+		});
+
+		$(".cut-tr",goodsImageTableObj).each(function(e){
+
+			//cut_number :: ["1","2","3"] 순서 변경 삭제 선택 후 남은 사진(부모창에 재적용될 사진)
+			delCutNum 		= e + 1;
+			now_obj 		= $(".cutnum"+delCutNum,goodsImageTableObj);	// 1.기존 Row Obj
+			newCutNum		= cut_number[e];				// 새로운 사진 정렬 순서
+
+			if(delCutNumCheck[e] != undefined){
+				newCutNum		= cut_number[e-delCount];		// 새로운 사진 정렬 순서
+				cutnum_clone 	= now_obj.clone();  			// 2. 삭제되지 않은 사진의 원본 row를 복사
+				cutnum_clone.removeClass('cutnum'+delCutNum);	// 3. Cut 순번 Class 삭제
+				newRow[newCutNum-1] = cutnum_clone;				// 4. 사진 순서 재정렬을 위해 배열로 저장
+			}else{ 
+				delCount++; // 삭제된 상품인 경우, newCutNum 값을 맞추기 위함
+			}
+			now_obj.remove();
+		});
+		newRow = newRow.filter((element) => element !== undefined);
+
+		if(newRow.length > 0){
+			var newcutnum = 0;
+			$.each(newRow, function( i, newObj) {
+				newcutnum++;
+				newObj.addClass('cutnum'+newcutnum);			// 5. Cut 순번 Class 재지정
+				newObj.find("td").eq(0).html(newcutnum);		// 6. Cut Row 첫번째 Td에 순번 재지정
+				$("tbody",goodsImageTableObj).append(newObj);	// 7. 사진 상세 Table에 복사한 최종 Row 추가
+			});
+		}
+
+		if(cut_number.length == 0){
+			var headBtn = '<div class="hide" id="multiadd" style="display: block;">';
+			headBtn += '순서';
+			headBtn += '</div>';
+			headBtn += '<span class="btn-plus first_plus hide"><button id="goodsImageAdd" type="button"></button></span>';
+			headBtn += '<div id="multitxt" style="display: none;">멀티등록<br>순서변경</div>';
+			$('thead',goodsImageTableObj).find('th').eq(0).html(headBtn);
+
+			var noimgtd	= '<tr class="no_goods_image"><td class="center" colspan="9">등록된 사진이 없습니다. 멀티일괄등록 버튼을 클릭하여 사진을 편리하게 등록하세요</td></tr>';
+			$('#goodsImageTable table.goodsImageDetail tbody').html(noimgtd);
+			$('table#watermark_tb').hide();
+			$('#goodsImagePriview').show();
+		}
+
+	}
+	
+	function userKeyPress() {
+		//입력받은 key가 엔터시 (key 값이 13)
+		if ( window.event.keyCode == 13 ) {
+			//아무런 작동값이 없는 0으로 강제 변환
+			window.event.keyCode = 0;
+		}else{
+			return;
+		}
+	}
+	</script>
+	</head>
+	
+	<div class="content">
+		<form name="sort_img_frm" id="sort_img_frm">
+		<input type="hidden" name="goodsSeq" value="{=goodsSeq}" />
+		<table class="tablednd table_basic">
+		<colgroup>
+		<col width="10%" />
+		<col width="10%" />
+		<col width="20%" />
+		<col width="" />
+		<col width="15%" />
+		</colgroup>
+		<thead>
+		<tr class="nodrag nodrop">
+			<th>순서</th>
+			<th>대표</th>
+			<th>사진</th>
+			<th>파일명</th>
+			<th>삭제</th>
+		</tr>
+		</thead>
+		<tbody id="img_body">
+		<tr id="noimg">
+			<td class="center" colspan="5">변경할 이미지가 없습니다.</td>
+		</tr>
+		</tbody>
+		</table>
+		<ul class='bullet_hyphen resp_message'>
+			<li>- 대표 사진 선택 후 저장 시, 첫 번째 순서로 자동 제공됩니다.</li>
+		</ul>
+		</form>
+	</div>
+	<div class="footer">
+		<button type="button" id="saveGoodsImg" class="resp_btn active size_XL">저장</button>
+		<button type="button" class="resp_btn v3 size_XL" onClick="closeDialog('set_popup_image_sort_lay')">취소</button>
+	</div>

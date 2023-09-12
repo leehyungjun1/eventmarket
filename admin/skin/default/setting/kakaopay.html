@@ -1,0 +1,263 @@
+<script type="text/javascript">
+var onInterestSettingButtonIndex = 0;
+
+$(document).ready(function() {
+	/* 무이자 할부기간 선택팝업 */
+	$("button.kakaononInterestSettingButton").each(function(idx){
+		$(this).bind("click",function(){
+			onInterestSettingButtonIndex = idx;
+			openDialog("무이자할부 <span class='desc'>무이자할부 정보를 설정합니다.</span>", "kakaononInterestPopup", {"width":"390","height":"310"});
+		});
+	});
+
+	/* 무이자 할부기간 삭제 */
+	$("button.kakaononInterestSettingDelete").live("click",function(){
+		$(this).parent().remove();
+		kakao_sync_height();
+	});
+
+	/* 무이자 할부기간 추가 */
+	$("button#kakaononInterestAddButton").bind("click",function(){
+		var codeName	= "kakaoCardCompanyCode[]";
+		var termsName	= "kakaoCardCompanyTerms[]";
+		var opt_text	= $("select[name=kakaocardCompany] option:selected").html();
+		var opt_value	= $("select[name=kakaocardCompany] option:selected").val();
+		var mons = "";
+		$("input[type='checkbox'][name='kakaopay_nonInterestTerms[]']:checked").each(function(){
+			 mons += ',' + $(this).val();
+		});
+		if(mons == "") return false;
+		$("input[name='"+codeName+"']").each(function(){
+			if($(this).val() == opt_value) $(this).parent().remove();
+		});
+		mons = mons.substring(1);
+		var tag = '<div style="margin-bottom: 3px"> - ' + opt_text + ' ' + mons + " 개월";
+		tag += '<input type="hidden" name="' + codeName + '" value="' + opt_value + '">';
+		tag += '<input type="hidden" name="' + termsName + '" value="' + mons + '">';
+		tag += ' <button type="button" class="resp_btn kakaononInterestSettingDelete" style="padding: 2px 4px !important">삭제</button></div>';
+		$("button.kakaononInterestSettingButton").eq(onInterestSettingButtonIndex).next().next().append(tag);
+		kakao_sync_height();
+	});
+
+	/* 신용카드 사용 */
+	$("input[name='kakaopay_payment']").bind("click", function(){
+		kakao_check_use_payment();
+	});
+
+	/* 무이자 할부기간 변경 */
+	$("select[name='kakaopay_nonInterestTerms']").bind("change",function(){
+		kakao_check_nonInterest();
+	});
+
+	/* 세팅값 출력 */
+	{? payment }
+	$("input[name='kakaopay_payment']").attr('checked',true);
+	{ / }
+	{? interestTerms }
+	$("select[name='kakaopay_interestTerms'] option[value='{=interestTerms}']").attr('selected',true);
+	{ / }
+	{? nonInterestTerms }
+	$("select[name='kakaopay_nonInterestTerms'] option[value='{nonInterestTerms}']").attr('selected',true);
+	{ / }
+
+	kakao_check_use_payment();
+	kakao_check_nonInterest();
+	kakao_sync_height();
+});
+
+// 모바일/pc플랫폼 테이블간의 높의 조절
+function kakao_sync_height(){
+	$("div.kakaoinputPgSetting table.info-table-style").eq(1).height( $("div.kakaoinputPgSetting table.info-table-style").eq(0).height()+1 );
+}
+
+// 신용카드 사용 체크
+function kakao_check_use_payment(){
+	var paymentObj	= $("input[name='kakaopay_payment']");
+	if( paymentObj.is(":checked") ){
+		paymentObj.closest("td").find("select").removeAttr('disabled');
+	}else{
+		paymentObj.closest("td").find("select").attr('disabled',true);
+	}
+}
+
+// 신용카드 무이자 할부 기간 체크
+function kakao_check_nonInterest(){
+	$("select[name='kakaopay_nonInterestTerms'] option").each(function(){
+		if( $(this).attr('selected') ){
+			if( $(this).val() == 'automatic' ){
+				$(this).parent().next().hide().next().find("span:eq(0)").show();
+				$(this).parent().next().next().find("span:eq(1)").hide();
+				$(this).parent().next().next().next().hide();
+			}else{
+				$(this).parent().next().show().next().find("span:eq(1)").show();
+				$(this).parent().next().next().find("span:eq(0)").hide();
+				$(this).parent().next().next().next().show();
+			}
+		}
+	});
+}
+
+</script>
+<div class="clearbox kakaoinputPgSetting">
+	<div style="float:left;width:50%">
+	<table width="100%" class="table_basic">
+		<col width="10%" /><col width="10%" /><col width="30%" />
+		<tr>
+			<th class="its-th center bold" colspan="3"  height="20">PC (Facebook쇼핑몰 포함)</th>
+		</tr>
+		<tr>
+			<th class="its-th" rowspan="3">일반</th>
+			<td class="its-td">사용여부</td>			
+			<td class="its-td">
+				<input type="radio" name="not_use_kakao" id="not_use_kakao_n" value='n' { ? config_system.not_use_kakao == 'n'}checked{/}><label for="not_use_kakao_n">카카오 페이 사용</label><br/>
+				<input type="radio" name="not_use_kakao" id="not_use_kakao_y" value='y' { ? config_system.not_use_kakao == 'y'}checked{/}><label for="not_use_kakao_y">카카오 페이 미사용</label>
+			</td>			
+		</tr>
+		<tr>
+			<td class="its-td">세팅 정보 등록</td>
+			<td class="its-td">
+				<table cellpadding="0" cellspacing="0" border="0" width="100%">
+				<tr>
+					<td>MID : </td>
+					<td>
+						<input type="text" name="kakao_mid" class="line" value="{mid}" title="MID" />
+					</td>
+				</tr>
+				<tr>
+					<td>인증요청용 EncKey : </td>
+					<td>
+						<input type="text" name="kakao_merchantEncKey" class="line" value="{merchantEncKey}" title="merchantEncKey" />
+					</td>
+				</tr>
+				<tr>
+					<td>인증요청용 HashKey : </td>
+					<td>
+						<input type="text" name="kakao_merchantHashKey" class="line" value="{merchantHashKey}" title="merchantHashKey" />
+					</td>
+				</tr>
+				<tr>
+					<td>상점키 : </td>
+					<td>
+						<input type="text" name="kakao_merchantKey" class="line" value="{merchantKey}" title="merchantKey" />
+					</td>
+				</tr>
+				<tr>
+					<td>거래취소비밀번호 : </td>
+					<td>
+						<input type="text" name="kakao_cancelPwd" class="line" value="{cancelPwd}" title="cancelPwd" />
+					</td>
+				</tr>
+				</table>
+			</td>
+		</tr>
+		<tr>
+			<td class="its-td">신용카드</td>
+			<td class="its-td">
+				<div>
+					<label><input type="checkbox" name="kakaopay_payment" value="card" disabled checked /> 사용</label>
+					<input type="hidden" name="kakaopay_payment" value="card" />
+				</div>
+				<div style="padding-top:5px;">
+					할부기간 :
+					<select name="kakaopay_interestTerms">
+						<option value="01">일시불</option>
+						<option value="02">2개월</option>
+						<option value="03">3개월</option>
+						<option value="04">4개월</option>
+						<option value="05">5개월</option>
+						<option value="06">6개월</option>
+						<option value="07">7개월</option>
+						<option value="08">8개월</option>
+						<option value="09">9개월</option>
+						<option value="10">10개월</option>
+						<option value="11">11개월</option>
+						<option value="12">12개월</option>
+					</select>
+					<span class="desc">할부가 가능한 최대기간을 선택</span>
+				</div>
+				<div style="padding-top:5px;">
+					무이자 할부기간 :
+					<select name="kakaopay_nonInterestTerms">
+						<option value="automatic">자동</option>
+						<option value="manual">수동</option>
+					</select>
+					<button type="button" class="kakaononInterestSettingButton resp_btn">설정하기</button>
+					<div class="desc">
+					<span class='red'>무이자할부 수수료를 PG사에서 부담 (권장)</span>
+					<span class='red'>무이자할부 수수료를 쇼핑몰에서 부담(PG사와 협의)</span>
+					</div>
+					<div>
+					<!--{ @ CardCompanyCode }-->
+						<div>
+						- {arrCardCompany[.value_]} {CardCompanyTerms[.index_]} 개월
+						<input type="hidden" name="kakaoCardCompanyCode[]" value="{.value_}">
+						<input type="hidden" name="kakaoCardCompanyTerms[]" value="{CardCompanyTerms[.index_]}">
+						<button type="button" class="kakaononInterestSettingDelete">삭제</button>
+						</div>
+					<!--{ / }-->
+					</div>
+				</div>
+			</td>
+		</tr>
+	</table>
+	</div>
+	<div style="float:left;width:50%;">
+	<table width="100%" height="285px" class="table_basic kakaoinputPgSetting">
+		<col width="10%" /><col width="10%" /><col width="30%" />
+		<tr>
+			<th class="its-th center bold" colspan="3" height="20">Mobile/Tablet (Facebook쇼핑몰 포함)</th>
+		</tr>
+		<tr>
+			<th class="its-th" rowspan="2">일반</th>
+			<td class="its-td">세팅 정보 등록</td>
+			<td class="its-td" valign="middle" height="131">
+				PC플랫폼과 동일
+			</td>
+		</tr>
+		<tr>
+			<td class="its-td">신용카드</td>
+			<td class="its-td">
+				PC플랫폼과 동일
+			</td>
+		</tr>
+	</table>
+	</div>
+</div>
+</form>
+<div id="kakaononInterestPopup" style="display: none">
+	<input type="hidden" name="kakaononInterestSettingButtonIndex" value="0" />
+	<div style="margin-bottom: 0.5rem">
+		<select name="kakaocardCompany">
+			<!--{ @ arrKakaoCardCompany }-->
+			<option value="{.codecd}">{.value}</option>
+			<!--{ / }-->
+		</select>
+	</div>
+	<div>
+	<label class="resp_checkbox"><input type="checkbox" name="kakaopay_nonInterestTerms[]" value="2" /> 2개월</label>
+	<label class="resp_checkbox"><input type="checkbox" name="kakaopay_nonInterestTerms[]" value="3" /> 3개월</label>
+	<label class="resp_checkbox"><input type="checkbox" name="kakaopay_nonInterestTerms[]" value="4" /> 4개월</label>
+	<label class="resp_checkbox"><input type="checkbox" name="kakaopay_nonInterestTerms[]" value="5" /> 5개월</label>
+	<label class="resp_checkbox"><input type="checkbox" name="kakaopay_nonInterestTerms[]" value="6" /> 6개월</label>
+	<label class="resp_checkbox"><input type="checkbox" name="kakaopay_nonInterestTerms[]" value="7" /> 7개월</label>
+	<label class="resp_checkbox"><input type="checkbox" name="kakaopay_nonInterestTerms[]" value="8" /> 8개월</label>
+	<label class="resp_checkbox"><input type="checkbox" name="kakaopay_nonInterestTerms[]" value="9" /> 9개월</label>
+	<label class="resp_checkbox"><input type="checkbox" name="kakaopay_nonInterestTerms[]" value="10" /> 10개월</label>
+	<label class="resp_checkbox"><input type="checkbox" name="kakaopay_nonInterestTerms[]" value="11" /> 11개월</label>
+	<label class="resp_checkbox"><input type="checkbox" name="kakaopay_nonInterestTerms[]" value="12" /> 12개월</label>
+	</div>
+	<div style="padding:10px 0 0 0" align="center"><span class="btn medium"><button type="button" id="kakaononInterestAddButton">추가</button></span></div>
+</div>
+<script type="text/javascript">
+$(".helpicon").poshytip({
+	className: 'tip-darkgray',
+	bgImageFrameSize: 8,
+	alignTo: 'target',
+	alignX: 'right',
+	alignY: 'center',
+	offsetX: 10,
+	allowTipHover: false,
+	slide: false,
+	showTimeout : 0
+});
+</script>
