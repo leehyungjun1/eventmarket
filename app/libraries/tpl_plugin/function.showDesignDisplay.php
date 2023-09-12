@@ -252,13 +252,6 @@ function _lightShowDesignDisplay($display_seq, $perpage=null, $kind=null, $iscac
 
 				// $CI->template->print_("tpl", '', true);
 				$html = $CI->template->fetch("tpl", '', true);
-
-				//GA통계
-				if($CI->ga_auth_commerce_plus && (!$CI->uri->uri_string || $CI->uri->uri_string == "main/index") && $list['record'] && !$return  && !$iscach){
-					$ga_params['item'] = $displayAllGoodsList;
-					$ga_params['page'] = "메인페이지";
-					$html .= google_analytics($ga_params,"list_count");
-				}
 			}
 		}
 
@@ -541,11 +534,6 @@ function _heavyShowDesignDisplay($display_seq, $perpage=null, $kind=null, $iscac
 			$CI->goodsdisplay->print_();
 			if(!$CI->designDisplayTabAjaxIdx && !$iscach){
 				echo "</div>";
-			}
-			if($CI->ga_auth_commerce_plus && (!$CI->uri->uri_string || $CI->uri->uri_string == "main/index") && $list['record'] && !$return  && !$iscach){ //GA통계
-				$ga_params['item'] = $displayAllGoodsList;
-				$ga_params['page'] = "메인페이지";
-				echo google_analytics($ga_params,"list_count");
 			}
 
 			// GA4 연동

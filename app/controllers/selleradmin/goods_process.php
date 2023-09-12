@@ -5013,7 +5013,7 @@ class goods_process extends selleradmin_base {
 				$upParam['reserve_unit']	= $reserve_unit;
 			$whrParam['tmp_no']				= $tmpSeq;
 			if	($saveFunc	== 'save_tmp_supply')	$whrParam['suboption_seq']	= NULL;
-			$this->goodsmodel->$saveFunc($whrParam, $upParam);
+			$this->goodsmodel->$saveFunc($whrParam, $upParam, $target);
 
 			echo '<script>parent.tmpSaveAll(\''.$target.'\', \''.$value.'\');</script>';
 		}

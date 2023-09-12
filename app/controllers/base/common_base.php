@@ -407,27 +407,18 @@ class common_base_original extends CI_Controller {
 
 	//GA통계 사용여부
 	function get_config_GA(){
-		$this->ga_auth_commerce  = false;
-		$this->ga_auth_commerce_plus = false;
-		$this->ga_auth = config_load('GA');
         // GA4 연동 추가
         $this->ga4_auth_commerce = false;
         $this->ga4_auth = config_load('GA4');
 
         if(serviceLimit('H_NFR')){
-			if($this->ga_auth['ga_id'] && $this->ga_auth['ga_visit'] == "Y" && $this->ga_auth['ga_commerce'] == "Y" ){
-				$this->ga_auth_commerce = true;
-				if($this->ga_auth['ga_commerce_plus'] == "Y") $this->ga_auth_commerce_plus = true;
-			}
             // GA4 설정
             if ($this->ga4_auth['ga4_id'] && $this->ga4_auth['ga4_visit'] == 'Y' && $this->ga4_auth['ga4_commerce'] == "Y" ) {
                 $this->ga4_auth_commerce = true;
             }
 		}
-		$this->ga_auth['ga_auth_commerce'] = $this->ga_auth_commerce;
-		$this->ga_auth['ga_auth_commerce_plus'] = $this->ga_auth_commerce_plus;
         $this->ga4_auth['ga4_auth_commerce'] = $this->ga4_auth_commerce;
-		$this->template->assign(array('ga_auth'=>$this->ga_auth,'ga4_auth' =>$this->ga4_auth));
+		$this->template->assign(array('ga4_auth' =>$this->ga4_auth));
 	}
 
 	function redirect_domain(){

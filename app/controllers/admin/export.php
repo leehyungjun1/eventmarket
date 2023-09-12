@@ -2024,6 +2024,7 @@ class export extends admin_base {
 		$this->load->model('goodsmodel');
 		$this->load->model('invoiceapimodel');
 		$this->load->helper('shipping');
+		$this->load->library('privatemasking');
 
 		if		($_POST && !$_GET)	$_GET = $_POST;
 		else if	($_POST && $_GET)	$_GET = array_merge($_POST,$_GET);
@@ -2067,6 +2068,14 @@ class export extends admin_base {
 			$data_export_item 		= $this->exportmodel->get_export_item($export_code);
 			$orders 				= $this->ordermodel->get_order($data_export['order_seq']);
 			$export_shipping		= $this->ordermodel->get_shipping($data_export['order_seq'],$data_export['shipping_provider_seq']);
+
+			// 롯데택배 개인정보 마스킹 처리(수하인성명, 수하인 연락처)
+			if($invoice_vendor == "auto_hlc"){
+				$masking_order = $this->privatemasking->hlc_masking($orders, 'invoice_prints');
+				$orders['recipient_user_name'] = $masking_order['recipient_user_name'];
+				$orders['recipient_phone'] = $masking_order['recipient_phone'];
+				$orders['recipient_cellphone'] = $masking_order['recipient_cellphone'];
+			}
 
 			// 롯데택배 API 양식 맞춤 - 받는 분 정보 :: 2017-11-23 lwh
 			$export_shipping[0]['recipient_user_name']		= $orders['recipient_user_name'];

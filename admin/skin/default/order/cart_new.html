@@ -1,0 +1,278 @@
+<!--{ ? shipping_cart_list }-->
+	<!--{ @ shipping_cart_list }-->
+	<!--{ @ .value_ }-->
+
+<div class="tmp_cart_item {..list_key}" list_num="{=_GET['list_num']}" >
+
+	<table width="100%" border="0" cellpadding="0" cellspacing="0" class="list_table_style" style="border-top:0px;border-bottom:1px solid #ddd;">
+		<colgroup>
+			<col width="30" />
+			<col width="" />
+			<col width="70" />
+			<col width="90" />
+			<col width="90" />
+			<col width="90" />
+			<col width="90" />
+		</colgroup>
+	<tbody>
+	<tr class="cartlist">
+		<td class="cell" height="60">
+			<input type="hidden" class="tmp_cart{=..list_key} goods" goods_seq="{..goods_seq}" opt_num="{..key_}" name="goods[{..goods_seq}][option][{..key_}][]" value="{=(..option1)}" />
+			<input type="hidden" class="tmp_cart{=..list_key}" name="goods[{..goods_seq}][optionTitle][{..key_}][]" value="{=(..title1)}" />
+
+			{? ..option2}
+			<input type="hidden" class="tmp_cart{=..list_key}" name="goods[{..goods_seq}][option][{..key_}][]" value="{=(..option2)}" />
+			<input type="hidden" class="tmp_cart{=..list_key}" name="goods[{..goods_seq}][optionTitle][{..key_}][]" value="{=(..title2)}" />
+			{/}
+			{? ..option3}
+			<input type="hidden" class="tmp_cart{=..list_key}" name="goods[{..goods_seq}][option][{..key_}][]" value="{=(..option3)}" />
+			<input type="hidden" class="tmp_cart{=..list_key}" name="goods[{..goods_seq}][optionTitle][{..key_}][]" value="{=(..title3)}" />
+			{/}
+			{? ..option4}
+			<input type="hidden" class="tmp_cart{=..list_key}" name="goods[{..goods_seq}][option][{..key_}][]" value="{=(..option4)}" />
+			<input type="hidden" class="tmp_cart{=..list_key}" name="goods[{..goods_seq}][optionTitle][{..key_}][]" value="{=(..title4)}" />
+			{/}
+			{? ..option5}
+			<input type="hidden" class="tmp_cart{=..list_key}" name="goods[{..goods_seq}][option][{..key_}][]" value="{=(..option5)}" />
+			<input type="hidden" class="tmp_cart{=..list_key}" name="goods[{..goods_seq}][optionTitle][{..key_}][]" value="{=(..title5)}" />
+			{/}
+
+			<input type="hidden" class="tmp_cart{=..list_key}" name="goods[{..goods_seq}][optionEa][{..key_}]" value="{..ea}" />
+
+			<input type="hidden" name="cartOptionSeq[{..cart_seq}][]" value="{..cart_option_seq}" />
+			<!--<img src="../images/design/icon_del_detail.gif" style="cursor:pointer;" onclick="cart_delete('{..cart_seq}','{..cart_option_seq}');">-->
+
+			<img src="../images/design/icon_del_detail.gif" style="cursor:pointer;" onclick="cart_delete('{=..list_key}');">
+
+		</td>
+		<td class="cell rborder">
+			<table width="100%" border="0" cellpadding="0" cellspacing="0">
+			<tr>
+				<td class="left" width="80" valign="top">
+					<a href="/goods/view?no={..goods_seq}" target="_blank"><img src="{..image}" align="absmiddle" hspace="5" style="border:1px solid #ddd;" onerror="this.src='../images/common/noimage_list.gif'" width="60" /></a>
+				</td>
+				<td class="left"  valign="top">
+					<div class="goods_name">
+						<!--{ ? serviceLimit('H_AD') }-->
+						[{=..provider_name}]
+						<!--{ / }-->
+						<a href="../goods/regist?no={..goods_seq}" title="{..goods_name}" target="_blank">{..goods_name}</a>
+					</div>
+
+					<div>
+						<!--{ ? ..adult_goods == 'Y' }-->
+						<img src="../images/common/auth_img.png" alt="성인" style="vertical-align: middle;"/>
+						<!--{ / }-->
+						<!--{ ? ..option_international_shipping_status == 'y' }-->
+						<img src="../images/common/icon/plane_on.png" alt="해외배송상품" style="vertical-align: middle;" height="19" />
+						<!--{ / }-->
+						<!--{ ? ..cancel_type == '1' }-->
+						<img src="../images/common/icon/nocancellation.gif" alt="청약철회" style="vertical-align: middle;"/>
+						<!--{ / }-->
+						<!--{ ? ..tax == 'exempt' }-->
+						<img src="../images/common/icon/taxfree.gif" alt="비과세" style="vertical-align: middle;"/>
+						<!--{ / }-->
+					</div>
+
+					<!--{? ..eventEnd }-->
+					<div class="cart_soloEventTd{..list_key}" style="font-face:Dotum; font-size:11px;">
+						<img src="../images/common/icon_clock.gif" style="padding-bottom:2px;">남은시간
+						<span style="background-color:#c61515; color:#ffffff; padding:2px; font-weight:bold;">
+						<span id="cart_soloday{..list_key}" style="color:#ffffff; font-weight:bold;">0</span>일
+						<span id="cart_solohour{..list_key}" style="color:#ffffff; font-weight:bold;">00</span>:
+						<span id="cart_solomin{..list_key}" style="color:#ffffff; font-weight:bold;">00</span>:
+						<span id="cart_solosecond{..list_key}" style="color:#ffffff; font-weight:bold;">00</span>
+						</span>
+					</div>
+					<script>
+						$(function() {
+							timeInterval{..list_key} = setInterval(function(){
+								var time{..list_key} = showClockTime('text', '{..eventEnd.year}', '{..eventEnd.month}', '{..eventEnd.day}', '{..eventEnd.hour}', '{..eventEnd.min}', '{..eventEnd.second}', 'cart_soloday{..list_key}', 'cart_solohour{..list_key}', 'cart_solomin{..list_key}', 'cart_solosecond{..list_key}', '{..list_key}');
+								if(time{..list_key} == 0){
+									clearInterval(timeInterval{..list_key});
+									$(".cart_soloEventTd{..list_key}").html("단독 이벤트 종료");
+								}
+							},1000);
+						});
+					</script>
+					<!--{ / }-->
+
+					<!--{ ? ..option1!=null }-->
+					<div class="goods_option">
+						<img src="/admin/skin/default/images/common/icon_option.gif" />
+						{?..title1}{..title1}:{ / }{..option1}
+						{ ? ..option2!=null }{?..title2}{..title2}:{ / }{..option2} { / }
+						{ ? ..option3!=null }{?..title3}{..title3}:{ / }{..option3} { / }
+						{ ? ..option4!=null }{?..title4}{..title4}:{ / }{..option4} { / }
+						{ ? ..option5!=null }{?..title5}{..title5}:{ / }{..option5} { / }
+					</div>
+					<!--{ / }-->
+					<!--{ ? ..cart_inputs }-->
+						<!--{ @ ..cart_inputs }-->
+							<!--{ ? ...input_value }-->
+							<input type="hidden" class="tmp_cart{=..list_key}" name="goods[{..goods_seq}][inputsType][{..key_}][]" value="{...type}" />
+							<input type="hidden" class="tmp_cart{=..list_key}" name="goods[{..goods_seq}][inputsTitle][{..key_}][]" value="{=(...input_title)}" />
+							<input type="hidden" class="tmp_cart{=..list_key}" name="goods[{..goods_seq}][inputsValue][{..key_}][]" value="{?...type=='file' && strstr(...input_img_path,'tmp')}{=(...input_img_path)}{/}{=(...input_value)}" />
+							<div class="goods_input">
+								<img src="/admin/skin/default/images/common/icon_input.gif" />
+								{?...type=='file'}
+									{?...input_title}{...input_title}:{ / } <img src="/{...input_img_path}{...input_value}" width="13" height="13" title="크게 보기" align="absmiddle" /> <span class="desc">{...input_value}</span></a>
+								{:}
+									{?...input_title}{...input_title}:{ / }{...input_value}
+								{/}
+							</div>
+							<!--{ / }-->
+						<!--{ / }-->
+					<!--{ / }-->
+					<!--{? cfg.order.fblike_ordertype && fblikesale //회원, 비회원체크 }-->
+					<div class="fblikelay" style="padding-top:10px">
+						{=snsLikeButton(..goods_seq,'button_count')}
+					</div>
+					<!--{ / }-->
+				</td>
+			</tr>
+			</table>
+		</td>
+		<td class="cell rborder">
+			<div>{=number_format(..ea)}</div>
+			<div><img src="../images/design/btn_change.gif" onclick="option_modify('{..cart_option_seq}','{_GET.cart_table}', '{..goods_seq}','tmp_cart{=..list_key}','{? _GET.old_option_seq}order{:}tmp{/}');" style="cursor:pointer;" /></div>
+		</td>
+		<td class="cell right rborder"><span>{=get_currency_price(..price*..ea)}</span>{=basic_currency}</td>
+		<td class="cell center rborder">
+			<div>
+				{ ? ..sales.total_sale_price > 0 }
+				{=get_currency_price(..sales.total_sale_price,3)}
+				{ : }
+				-
+				{ / }
+			</div>
+			<div { ? ..sales.total_sale_price > 0 }{ : }class="hide"{ / }>
+				<img src="../images/common/icon_dc_list.gif" alt="할인내역" class="price_area" class="hand" onmouseover="open_sale_price_layer(this);" onmouseout="close_sale_price_layer(this);" />
+				<div class="absolute">
+					<div class="sale_price_layer hide" style="width:200px;">
+						<div class="title_line">할인내역</div>
+						<br style="line-height:10px;" />
+						<table width="100%" border="0" cellpadding="0" cellspacing="0">
+						<col width="78" />
+						<tr>
+							<th>구분</th>
+							<th class="bolds ends">할인</th>
+						</tr>
+						{ @ ..sales.title_list }
+						<tr { ? ..sales.sale_list[...key_] > 0 }{ : }class="hide"{ / }>
+							<td class="gr">{..sales.title_list[...key_]}</td>
+							<td class="bolds ends prices">
+								<span>{=get_currency_price(..sales.sale_list[...key_])}</span>{=basic_currency}
+							</td>
+						</tr>
+						{ / }
+						</table>
+					</div>
+				</div>
+			</div>
+		</td>
+		<td class="cell right rborder">
+			<span>{=get_currency_price(..sales.result_price)}</span>{=basic_currency}
+		</td>
+		<td class="cell rborder">
+			<table align="center" border="0">
+			<col />
+			<col width="50" />
+			<tr>
+				<td><img src="/admin/skin/default/images/common/icon/icon_ord_emn.gif" title="마일리지" /></td>
+				<td class="right"><span >{=get_currency_price(..reserve)}</span>{=basic_currency}</td>
+			</tr>
+			<!--{ ? isplusfreenot && isplusfreenot.ispoint}-->
+			<tr>
+				<td><img src="/admin/skin/default/images/common/icon/icon_ord_point.gif" title="포인트" /></td>
+				<td class="right"><span >{=get_currency_price(..point)}</span>P</td>
+			</tr>
+			<!--{ / }-->
+			</table>
+		</td>
+	</tr>
+	<!--{ @ ..cart_suboptions }-->
+	<input type="hidden" class="tmp_cart{=..list_key}" name="goods[{..goods_seq}][suboptionTitle][{..key_}][]" value="{=(...suboption_title)}" />
+	<input type="hidden" class="tmp_cart{=..list_key}" name="goods[{..goods_seq}][suboption][{..key_}][]" value="{=(...suboption)}" />
+	<input type="hidden" class="tmp_cart{=..list_key}" name="goods[{..goods_seq}][suboptionEa][{..key_}][]" value="{...ea}" />
+
+	<tr class="cartlist {..cart_option_seq}" cart_opt_seq="{..cart_option_seq}">
+		<td class="cell sub_bg"></td>
+		<td class="cell sub_bg rborder">
+			<table width="100%" border="0" cellpadding="0" cellspacing="0">
+			<tr>
+				<td class="right" width="80">
+					<div style="padding-right:5px;"><img src="/admin/skin/default/images/common/icon_add_arrow.gif" /></div>
+				</td>
+				<td class="left"  valign="top">
+					<img src="/admin/skin/default/images/common/icon_add.gif" />
+					{ ? ...suboption }
+						{ ? ...suboption_title }{...suboption_title}:{ / }{...suboption}
+					{ / }
+				</td>
+			</tr>
+			</table>
+		</td>
+		<td class="cell sub_bg rborder"><div>{=number_format(...ea)}</div></td>
+		<td class="cell sub_bg right rborder">{=get_currency_price(...price*...ea,3)}</td>
+		<td class="cell sub_bg center rborder">
+			<div >
+				{ ? ...sales.total_sale_price > 0 }
+				{=get_currency_price(...sales.total_sale_price,3)}
+				{ : }
+				-
+				{ / }
+			</div>
+			<div { ? ...sales.total_sale_price > 0 }{ : }class="hide"{ / }>
+				<img src="../images/common/icon_dc_list.gif" alt="할인내역" class="price_area" class="hand"  onmouseover="open_sale_price_layer(this);" onmouseout="close_sale_price_layer(this);" />
+				<div class="absolute">
+					<div class="sale_price_layer hide" style="width:200px;">
+						<div class="title_line">할인내역</div>
+						<br style="line-height:10px;" />
+						<table width="100%" border="0" cellpadding="0" cellspacing="0">
+						<col width="78" />
+						<tr>
+							<th>구분</th>
+							<th class="bolds ends">할인</th>
+						</tr>
+						{ @ ...sales.sale_list }
+						<tr bgcolor="#ffffff" height="25" { ? ....value_ > 0 }{ : }class="hide"{ / }>
+							<td class="gr">{...sales.title_list[....key_]}</td>
+							<td class="bolds ends prices">
+								<span >{=get_currency_price(....value_)}</span>{=basic_currency}
+							</td>
+						</tr>
+						{ / }
+						</table>
+					</div>
+				</div>
+			</div>
+		</td>
+		<td class="cell sub_bg right rborder">
+			<span >{=get_currency_price(...sales.result_price)}</span>{=basic_currency}
+		</td>
+		<td class="cell sub_bg rborder">
+			<table align="center" border="0">
+			<col />
+			<col width="50" />
+			<tr>
+				<td><img src="/admin/skin/default/images/common/icon/icon_ord_emn.gif" title="마일리지" /></td>
+				<td class="right"><span >{=get_currency_price(...reserve)}</span>{=basic_currency}</td>
+			</tr>
+			<!--{ ? isplusfreenot && isplusfreenot.ispoint}-->
+			<tr>
+				<td><img src="/admin/skin/default/images/common/icon/icon_ord_point.gif" title="포인트" /></td>
+				<td class="right"><span >{=get_currency_price(...point)}</span>P</td>
+			</tr>
+			<!--{ / }-->
+			</table>
+		</td>
+	</tr>
+	<!--{ / }-->
+	</tbody>
+	</table>
+</div>
+	<!--{ / }-->
+	<!--{ / }-->
+
+<!--{ / }-->

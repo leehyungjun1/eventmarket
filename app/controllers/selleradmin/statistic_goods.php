@@ -13,6 +13,14 @@ class statistic_goods extends selleradmin_base {
 		$this->load->model('usedmodel');
 
 		### SERVICE CHECK
+		$auth = $this->authmodel->manager_limit_act('statistic_goods');
+
+		if (!$auth) {
+			pageBack($this->auth_msg);
+			exit;
+		}
+
+		### SERVICE CHECK
 		$result = $this->usedmodel->used_service_check('statistic_goods_detail');
 		if(!$result['type']){
 			$this->template->assign('statistic_goods_detail_limit','Y');

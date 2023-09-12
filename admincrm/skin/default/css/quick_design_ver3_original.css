@@ -1,0 +1,41 @@
+#layout_header {background-color:{color_header_b1};}
+#layout_header h1 a {color:{color_header_t1};}
+
+.btn_style {display:inline-block; background-color:{color_btn_b1}; border:1px solid {color_btn_b2}; border-radius:2px !important; padding:0 10px; height:28px; line-height:28px; font-size:13px; font-family:dotum; font-weight:bold; color:{color_btn_t1}; letter-spacing:-1px;}
+.btn_important_large {display:inline-block; background-color:{color_btnimportant_b1}; border:1px solid {color_btnimportant_b2}; border-radius:5px !important; height:42px; line-height:42px; font-size:16px; font-family:dotum; font-weight:bold; color:{color_btnimportant_t1}; letter-spacing:-1px;}
+.btn_important_small {display:inline-block; background-color:{color_btnimportant_b1}; border:1px solid {color_btnimportant_b2}; border-radius:3px !important; height:32px; line-height:32px; font-size:14px; font-family:dotum; font-weight:bold; color:{color_btnimportant_t2}; letter-spacing:-1px;}
+.btn_normal_large {display:inline-block; background-color:{color_btnnormal_b1}; border:1px solid {color_btnnormal_b2}; border-radius:5px !important; height:42px; line-height:42px; font-size:16px; font-family:dotum; font-weight:bold; color:{color_btnnormal_t1}; letter-spacing:-1px;}
+.btn_normal_small {display:inline-block; background-color:{color_btnnormal_b1}; border:1px solid {color_btnnormal_b2}; border-radius:3px !important; height:36px; line-height:32px; font-size:14px; font-family:dotum; font-weight:bold; color:{color_btnnormal_t1}; letter-spacing:-1px;}
+.btn_cancel_large {display:inline-block; background-color:{color_btncancel_b1}; border:1px solid {color_btncancel_b2}; border-radius:5px !important; height:42px; line-height:42px; font-size:16px; font-family:dotum; font-weight:bold; color:{color_btncancel_t1}; letter-spacing:-1px;}
+.btn_cancel_small {display:inline-block; background-color:{color_btncancel_b1}; border:1px solid {color_btncancel_b2}; border-radius:3px !important; height:36px; line-height:32px; font-size:14px; font-family:dotum; font-weight:bold; color:{color_btncancel_t1}; letter-spacing:-1px;}
+.btn_arw_up {position:relative; display:inline-block; min-width:40px; box-sizing:border-box; height:28px; line-height:28px; padding-left:10px; padding-right:25px; font-weight:bold; color:#61656d; background-color:#fff; border:1px solid #c1c2c5; border-radius:3px !important; font-size:12px; text-align:left;}
+.btn_arw_up_icon {position:absolute; right:8px; top:50%; margin-top:-3px; width:8px; height:5px; background:url('../images/design/ico_arw_close_s.png') no-repeat right center; background-size:8px 5px;}
+.btn_arw_dn {position:relative; display:inline-block; min-width:40px; box-sizing:border-box; height:28px; line-height:28px; padding-left:10px; padding-right:25px; font-weight:bold; color:#61656d; background-color:#fff; border:1px solid #c1c2c5; border-radius:3px !important; font-size:12px; text-align:left;}
+.btn_arw_dn_icon {position:absolute; right:8px; top:50%; margin-top:-1px; width:8px; height:5px; background:url('../images/design/ico_arw_open_s.png') no-repeat right center; background-size:8px 5px;}
+.btn_arw_up_gray {position:relative; display:inline-block; min-width:40px; height:28px; line-height:28px; padding-left:10px; padding-right:25px; font-weight:bold; color:#61656d; background-color:#fff; border:1px solid #c1c2c5; border-radius:3px !important; font-size:12px; text-align:left;}
+.btn_arw_dn_gray {position:relative; display:inline-block; min-width:40px; height:28px; line-height:28px; padding-left:10px; padding-right:25px; font-weight:bold; color:#61656d; background-color:#fff; border:1px solid #c1c2c5; border-radius:3px !important; font-size:12px; text-align:left;}
+
+/* 모바일 서브페이지 타이틀바 */
+.sub_title_bar {position:relative; background-color:{color_subtitle_b1}; border-bottom:1px solid {color_subtitle_b2}; height:32px;}
+.sub_title_bar h2 {text-align:center; height:32px; line-height:32px;}
+.sub_title_bar h2,
+.sub_title_bar h2 a {color:{color_subtitle_t1}; font-size:16px; letter-spacing:-1px; font-family:dotum;}
+.sub_title_bar .stb_back_btn {position:absolute; left:10px; top:50%; margin-top:-7px;}
+.sub_title_bar .stb_back_btn img {width:15px; height:15px;}
+.sub_title_bar .stb_relation_btn {position:absolute; right:5px; top:3px}
+.sbt_relation_contents {display:none; position:relative;z-index:10;}
+
+/* 셀렉트박스 */
+.sbOptions {max-height: 400px; overflow-y: auto; border-top-color:{color_selectbox_b2}}
+.sbOptions a.sbFocus {background-color:{color_selectbox_b1}}
+.sbHolderFocus {border-color:{color_selectbox_b2}}
+
+.total_sum_price {background-color:{color_price_b1}; padding:15px 0px;}
+.total_sum_price table { font-size:16px; letter-spacing:-1px; color:{color_price_t1}}
+.total_sum_price table th {height:27px; padding:0px 0px 0px 10px; font-weight:normal;}
+.total_sum_price table td {padding:0px 10px; font-weight:normal;}
+.total_sum_price table tbody.sub th,
+.total_sum_price table tbody.sub td {height:25px; background-color:{color_price_b2}; font-size:14px}
+.total_sum_price .sum_price { font-size:16px;}
+
+.total_goods_price_area {font-size:28px; font-family:helvetica,sans-serif; font-weight:Bold; color:{color_important_t1};}

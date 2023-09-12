@@ -11,6 +11,15 @@ class Board extends selleradmin_base {
 
 	public function __construct() {
 		parent::__construct();
+
+		### SERVICE CHECK
+		$auth = $this->authmodel->manager_limit_act('board_view');
+
+		if (!$auth) {
+			pageBack($this->auth_msg);
+			exit;
+		}
+
 		$this->load->library('validation');
 
 		$aGetParams = $this->input->get();

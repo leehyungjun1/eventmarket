@@ -3714,10 +3714,24 @@ class mypage extends board
 
 
 	public function buy_gift(){
-		$goods_seq		= $_GET['seq'];
-		$point			= $_GET['point'];
-		$goods_rule			= $_GET['goods_rule'];
-		$goods_name			= unescape($_GET['goods_name']);
+
+		$aGetParams = $this->input->get();
+		// validation
+		if ($aGetParams) {
+			$this->validation->set_data($aGetParams);
+			$this->validation->set_rules('seq', '상품번호', 'trim|numeric|xss_clean');
+			$this->validation->set_rules('point', '포인트', 'trim|numeric|xss_clean');
+			$this->validation->set_rules('goods_rule', '상품번호', 'trim|string|xss_clean');
+			$this->validation->set_rules('goods_name', '상품번호', 'trim|string|xss_clean');
+			if ($this->validation->exec() === false) {
+				show_error($this->validation->error_array['value']);
+			}
+		}
+
+		$goods_seq		= $aGetParams['seq'];
+		$point			= $aGetParams['point'];
+		$goods_rule		= $aGetParams['goods_rule'];
+		$goods_name		= unescape($aGetParams['goods_name']);
 
 		$this->template->assign(array('goods_seq'=>$goods_seq,'point'=>$point,'goods_name'=>$goods_name));
 

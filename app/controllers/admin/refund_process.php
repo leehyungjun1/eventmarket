@@ -957,15 +957,6 @@ class refund_process extends admin_base {
 				}
 			}
 			
-			//GA통계
-			if($this->ga_auth_commerce_plus){
-				$ga_item = $this->refundmodel->get_refund_item($refund_code);
-				$ga_params['item']		= $ga_item;
-				$ga_params['order_seq'] = $data_refund['order_seq'];
-				$ga_params['action']	= "refund";
-				echo google_analytics($ga_params,"refund");
-			}
-			
 			/* 로그저장 */
 			$logTitle = "환불완료(".$refund_code.")";
 			$logDetail = "관리자가 환불완료처리를 하였습니다.";
@@ -1893,15 +1884,6 @@ class refund_process extends admin_base {
 				}else{
 					$this->ordermodel->update_tax_sales($data_refund['order_seq']);
 				}
-			}
-
-			//GA통계
-			if($this->ga_auth_commerce_plus){
-				$ga_item = $this->refundmodel->get_refund_item($refund_code);
-				$ga_params['item']		= $ga_item;
-				$ga_params['order_seq'] = $data_refund['order_seq'];
-				$ga_params['action']	= "refund";
-				echo google_analytics($ga_params,"refund");
 			}
 
 			/* 로그저장 */

@@ -795,15 +795,6 @@ class mypage_process extends front_base {
 				commonSendSMS($commonSmsData);
 			}
 
-			//GA통계
-			if($this->ga_auth_commerce_plus){
-				$ga_item = $this->refundmodel->get_refund_item($refund_code);
-				$ga_params['item'] = $ga_item;
-				$ga_params['order_seq'] = $data_order['order_seq'];
-				$ga_params['action'] = "refund";
-				echo google_analytics($ga_params,"refund");
-			}
-
 			$logTitle	= "결제취소";
 			$logDetail	= "신용카드 전체취소처리하였습니다.";
 			$logParams	= array('refund_code' => $refund_code);

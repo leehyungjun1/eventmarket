@@ -1593,15 +1593,6 @@ class RefundLibrary
 				}
 			}
 
-			//GA통계
-			if($this->CI->ga_auth_commerce_plus){
-				$ga_item = $this->CI->refundmodel->get_refund_item($refund_code);
-				$ga_params['item']		= $ga_item;
-				$ga_params['order_seq'] = $data_refund['order_seq'];
-				$ga_params['action']	= "refund";
-				echo google_analytics($ga_params,"refund");
-			}
-
 			/* 로그저장 */
 			$logTitle = "환불완료(".$refund_code.")";
 			$logDetail = "관리자가 환불완료처리를 하였습니다.";

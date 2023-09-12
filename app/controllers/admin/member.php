@@ -1461,7 +1461,7 @@ class member extends admin_base {
 			exit;
 		}
 
-		$per_page 	= ($aGetParams['perpage'])? $aGetParams['perpage']: 20;
+		$per_page = $aGetParams['perpage'] ?? 10;
 
 		if ($aGetParams['page'] > 1) {
 			$page = ceil($aGetParams['page'] / $per_page) + 1;

@@ -910,6 +910,14 @@ class goods extends selleradmin_base {
 		header('Pragma: no-cache'); // HTTP 1.0.
 		header('Expires: 0'); // Proxies.
 		*/
+
+		### SERVICE CHECK
+		$auth = $this->authmodel->manager_limit_act('goods_act');
+		
+		if (!$auth) {
+			pageBack($this->auth_msg);
+			exit;
+		}
 		
 		$this->admin_menu();
 		$this->tempate_modules();

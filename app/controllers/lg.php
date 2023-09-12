@@ -441,12 +441,14 @@ class lg extends front_base {
 
 			// 주문서 실패 처리
 			if (! $bDuplicateTransaction && $aResult['LGD_RESPCODE'] != '0000' && $aResult['LGD_RESPCODE'] != "S007") {
+				$log = "[" . $aResult['LGD_RESPCODE'] . convert_to_utf8($aResult['LGD_RESPMSG']) . "]";
 				if ($aResult['LGD_RESPCODE'] == "XC01") {
 					$log = "[" . $aResult['LGD_RESPCODE'] . convert_to_utf8($aResult['LGD_RESPMSG']) . "] 중복결제";
 				}
 				$xpay->Rollback("상점 DB처리 실패로 인하여 Rollback 처리 [TID:" . $aResult['LGD_TID'] . ",MID:" . $aResult['LGD_MID'] . ",OID:" . $orders['order_seq'] . "]");
-				$this->ordermodel->set_step($orders['order_seq'], '95');
-				$this->ordermodel->set_log($orders['order_seq'], 'pay', '주문자', '결제취소', $log);
+				$log_title = '결제실패[' . $aResult['LGD_RESPCODE'] . ']';
+				$this->ordermodel->set_step($orders['order_seq'], '99');
+				$this->ordermodel->set_log($orders['order_seq'], 'pay', $orders['order_user_name'], $log_title, $log);
 				throw new Exception('Payment Fail : [LGD_TID]' . $aResult['LGD_TID'] . '[LGD_MID]' . $aResult['LGD_MID'] . '[OID]' . $aPost['order_seq']);
 			}
 

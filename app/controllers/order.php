@@ -1177,13 +1177,6 @@ class order extends front_base {
 				// 우측 퀵메뉴 장바구니 카운트 증가 추가 leewh 2014-06-19
 				echo("<script>top.getRightItemTotal('right_item_cart');</script>");
 
-				//GA통계
-				if($this->ga_auth_commerce_plus){
-					$params['item'] = array('goods_seq'=>$goods_seq,'cart_seq'=>$cart_seq);
-					$params['action'] = "add";
-					echo google_analytics($params,"cart_add");
-				}
-
 
 			}else{
 
@@ -1199,20 +1192,6 @@ class order extends front_base {
 				}
 			}
 		}else{
-			//GA통계 이전페이지 기록으로 세션사용
-			if($this->ga_auth_commerce_plus){
-				$unsetuserdata = array('ga_referer' => '', 'ga_goods_seq' => '');
-				$this->session->unset_userdata($unsetuserdata);
-				$_SESSION['ga_referer']	= '';
-				$_SESSION['ga_goods_seq']	= '';
-				if($_POST['referer_page_ga']){
-					$this->session->set_userdata('ga_referer',$_POST['referer_page_ga']);
-					$this->session->set_userdata('ga_goods_seq',$goods_seq);
-					$_SESSION['ga_referer'] = $_POST['referer_page_ga'];
-					$_SESSION['ga_goods_seq'] = $goods_seq;
-				}
-			}
-
 			$url	= "/order/settle?mode=".$mode;
 			if(!isset($_GET['guest']) && !$member_seq){
 				$url	= "/member/login?return_url=" . urlencode($url);
@@ -1399,28 +1378,6 @@ class order extends front_base {
 					exit;
 				}
 			}
-		}
-
-		//GA통계
-		if($this->ga_auth_commerce_plus){
-			$this->load->model('goodsmodel');
-			foreach($_POST['cart_option_seq'] as $cart_option_seq){
-				$ga_cart_option = $this->cartmodel->get_cart_option_by_cart_option($cart_option_seq);
-				$goods = $this->goodsmodel->get_goods($ga_cart_option["goods_seq"]);
-
-				for($i=1;$i<5;$i++){
-					$temp["option".$i] = $ga_cart_option['option'.$i];
-				}
-
-				$temp["ea"] = $ga_cart_option["ea"];
-				$temp["goods_name"] = $goods["goods_name"];
-				$temp["goods_seq"] = $goods["goods_seq"];
-
-				$ga_params["item"][] = $temp;
-			}
-
-			$ga_params['action'] = "remove";
-			echo google_analytics($ga_params,"cart_remove");
 		}
 
 		foreach($_POST['cart_option_seq'] as $cart_option_seq){
@@ -3467,13 +3424,6 @@ class order extends front_base {
 					}
 				}
 			}
-		}
-
-		//GA통계 이전페이지 넘기기 위해
-		if($this->ga_auth_commerce_plus){
-			echo "<script>
-			$(\"form[name='orderFrm']\").append(\"<input type='hidden' name='referer_page_ga' value='{$_POST['referer_page_ga']}'>\");
-			</script>";
 		}
 
 		if ($this->config_system['facebook_pixel_use'] == 'Y') {
@@ -7109,37 +7059,6 @@ class order extends front_base {
 			//회원이 최초주문시 회원정보 저장되는 구문제거 (일반몰매칭) @2016-06-20
 		}
 
-		//GA통계
-		if($this->ga_auth_commerce_plus){
-			$ga_flag = false;
-			$ga_referer = "";
-			foreach($this->cart['list'] as $item_arr){
-				for($i=1;$i<5;$i++){
-					$temp["option".$i] = $item_arr['option'.$i];
-				}
-				$temp["ea"] = $item_arr["ea"];
-				$temp["goods_name"] = $item_arr["goods_name"];
-				$temp["goods_seq"] = $item_arr["goods_seq"];
-				$temp["price"] = $item_arr["price"];
-				$temp["payment"] = $_POST['payment'];
-
-				$ga_params["item"][] = $temp;
-				if($_SESSION['ga_goods_seq'] == $item_arr["goods_seq"]) $ga_flag = true;
-			}
-
-			if($ga_flag) $ga_referer = $_SESSION['ga_referer'];
-
-			$unsetuserdata = array('ga_referer' => '', 'ga_goods_seq' => '');
-			$this->session->unset_userdata($unsetuserdata);
-			$_SESSION['ga_referer']	= '';
-			$_SESSION['ga_goods_seq']	= '';
-
-			$ga_params['action'] = "checkout";
-			$ga_params["page"] = $ga_referer;
-
-			echo google_analytics($ga_params,"payment");
-		}
-
 		// 채널톡 연동
         $this->load->library('channeltalklibrary');
         $channeltalk_cart		= $this->channeltalklibrary->begin_checkout($order_seq, $order_params, $this->cart['list']);
@@ -8713,20 +8632,6 @@ class order extends front_base {
 			 _nao[\"order\"]=[".implode(',',$r_naver_cpa)."];
 			wcs.CPAOrder(_nao);
 			</script>";
-		}
-
-		//GA통계
-		if($this->ga_auth_commerce && !$this->ga_auth_commerce_plus){
-			//일반 전자상거래 스크립트
-			getTransactionJs($orders,$items);
-		}else if($this->ga_auth_commerce_plus){
-			if($orders['step']==15 || $orders['step']==25){
-				//향상된 전자상거래 스크립트
-				$params['orders'] = $orders;
-				$params['item'] = $items;
-				$params['page'] = uri_string();
-				echo google_analytics($params,"order_complete");
-			}
 		}
 
 		// 주문메일 sms발송

@@ -1,0 +1,96 @@
+{ #layout_header }
+<script type="text/javascript">
+	$(function(){		
+		$(".page-manual-btn").hide();
+
+        setContentsRadio("ga4_visit", "{?ga4_auth.ga4_visit}{ga4_auth.ga4_visit}{:}N{/}");
+		setContentsRadio("ga4_commerce", "{?ga4_auth.ga4_commerce}{ga4_auth.ga4_commerce}{:}N{/}");        
+	});
+
+	var authCheck = function(){
+        ga4_visit = $('input[name="ga4_visit"]:radio:checked').val();
+        ga4_commerce = $('input[name="ga4_commerce"]:radio:checked');
+        ga4_commerce_chk = ga4_commerce.val();
+
+        if (ga4_commerce.prop("disablied")) ga4_commerce_chk = "N"; 
+
+        if (ga4_visit == "Y" && $.trim($("#ga4_id").val()) == "") {
+            openDialogAlert("측정ID는 필수 항목입니다.","400",'150',function(){});
+            return;
+        }
+
+		$("#gaSettingForm").submit();
+	};
+</script>
+
+<form name="gaSettingForm" id="gaSettingForm" method="post" action="../statistic_process/ga_setting" target="actionFrame">
+	<!-- 페이지 타이틀 바 : 시작 -->
+	<div id="page-title-bar-area">
+		<div id="page-title-bar">			
+			<!-- 타이틀 -->
+			<div class="page-title"><h2>구글 애널리틱스 4</h2></div>
+			
+			<!-- 우측 버튼 -->
+			<ul class="page-buttons-right">
+				<li>
+					<div class="footer_btn_wrap"><button type="button" onclick="authCheck();" class="resp_btn active size_L">저장</button></div>
+				</li>
+			</ul>
+		</div>
+	</div>
+	<!-- 페이지 타이틀 바 : 끝 -->
+
+    <div id="tabCon1">
+        <div class="contents_dvs"> 
+            <div class="item-title">연결 설정</div>
+            <table class="table_basic thl">		
+                <tr>
+                    <th>사용설정</th>
+                    <td>
+                        <div class="resp_radio">
+                            <label><input type="radio" name="ga4_visit" value="Y" {?ga4_auth.ga4_visit=="Y"}checked{/}/> 사용</label>
+                            <label><input type="radio" name="ga4_visit" value="N" {?ga4_auth.ga4_visit=="N"}checked{/}/> 사용 안 함</label>
+                        </div>
+                    </td>
+                </tr>
+                
+                <tr class="ga4_visit_Y hide">
+                    <th>측정 ID</th>
+                    <td>
+                        <input type="text" name="ga4_id" id="ga4_id" value="{ga4_auth.ga4_id}" size="25"/>
+                        <div class="resp_message v2">
+                            - 구글 애널리틱스에서 생성한 ‘G-*******’ 형식의 측정ID를 입력하세요. <a href="https://www.firstmall.kr/customer/faq/1744" target="_blank" class="resp_btn_txt">자세히 보기</a>
+                        </div>
+                    </td>
+                </tr>
+
+                <tr class="ga4_visit_Y hide">
+                    <th>
+                        전자 상거래
+                        <span class="tooltip_btn" onClick="showTooltip(this, '/admin/tooltip/statistic', '#tip9')"></span>
+                    </th>
+                    <td>
+                        <div class="resp_radio">
+                            <label><input type="radio" name="ga4_commerce" value="Y" {?ga4_auth.ga4_commerce=="Y"}checked{/}/> 사용</label> 
+                            <label><input type="radio" name="ga4_commerce" value="N" {?ga4_auth.ga4_commerce!="Y"}checked{/}/ /> 사용 안 함</label>
+                        </div>
+                        <div class="resp_message v2">
+                            - 구매 전환에 대한 수치를 측정할 수 있습니다. <a href="https://www.firstmall.kr/customer/faq/1745" target="_blank" class="resp_btn_txt">자세히 보기</a>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="box_style_05 mt15">
+            <div class="title">안내</div>
+            <ul class="bullet_hyphen">							
+                <li>구글 애널리틱스 4 FAQ <a href="https://www.firstmall.kr/customer/faq/1742" target="_blank" class="resp_btn_txt">자세히 보기</a></li>
+                <!-- <li>구글 애널리틱스 4 앱 데이터 수집 설정방법 <a href="https://www.firstmall.kr/customer/faq/1743" target="_blank" class="resp_btn_txt">자세히 보기</a></li> -->
+            </ul>
+        </div>
+    </div>
+	
+</form>
+
+{ #layout_footer }

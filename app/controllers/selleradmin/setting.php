@@ -1830,6 +1830,14 @@ class setting extends selleradmin_base {
 			if(!$provider_seq)	$provider_seq = 1;
 		}
 
+		### SERVICE CHECK
+		$auth = $this->authmodel->manager_limit_act('setting_shipping_act');
+		
+		if (!$auth) {
+			pageBack($this->auth_msg);
+			exit;
+		}
+
 		//임시 seq 부여
 		$shipping_group_dummy		= $this->shippingmodel->set_shipping_dummy($_GET['shipping_group_seq']);
 		$shipping_group_dummy_seq	= $shipping_group_dummy['shipping_group_dummy_seq'];
@@ -2094,6 +2102,13 @@ class setting extends selleradmin_base {
 		$this->tempate_modules();
 		$filePath	= $this->template_path();
 		$this->load->model('providershipping');
+
+		### SERVICE CHECK
+		$auth = $this->authmodel->manager_limit_act('setting_shipping_act');
+		if(!$auth){
+			pageBack($this->auth_msg);
+			exit;
+		}
 
 		$provider_seq			= $this->providerInfo['provider_seq'];
 		$delivery_url			= config_load('delivery_url');

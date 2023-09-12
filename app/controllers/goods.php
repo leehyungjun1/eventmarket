@@ -592,17 +592,6 @@ class goods extends board {
 			$this->print_layout($this->template_path());
 		}
 
-		//GA통계
-		if($this->ga_auth_commerce_plus){
-			$ga_params['item'] = $list['record'];
-			$ga_params['page'] = "카테고리:".$categoryData['title'];
-			if( $aGetParams['pagever'] == 1 ) {
-				$result['html'] .= google_analytics($ga_params,"list_count");
-			} else {
-				echo google_analytics($ga_params,"list_count");
-			}
-		}
-
 		// GA4 연동
 		if ($this->ga4_auth_commerce) {
 			$this->load->library('ga4library');
@@ -1249,13 +1238,6 @@ class goods extends board {
 			$this->print_layout($this->template_path());
 		}
 
-		//GA통계
-		if($this->ga_auth_commerce_plus){
-			$ga_params['item'] = $list['record'];
-			$ga_params['page'] = "브랜드:".$categoryData['title'];
-			echo google_analytics($ga_params,"list_count");
-		}
-
 		// GA4 연동
 		if ($this->ga4_auth_commerce) {
 			$this->load->library('ga4library');
@@ -1532,52 +1514,10 @@ class goods extends board {
 			$this->template->assign(array('talkbuyorder_tpl'=>$tmptpl));
 		}
 
-		// 통계서버로 통계데이터 전달 사용안함
-		//$GAHTML	= "<script>statistics_firstmall('view','".$goods['goods_seq']."','','');</script>";
-
 		/* 고객리마인드서비스 상세유입로그 */
 		$this->load->helper('reservation');
 		$curation = array("action_kind"=>"goodsview","goods_seq"=>$goods['goods_seq']);
 		curation_log($curation);
-
-		// GA통계
-		if ($this->ga_auth_commerce_plus) {
-			$ga_params['item'] = $result["goods"];
-			$ga_params['action'] = "click";
-			$reffer = $_SERVER['HTTP_REFERER'];
-			if ($reffer) {
-				$ga_params["page"] = getPage_forGA($reffer);
-				if (strstr($reffer, "page/index") !== false) {
-					$this->load->model('eventmodel');
-					$this->load->helper('basic');
-					$reffer_event = explode("?",$reffer);
-
-					parse_str(chk_parameter_xss_clean($reffer_event[1]));
-
-					$event_type = "event";
-					if ($this->eventmodel->is_gift_template_file($tpl)) {
-						$event_type = "gift";
-						$query = $this->db->query("select *, if(current_date() between start_date and end_date,'진행 중',if(end_date < current_date(),'종료','시작 전')) as status from fm_".$event_type." where tpl_path=?",array($tpl));
-					} else {//
-						$query = $this->db->query("select *, if(CURRENT_TIMESTAMP() between start_date and end_date,'진행 중',if(end_date < CURRENT_TIMESTAMP(),'종료','시작 전')) as status from fm_".$event_type." where tpl_path=?",array($tpl));
-					}
-
-					$data = $query->row_array();
-
-					$ga_params_event['event_seq'] = $data['event_seq'];
-					$ga_params_event['title'] = $data['title'];
-					$ga_params_event['tpl_path'] = $data['tpl_path'];
-					$ga_params_event['action'] = "promo_click";
-					$GAHTML	.= google_analytics($ga_params_event,"promotion");
-					//이벤트 페이지도 기록해준다
-					$ga_params["page"] = "이벤트:".$data['title'];
-				}
-			}
-			$GAHTML	.= google_analytics($ga_params,"view_count");
-			//클릭과 동시에 세부정보 비율 카운트해준다
-			$ga_params['action'] = "detail";
-			$GAHTML	.= google_analytics($ga_params,"view_count");
-		}
 
 		//메타테그 치환용 정보
 		$add_meta_info['summary']     = $goods['summary'];
@@ -1677,8 +1617,6 @@ class goods extends board {
 			$ga4_cart = $this->ga4library->add_to_cart($ga4_data);
 		}
 
-
-		$this->template->ga_html = $this->template->ga_html.$GAHTML;
 		$this->template->template_dir = $template_dir;
 		$this->template->compile_dir = $compile_dir;
 		$this->print_layout($this->template_path());
@@ -2551,13 +2489,6 @@ class goods extends board {
 			});
 			</script>
 			";
-		}
-
-		//GA통계
-		if($this->ga_auth_commerce_plus){
-			$ga_params['item'] = $list['record'];
-			$ga_params['page'] = "검색어:".$sc['search_text'];
-			echo google_analytics($ga_params,"list_count");
 		}
 
 		// GA4 연동
@@ -4599,13 +4530,6 @@ class goods extends board {
 				}
 		}else{
 			$this->print_layout($this->template_path());
-		}
-
-		//GA통계
-		if($this->ga_auth_commerce_plus){
-			$ga_params['item'] = $list['record'];
-			$ga_params['page'] = "지역:".$categoryData['title'];
-			echo google_analytics($ga_params,"list_count");
 		}
 
 		if($aGetParams['pagever'] == 1) echo json_encode($result);

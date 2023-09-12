@@ -146,7 +146,7 @@ class lg_mobile extends front_base {
 		);
 
 		// 가상계좌일때만
-		$parayment_virtual_check = ['escorw_virtual','virtual'];
+		$parayment_virtual_check = ['escrow_virtual','virtual'];
 		if (in_array( $orders['payment'], $parayment_virtual_check)) {
 			$tpl_param['LGD_CLOSEDATE'] = $LGD_CLOSEDATE; // 가상계좌 만료일시 추가
 		}

@@ -1,0 +1,570 @@
+{ #layout_header }
+
+<script type="text/javascript" src="/app/javascript/plugin/jquery.fmdomsaver.js"></script>
+<script type="text/javascript" src="/app/javascript/plugin/jquery.colorpicker.min.js"></script>
+<script type="text/javascript" src="/app/javascript/plugin/custom-color-picker.js"></script>
+<script type="text/javascript" src="/app/javascript/js/scm.common.js?dummy={=date('Ymd')}"></script>
+<script type="text/javascript" src="/app/javascript/js/admin-goodsQuickRegist.js?dummy={=date('Ymd')}"></script>
+<script type="text/javascript">
+	$(document).ready(function(){
+		quick_regist_js_init(
+			'{loadStatus}', 
+			'{cfg_order.runout}', 
+			'{cfg_order.ableStockLimit}', 
+			'{scm_cfg.use}', 
+			'{scm_cfg.set_default_date}', 
+			{=json_encode(whData['warehouse'])}, 
+			{=json_encode(whData['location'])} 
+		);
+
+		$("select[name='provider_seq_selector']").on("change", function(){
+			console.log();
+			$(this).val()=="1" ? $(".sellermode").css("display", "none") : $(".sellermode").css("display", "table-column");
+		})
+	});
+</script>
+<style>
+	.consumer_price,.price,.supply_price,.commission_rate { text-align:right; }
+	#batch_regist_table td, #batch_regist_table th {padding-left: 0; padding-right: 0;}
+	#batch_regist_table input {padding-left: 4px; padding-right: 4px;}
+	#batch_regist_table .all-batch-lay{margin-top:5px;}
+	.sellermode {display: none;}
+</style>
+<!-- 페이지 타이틀 바 : 시작 -->
+<div id="page-title-bar-area">
+	<div id="page-title-bar">
+		<!-- 타이틀 -->
+		<div class="page-title">
+			<h2>일반 상품 빠른 등록</h2>
+		</div>
+
+		<!-- 좌측 버튼 -->
+		<ul class="page-buttons-left"></ul>
+
+		<!-- 우측 버튼 -->
+		<ul class="page-buttons-right">
+			<li><button type="button" onclick="saveGoodsData()" class="barcode_update resp_btn active size_L">등록</button></li>
+		</ul>
+	</div>
+</div>
+<!-- 페이지 타이틀 바 : 끝 -->
+
+<form name="batchRegistFrm" method="post" action="../goods_process/save_tmp_goods_row" target="actionFrame">
+<input type="hidden" name="tmp_seq" value="{tmpData.tmp_seq}" />
+<input type="hidden" name="act_type" value="add" />
+<input type="hidden" class="provider_seq" name="provider_seq" value="{tmpData.provider_seq}" />
+<input type="hidden" class="commission_type" name="commission_type" value="{current_provider['commission_type']}" />
+<!--{ ? tmpData.provider_seq > 1 || scm_cfg.use != 'Y' || !scm_cfg.set_default_date && !sellermode }-->
+<input type="hidden" name="stock_type" value="" />
+<!--{ : }-->
+<input type="hidden" name="stock_type" value="scm" />
+<!--{ / }-->
+<div class="search_container">
+<table class="table_search thl" >
+<colgroup>
+	<col width="150">
+	<col width="40%">
+	<col width="150">
+	<col>
+</colgroup>
+	<tbody>
+		<tr>
+			<th>노출 여부</th>
+			<td>
+				<div class="resp_radio">
+					<label><input type="radio" name="goods_view" value="look" {?tmpData.goods_view=='look'}checked{/} onclick="domSaverSendData(this);" /> 노출</label>
+					<label><input type="radio" name="goods_view" value="notLook" {?tmpData.goods_view!='look'}checked{/} onclick="domSaverSendData(this);" /> 미노출</label>
+				</div>
+			</td>
+			<th>과세 여부</th>
+			<td>
+				<div class="resp_radio">
+					<label><input type="radio" name="tax" value="tax" {?tmpData.tax!='exempt'}checked{/} onclick="domSaverSendData(this);" /> 과세</label>
+					<!--{ ? serviceLimit('H_NFR') }-->
+					<label><input type="radio" name="tax" value="exempt" {?tmpData.tax=='exempt'}checked{/} onclick="domSaverSendData(this);" /> 비과세</label>
+					<!--{ / }-->
+				</div>
+			</td>
+		</tr>
+		<!--{ ? serviceLimit('H_AD') && !sellermode }-->
+		<tr>
+			<th>승인 여부</th>
+			<td>
+				<div class="resp_radio ">
+					<label><input type="radio" name="provider_status" value="1" {?tmpData.provider_status}checked{/} onclick="domSaverSendData(this);" /> 승인</label>
+					<label><input type="radio" name="provider_status" value="0" {?!tmpData.provider_status}checked{/} onclick="domSaverSendData(this);" /> 미승인</label>
+				</div>
+			</td>
+			<th>입점사</th>
+			<td>
+				<div class="ui-widget">
+					<select name="provider_seq_selector" style="width:125px;">
+						<option value="1" selected="">본사</option>
+						<!--{ @ provider_list }-->
+						<option value="{.provider_seq}" commissionType="{.commission_type}" providerStatus="{.provider_status}" {?tmpData.provider_seq==.provider_seq}selected{/}>{.provider_name}({.provider_id})</option>
+						<!--{ / }-->
+					</select>
+					<span style="margin-left:20px;">&nbsp;</span>
+					<input type="hidden" class="provider_seq" name="provider_seq" value="" />
+				</div>
+				<span class="ptc-charges hide"></span>
+			</td>
+		</tr>
+		<!--{ / }-->		
+		<tr>
+			<th>
+				재고에 따른 판매 <span class="tooltip_btn" onClick="showTooltip(this, '/admin/tooltip/goods', '#quick_stock', 'sizeS')"></span>
+			</th>
+			<td>
+				<div class="resp_radio">
+					<label><input type="radio" name="runout_type" value="shop" checked/> 통합</label>
+					<label><input type="radio" name="runout_type" value="goods"/> 개별</label>
+				</div>
+				<button type="button" class="resp_btn v2 runout_type_goods" style="display:none;" onclick="{?serviceLimit('H_FR')}{=serviceLimit('A1')}{:}open_runout_setting_popup();{/}">설정</button>
+				<span class="runout-msg-lay runout_type_goods desc"></span>
+				<input type="hidden" name="runout_policy" value="{tmpData.runout_policy}" />
+				<input type="hidden" name="able_stock_limit" value="{tmpData.able_stock_limit}" />
+			</td>
+			<th>
+				배송비
+			</th>
+			<td>
+				<button type="button" class="resp_btn v2" onclick="open_shipping_setting_popup('set_provider_shipping_setting', 'selected_provider_shipping_group');">선택</button>
+				<span class="shipping-group-name">{shippingData.shipping_group_name}</span>
+				(<span class="shipping-group-seq">{shippingData.shipping_group_seq}</span>)
+				<span class="shipping-default-yn { ? shippingData.default_yn != 'Y' }hide{ / } basic_black_box">기본</span>
+				<input type="hidden" name="shipping_group_seq" value="{shippingData.shipping_group_seq}" />
+			</td>
+		</tr>
+		<!--{ ? scm_cfg.use == 'Y' && !sellermode }-->
+		<tr class="scm-box {?tmpData.provider_seq>1}hide{/}">
+			<th>재고관리 분류</th>
+			<td>
+				<!--{ @ range(1, 4) }-->
+				<select name="scm_catagory[]" class="scm-category" depth="{.value_}" onchange="getChildScmCategory(this, 'scm-category');scmCategorySendData(this);">
+					<option value="">{.value_}차 분류</option>
+					<!--{ @ categoryinfo[.value_] }-->
+					<option value="{..category_code}" {?scmCategory[.value_]==..category_code}selected{/}>{..title}</option>
+					<!--{ / }-->
+				</select>
+				<!--{ / }-->
+			</td>			
+			<th>
+				기초재고 기초일자
+				<span class="tooltip_btn" onClick="showTooltip(this, '/admin/tooltip/goods', '#quick_default', 'sizeS')">
+			</th>
+			<td>
+				<!--{ ? scm_cfg.set_default_date }-->
+				{scm_cfg.set_default_date}
+				<!--{ : }-->
+				재고기초 > <span class="click-lay" onclick="window.open('../scm_basic/config');">절사/환율, 기초일자</span>에서 설정
+				<!--{ / }-->
+			</td>
+		</tr>
+		<!--{ / }-->
+	</tbody>
+</table>
+</div>
+<div class="contents_dvs v2">
+	<div class="table_row_frame">
+		<div class="dvs_top">	
+			<div class="dvs_left">	
+				<button type="button" name="codetype_btn" class="resp_btn v3" onclick="save_tmp_goods_row('remove');">선택 삭제</button>
+				<button type="button" name="barcode_print_btn" class="resp_btn v2" onclick="save_tmp_goods_row('copy');">선택 복사</button>
+			</div>
+			<div class="dvs_right quick-goods-regist-table">	
+				<button type='button' name="barcode_write_btn" class='resp_btn active' onclick="save_tmp_goods_row('add');">항목 추가</button>	
+			</div>
+		</div>
+		<table class="table_row_basic v3 v2" id="batch_regist_table">
+		<colgroup>
+			<col width="50"></col>
+			<col width="80"></col>
+			<col></col>
+			<col></col>
+			<col></col>
+			
+			<col width="85"></col>
+			<!--{ ? scm_cfg.use == 'Y' && scm_cfg.set_default_date && !sellermode }-->
+			<col width="300"></col>
+			<!--{ / }-->
+			<col width="100px"></col>
+			<col width="100px"></col>
+			<col width="100px"></col>
+			<col width="100px"></col>
+			<!--{ ? serviceLimit('H_AD') && tmpData.provider_seq > 1 }-->
+			<col width="100px"></col>
+			<col width="100px"></col>
+			<!--{ / }-->
+			<col width="100px" class="sellermode"></col>
+			<col width="100px"></col>
+			<col width="100px"></col>
+			<col width="100px"></col>
+		</colgroup>
+			<thead>
+				<tr>
+					<th><label class='resp_checkbox'><input type="checkbox" id="chkAll" /></label></th>
+					<th>상품코드</th>
+					<th>상품명</th>
+					<th colspan="2">옵션</th>
+					<th>
+						무게(kg)
+						<div class="all-batch-lay">
+							<input type="text" size="2" class="all-batch-weight" />
+							<span class="btn small gray"><button type="button" onclick="allBatchSave(this, 'all');" class="resp_btn v2 arrow">▼</button></span>
+						</div>
+					</th>
+					<!--{ ? scm_cfg.use == 'Y' && scm_cfg.set_default_date && !sellermode }-->
+					<th class=" option-box-subtitle-lay scm-box {?tmpData.provider_seq>1}hide{/}" >
+						창고 및 로케이션
+						<div class="all-batch-lay">
+							<select class="all-batch-warehouse warehouse wx85" onchange="select_warehouse(this, 'nosave');">
+								<!--{ @ whData['warehouse'] }-->
+								<option value="{.wh_seq}">{.wh_name}</option>
+								<!--{ / }-->
+							</select>
+							<select class="all-batch-location_w location_w">
+								<!--{ @ whData['location'] }-->
+								<option value="{.key_}">{.key_}</option>
+								<!--{ / }-->
+							</select>
+							<select class="all-batch-location_l location_l">
+								<!--{ @ whData['location'][1] }-->
+								<option value="{.key_}">{.key_}</option>
+								<!--{ / }-->
+							</select>
+							<select class="all-batch-location_h location_h">
+								<!--{ @ whData['location'][1][1] }-->
+								<option value="{.key_}">{.key_}</option>
+								<!--{ / }-->
+							</select>
+							<span class="btn small gray"><button type="button" onclick="allBatchSave(this, 'all');" class="resp_btn v2 arrow">▼</button></span>
+						</div>
+					</th>
+					<!--{ / }-->
+					<th class="option-box-subtitle-lay">
+						재고
+						<div class="all-batch-lay">
+							<input type="text" size="2" class="all-batch-stock" {?!scm_cfg.set_default_date}disabled{/} />
+							<!--{ ? scm_cfg.set_default_date }-->
+							<span class="btn small gray"><button type="button" onclick="allBatchSave(this, 'all');" class="resp_btn v2 arrow">▼</button></span>
+							<!--{ / }-->
+						</div>
+					</th>
+					<th class="option-box-subtitle-lay">
+						불량
+						<div class="all-batch-lay">
+							<input type="text" size="2" class="all-batch-badstock" {?!scm_cfg.set_default_date}disabled{/} />
+							<!--{ ? scm_cfg.set_default_date }-->
+							<span class="btn small gray"><button type="button" onclick="allBatchSave(this, 'all');" class="resp_btn v2 arrow">▼</button></span>
+							<!--{ / }-->
+						</div>
+					</th>
+					<th>
+						안전
+						<div class="all-batch-lay">
+							<input type="text" size="2" class="all-batch-safe_stock" />
+							<span class="btn small gray"><button type="button" onclick="allBatchSave(this, 'all');" class="resp_btn v2 arrow">▼</button></span>
+						</div>
+					</th>
+					<th class="option-box-subtitle-lay admin-box {?tmpData.provider_seq>1}hide{/}" ">
+						매입가(원)
+						<div class="all-batch-lay">
+							<input type="text" size="5" class="all-batch-supply_price" {?!scm_cfg.set_default_date}disabled{/} />
+							<!--{ ? scm_cfg.set_default_date }-->
+							<span class="btn small gray"><button type="button" onclick="allBatchSave(this, 'all');" class="resp_btn v2 arrow">▼</button></span>
+							<!--{ / }-->
+						</div>
+					</th>					
+					<!--{ ? serviceLimit('H_AD') }-->
+					<th class="center seller-box {?tmpData.provider_seq==1}hide{/}" >정산금액</th>
+					<th class="center seller-box {?tmpData.provider_seq==1}hide{/}" >
+						<span class="commission-type-text">수수료</span>
+						<div class="all-batch-lay">
+							<input type="text" size="2" class="all-batch-commission_rate" />
+							<span class="commission-type-unit">
+								<!--{ ? current_provider['commission_type'] == 'SUPR' }-->원<!--{ : }-->%<!--{ / }-->
+							</span>
+							<span class="btn small gray"><button type="button" onclick="allBatchSave(this, 'all');" class="resp_btn v2 arrow">▼</button></span>
+						</div>
+					</th>
+					<!--{ / }-->
+					<th>
+						정가(원)
+						<div class="all-batch-lay">
+							<input type="text" size="5" class="all-batch-consumer_price" />
+							<span class="btn small gray"><button type="button" onclick="allBatchSave(this, 'all');" class="resp_btn v2 arrow">▼</button></span>
+						</div>
+					</th>
+					<th>
+						판매가(원)
+						<div class="all-batch-lay">
+							<input type="text" size="5" class="all-batch-price" />
+							<span class="btn small gray"><button type="button" onclick="allBatchSave(this, 'all');" class="resp_btn v2 arrow">▼</button></span>
+						</div>
+					</th>
+					<th>
+						옵션노출
+						<div class="all-batch-lay">
+							<select class="all-batch-option_view">
+								<option value="Y">Y</option>
+								<option value="N">N</option>
+							</select>
+							<span class="btn small gray"><button type="button" onclick="allBatchSave(this, 'all');" class="resp_btn v2 arrow">▼</button></span>
+						</div>
+					</th>
+				</tr>				
+			</thead>
+			<tbody class="quick-goods-regist-tbody">
+		<!--{ @ tmpData.goods }-->
+			<!--{ @ .options }-->
+			<tr class="option-row-{.goods_seq} option-rows" goodsSeq="{.goods_seq}">
+				<!--{ ? ..index_ == 0 }-->
+					<td class="goods-seq-td" rowspan="{=count(.options)}">
+						<label class='resp_checkbox'><input type="checkbox" name="goods_seq[]" class="chk" value="{.goods_seq}" /></label>
+					</td>
+					<td class="goods-code-td" rowspan="{=count(.options)}">
+						<input type="text" name="goods_code[{.goods_seq}]" class="goods_code" value="{.goods_code}" size="6" title="상품코드" onblur="domSaverSendData(this);" />
+					</td>
+					<td class="goods-name-td" rowspan="{=count(.options)}">
+						<input type="text" name="goods_name[{.goods_seq}]" class="goods_name" value="{.goods_name}" style="width:90%;" title="상품명" onblur="domSaverSendData(this);" />
+					</td>
+					<td class="goods-option-td" rowspan="{=count(.options)}">
+						<input type="hidden" name="option_use[{.goods_seq}]" class="option_use" value="{.option_use}" />
+						<button type="button" class="resp_btn v2 size_S" onclick="open_options_create_popup('create_option_popup', '{.goods_seq}', 'create_option_batch_regist', '{tmpData.tmp_seq}');">옵션</button>
+					</td>
+				<!--{ / }-->
+				<td>
+					<table>
+					<!--{ @ ..opt_values }-->
+						<tr>
+							<td width="55" height="20">{...value_}</td>
+							<td width="12" style="text-align:center;">
+								<!--{ ? ..newtype[...key_] == 'color' }-->
+								<div style="background-color:{..color};border:1px solid #c5c5c5;width:10px;height:10px;"></div>
+								<!--{ / }-->
+							</td>
+							<td class="left pdl5" height="20">{..opt_codes[...key_]}</td>
+						</tr>
+					<!--{ / }-->
+					</table>
+					<input type="hidden" name="option_seq[{.goods_seq}][]" class="option_seq" value="{..option_seq}" />	
+				</td>
+				<td>
+					<input type="text" name="weight[{..option_seq}]" class="weight" size="2" value="{..weight}" onblur="domSaverSendData(this);" />
+					<!--{ ? ..index_ == 0 && .option_use == 'Y' }-->
+					<span class="btn small gray"><button type="button" onclick="allBatchSave(this, 'goods');" class="resp_btn v2 arrow">▼</button></span>
+					<!--{ / }-->
+				</td>
+				<!--{ ? scm_cfg.use == 'Y' && scm_cfg.set_default_date && !sellermode }-->
+				<td class="scm-box {?tmpData.provider_seq>1}hide{/}">
+					<!--{ @ ..revision }-->
+					<div class="warehouse-lay-{..option_seq} revision-row-{...revision_seq}" rseq="{...revision_seq}">
+						<input type="hidden" name="revision_seq[{..option_seq}][]" class="revision_seq" value="{...revision_seq}" />
+						<select name="warehouse[{..option_seq}][]" class="warehouse wx85" onchange="select_warehouse(this, '');" whSeq="{...wh_seq}">
+							<option value="">창고 선택</option>
+							<!--{ @ whData['warehouse'] }-->
+							<option value="{....wh_seq}" {?....wh_seq==...wh_seq}selected{/}>{....wh_name}</option>
+							<!--{ / }-->
+						</select>
+						<select name="location_w[{..option_seq}][]" class="location_w wx50" onchange="scmLocationSendData(this);" {?!...wh_seq}disabled style="background-color:#efefef;"{/}>
+							<!--{ @ ...location }-->
+							<option value="{....key_}" {?...position_arr[0]==....key_}selected{/}>{....key_}</option>
+							<!--{ / }-->
+						</select>
+						<select name="location_l[{..option_seq}][]" class="location_l wx50" onchange="scmLocationSendData(this);" {?!...wh_seq}disabled style="background-color:#efefef;"{/}>
+							<!--{ @ ...location[...position_arr[0]] }-->
+							<option value="{....key_}" {?...position_arr[1]==....key_}selected{/}>{....key_}</option>
+							<!--{ / }-->
+						</select>
+						<select name="location_h[{..option_seq}][]" class="location_h wx50" onchange="scmLocationSendData(this);" {?!...wh_seq}disabled style="background-color:#efefef;"{/}>
+							<!--{ @ ...location[...position_arr[0]][...position_arr[1]] }-->
+							<option value="{....key_}" {?...position_arr[2]==....key_}selected{/}>{....key_}</option>
+							<!--{ / }-->
+						</select>
+						<!--{ ? ...index_ == 0 }-->
+						<button type="button" class="btn_plus" onclick="add_tmp_revision_data(this);"></button>
+						<!--{ : }-->
+						<button type="button" class="btn_minus" onclick="remove_tmp_revision_data(this);"></button>
+						<!--{ / }-->
+					</div>
+					<!--{ / }-->
+				</td>
+				<!--{ / }-->
+				<td>
+					<!--{ ? tmpData.provider_seq == 1 && scm_cfg.use == 'Y' && !sellermode }-->
+						<!--{ @ ..revision }-->
+						<div class="stock-lay-{..option_seq} revision-row-{...revision_seq}" rseq="{...revision_seq}">
+							<input type="text" size="3" name="stock[{..option_seq}][]" class="stock" value="{...stock}" {?!...wh_seq || !scm_cfg.set_default_date}disabled{/} onblur="domSaverSendData(this);"/>
+							<!--{ ? ..index_ == 0 && ...index_ == 0 && .option_use == 'Y' }-->
+							<span class="btn small gray"><button type="button" onclick="allBatchSave(this, 'goods');" class="resp_btn v2 arrow">▼</button></span>
+							<!--{ / }-->
+						</div>
+						<!--{ / }-->
+					<!--{ : }-->
+						<input type="text" size="3" name="stock[{..option_seq}][]" class="stock"  value="{..stock}" onblur="domSaverSendData(this);" />
+						<!--{ ? ..index_ == 0 && .option_use == 'Y' }-->
+						<span class="btn small gray"><button type="button" onclick="allBatchSave(this, 'goods');" class="resp_btn v2 arrow">▼</button></span>
+						<!--{ / }-->
+					<!--{ / }-->
+				</td>
+				<td>
+					<!--{ ? tmpData.provider_seq == 1 && scm_cfg.use == 'Y' && !sellermode }-->
+					<!--{ @ ..revision }-->
+					<div class="badstock-lay-{..option_seq} revision-row-{...revision_seq}" rseq="{...revision_seq}">
+						<input type="text" size="3" name="badstock[{..option_seq}][]" class="badstock" value="{...badstock}" {?!...wh_seq || !scm_cfg.set_default_date}disabled{/} onblur="domSaverSendData(this);" />
+						<!--{ ? ..index_ == 0 && ...index_ == 0 && .option_use == 'Y' }-->
+						<span class="btn small gray"><button type="button" onclick="allBatchSave(this, 'goods');" class="resp_btn v2 arrow">▼</button></span>
+						<!--{ / }-->
+					</div>
+					<!--{ / }-->
+					<!--{ : }-->
+						<input type="text" size="3" name="badstock[{..option_seq}][]" class="badstock" value="{..badstock}" onblur="domSaverSendData(this);" />
+						<!--{ ? ..index_ == 0 && .option_use == 'Y' }-->
+						<span class="btn small gray"><button type="button" onclick="allBatchSave(this, 'goods');" class="resp_btn v2 arrow">▼</button></span>
+						<!--{ / }-->
+					<!--{ / }-->
+				</td>
+				<td>
+					<input type="text" size="3" name="safe_stock[{..option_seq}]" class="safe_stock" value="{..safe_stock}" onblur="domSaverSendData(this);" />
+					<!--{ ? ..index_ == 0 && .option_use == 'Y' }-->
+					<span class="btn small gray"><button type="button" onclick="allBatchSave(this, 'goods');" class="resp_btn v2 arrow">▼</button></span>
+					<!--{ / }-->
+				</td>
+				<td class="admin-box {?tmpData.provider_seq>1}hide{/}">
+					<!--{ ? tmpData.provider_seq == 1 && scm_cfg.use == 'Y' && !sellermode }-->
+					<!--{ @ ..revision }-->
+					<div class="supplyprice-lay-{..option_seq} revision-row-{...revision_seq}" rseq="{...revision_seq}" >
+						<input type="text" size="7" name="supply_price[{..option_seq}][]" class="supply_price" value="{...supply_price}" {?!...wh_seq || !scm_cfg.set_default_date}disabled{/} onblur="domSaverSendData(this);" />
+						<!--{ ? ..index_ == 0 && ...index_ == 0 && .option_use == 'Y' }-->
+						<span class="btn small gray"><button type="button" onclick="allBatchSave(this, 'goods');" class="resp_btn v2 arrow">▼</button></span>
+						<!--{ / }-->
+					</div>
+					<!--{ / }-->
+					<!--{ : }-->
+						<input type="text" size="7" name="supply_price[{..option_seq}][]" class="supply_price" value="{..supply_price}" onblur="domSaverSendData(this);" />
+						<!--{ ? ..index_ == 0 && .option_use == 'Y' }-->
+						<span class="btn small gray"><button type="button" onclick="allBatchSave(this, 'goods');" class="resp_btn v2 arrow">▼</button></span>
+						<!--{ / }-->
+					<!--{ / }-->
+				</td>				
+				<!--{ ? serviceLimit('H_AD') }-->
+				<td class="seller-box {?tmpData.provider_seq==1}hide{/}" >
+					<span class="commission_price_lay">{=get_currency_price(..commission_price)}</span>
+				</td>
+				<td class="seller-box {?tmpData.provider_seq==1}hide{/}" >
+					<!--{ ? sellermode }-->
+						{..commission_rate}
+						<!--{ ? current_provider['commission_type'] == 'SUPR' }-->원<!--{ : }-->%<!--{ / }-->
+					<!--{ : }-->
+						<input type="text" size="3" name="commission_rate[{..option_seq}]" class="commission_rate" value="{..commission_rate}" onblur="calculate_commission(this);" />
+						<!--{ ? ..index_ == 0 && .option_use == 'Y' }-->
+						<span class="btn small gray"><button type="button" onclick="allBatchSave(this, 'goods');" class="resp_btn v2 arrow">▼</button></span>
+						<!--{ / }-->
+					<!--{ / }-->
+				</td>
+				<!--{ / }-->
+				<td>
+					<input type="text" size="7" name="consumer_price[{..option_seq}]" class="consumer_price"  value="{=get_currency_price(..consumer_price)}" onblur="calculate_commission(this);" />
+					<!--{ ? ..index_ == 0 && .option_use == 'Y' }-->
+					<span class="btn small gray"><button type="button" onclick="allBatchSave(this, 'goods');" class="resp_btn v2 arrow">▼</button></span>
+					<!--{ / }-->
+				</td>
+				<td>
+					<input type="text" size="7" name="price[{..option_seq}]" class="price" value="{=get_currency_price(..price,1)}" onblur="calculate_commission(this);" />
+					<!--{ ? ..index_ == 0 && .option_use == 'Y' }-->
+					<span class="btn small gray"><button type="button" onclick="allBatchSave(this, 'goods');" class="resp_btn v2 arrow">▼</button></span>
+					<!--{ / }-->
+				</td>
+				<td>
+					<select name="option_view[{..option_seq}]" class="option_view wx60"  onchange="domSaverSendData(this);">
+					<option value="Y" {?..option_view=='Y'}selected{/}>Y</option>
+					<option value="N" {?..option_view=='N'}selected{/}>N</option>
+					</select>
+					<!--{ ? ..index_ == 0 && .option_use == 'Y' }-->
+					< class="btn small gray"><button type="button" onclick="allBatchSave(this, 'goods');" class="resp_btn v2 arrow">▼</button></
+					<!--{ / }-->
+				</td>
+			</tr>
+			<!--{ / }-->
+		<!--{ / }-->
+			</tbody>
+		</table>
+		<div class="dvs_bottom">	
+			<div class="dvs_left">	
+				<button type="button" name="codetype_btn" class="resp_btn v3" onclick="save_tmp_goods_row('remove');">선택 삭제</button>
+				<button type="button" name="barcode_print_btn" class="resp_btn v2" onclick="save_tmp_goods_row('copy');">선택 복사</button>
+			</div>
+			<div class="dvs_right quick-goods-regist-table">	
+				<button type='button' name="barcode_write_btn" class='resp_btn active' onclick="save_tmp_goods_row('add');">항목 추가</button>	
+			</div>
+		</div>		
+	</div>
+</div>
+</form>
+
+<div id="popup_shipping_setting" class="hide">
+	<div class="content">
+		<table class="table_basic v7" width="100%">				
+		<thead>
+		<tr>
+			<th>배송그룹명 (배송그룹번호)</th>
+			<th>배송비계산기준</th>
+		</tr>
+		</thead>
+		<tbody>
+		<tr class="default-row hide">
+			<td>
+				<label class="resp_radio">
+					<input type="radio" name="sel_shipping_group" [:SHIPPING_GROUP_CHECKED:] value="[:SHIPPING_GROUP_SEQ:]" />
+					<span class="sel_shipping_group_name">[:SHIPPING_GROUP_NAME:]</span>
+					([:SHIPPING_GROUP_SEQ:])
+					<span class="sel_shipping_default_yn basic_black_box [:SHIPPING_DEFAULT_CLASS:]">[:SHIPPING_DEFAULT_YN:]</span>
+				</label>
+			</td>
+			<td class="center">[:SHIPPING_CALCULATE_TYPE:]</td>
+		</tr>
+		</tbody>
+		</table>
+	</div>
+	<div class="footer">
+		<button type="button" class="resp_btn active size_XL shipping-apply-button" >선택</button>
+		<button type="button" class="resp_btn v3 size_XL" onclick="closeDialog('popup_shipping_setting')" >취소</button>
+	</div>
+</div>
+<!-- 재고에 따른 판매 설정 - 개별설정-->
+<div id="popup_runout_setting" class="hide">
+	<div class="content">
+		<table class="table_basic thl mb10" id="goods_runout">
+		<colgroup><col width="20%"><col width="80%"></colgroup>
+		<tr>
+			<th>개별 설정</th>
+			<td>
+				<div class="resp_radio">
+					<label><input type="radio" name="runout" value="stock" checked /> 재고가 있으면 판매</label>
+						<span class="tooltip_btn" onClick="showTooltip(this, '/admin/tooltip/goods', '#regist_stock_tip1', 'sizeS')"></span>
+					<label><input type="radio" name="runout" value="ableStock" /> 가용 재고가 있으면 판매</label>
+						<span class="tooltip_btn" onClick="showTooltip(this, '/admin/tooltip/goods', '#regist_stock_tip2', 'sizeS')"></span>
+					<label><input type="radio" name="runout" value="unlimited" /> 재고와 상관 없이 판매</label>
+						<span class="tooltip_btn" onClick="showTooltip(this, '/admin/tooltip/goods', '#regist_stock_tip3', 'sizeS')"></span>
+				</div>
+			</td>
+		</tr>
+		<tr class="ableStock_sub">
+			<th>가용 재고</th>
+			<td>
+				<input type="text" name="ableStockLimit" size="5" value="{cfg_order.ableStockLimit}" class="right line onlynumber_signed"> 이하 일 때 품절 또는 재고 확보 중 처리
+				<div class="resp_message">※ 가용재고 = 상품의 재고 - 출고 예약량 - 불량재고</div>
+			</td>
+		</tr>
+		</table>
+	</div>
+	<div class="footer">
+		<input type="button" class="resp_btn active size_XL" onclick="chk_runout_policy()" value="확인" />
+		<input type="button" class="resp_btn v3 size_XL" onclick="closeDialog('popup_runout_setting')" value="취소" />
+	</div>
+</div>
+
+<div id="create_option_popup" class="hide"></div>
+
+{ #layout_footer }
