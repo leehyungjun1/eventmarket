@@ -2731,6 +2731,9 @@ function accountalllist($pagetype='list',$acinsdata, &$loop, &$tot, &$carryoverl
 	if ($acinsdata['payment'] === 'point' && $acinsdata['pg'] === 'talkbuy') {
 		$acinsdata['out_payment'] = '카카오 머니';
 	}
+	if($acinsdata['pg'] === 'naverpayment') {
+		$acinsdata['out_payment'] = '네이버페이 - ' . $acinsdata['out_payment'];
+	}
 
 	//Npay 상품 할인액(Npay부담) # npay 쿠폰할인(네이버페이 부담=상품별 할인액-판매자 부담 할인액)
 	$acinsdata['out_npay_sale_npay']	= ($acinsdata['npay_sale_npay']);

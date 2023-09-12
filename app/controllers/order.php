@@ -3163,6 +3163,7 @@ class order extends front_base {
 			if(strpos($res["pay_type"], 'cellphone') === false) $payment["cellphone"] = '';else $payment["cellphone"] = 'cellphone';
 			if(strpos($res["pay_type"], 'virtual') === false) 		$payment["virtual"] = '';		else $payment["virtual"] = 'virtual';
 			if(strpos($res["pay_type"], 'payco') === false)		$payment["payco"] = '';		else 	$payment["payco"] = 'payco';
+			if(strpos($res["pay_type"], 'naverpayment') === false)	$payment["naverpayment"] = '';	else 	$payment["naverpayment"] = 'naverpayment';
 			if(strpos($res["pay_type"], 'paypal') === false)		$payment["paypal"] = '';		else 	$payment["paypal"] = 'paypal';
 			if(strpos($res["pay_type"], 'eximbay') === false) 	$payment["eximbay"] = '';	else 	$payment["eximbay"] = 'eximbay';
 
@@ -5948,7 +5949,7 @@ class order extends front_base {
 		}
 
 		## 결제수단에 따른 PG모듈 선택 :: 2015-02-23 lwh
-		if(in_array($_POST['payment'],array('kakaopay','paypal','payco','eximbay'))){
+		if(in_array($_POST['payment'],array('kakaopay','paypal','payco','eximbay','naverpayment'))){
 			$pgCompany	= $_POST['payment'];
 		}else{
 			$pgCompany	= $this->config_system['pgCompany'];
@@ -7158,6 +7159,7 @@ class order extends front_base {
 
 			$this->pg_param['payment'] = $_POST['payment'];
 			$this->pg_param['order_seq'] = $order_seq;
+			$this->pg_param['product_name'] = $goods_name;
 			$goods_name = preg_replace("/[ #\&\+\-%@=\/\\\:;,\.'\"\^`~\_|\!\?\*$#<>()\[\]\{\}]/i", "", $goods_name);
 			$this->pg_param['goods_name'] = $goods_name;
 			$this->pg_param['goods_info']	= serialize($goods_info);		//장바구니 상세정보(에스크로시 사용) 2014.09-22
@@ -7171,6 +7173,7 @@ class order extends front_base {
 			$this->pg_param['order_email'] = $_POST['order_email'];
 			$this->pg_param['order_phone'] = implode('-',$_POST['order_phone']);
 			$this->pg_param['order_cellphone'] = implode('-',$_POST['order_cellphone']);
+			$this->pg_param['mode'] = $_POST['mode'] ?? 'direct';
 			if($_POST['mobilenew']) $this->pg_param['mobilenew'] = $_POST['mobilenew'];
 
 			// 카카오페이 사용 시 예외처리 - 구버전와 동시사용X :: 2017-12-11 lwh
@@ -7179,6 +7182,14 @@ class order extends front_base {
 			}else{
 				//2017-05-24 jhs 크로스 브라우징 결제모듈 추가
 				$payConfig = config_load($pgCompany);
+			}
+
+			// 네이버페이 결제창에서 모바일 뒤로가기 시 err_cache_miss 이슈로 get 메소드로 변경
+			if($pgCompany == 'naverpayment') {
+				$this->session->unset_userdata('naverpay_pg');
+				$pgMethod = 'get';
+			} else {
+				$pgMethod = 'post';
 			}
 
 			$naxCheck = $payConfig["nonActiveXUse"];
@@ -7192,7 +7203,7 @@ class order extends front_base {
 			if(!$this->_is_mobile_agent) {
 				if($naxCheck == "Y"){
 					$jsonParam = base64_encode(json_encode($this->pg_param));
-					echo("<form name='".$pgCompany."_settle_form' method='post' action='../".$pgCompany."/request'>");
+					echo("<form name='".$pgCompany."_settle_form' method='".$pgMethod."' action='../".$pgCompany."/request'>");
 					echo("<input type='hidden' name='jsonParam' value='".$jsonParam."' />");
 					echo("</form>");
 					echo("<script>document.".$pgCompany."_settle_form.submit();</script>");
@@ -7205,14 +7216,21 @@ class order extends front_base {
 					|| ($pgCompany == 'kicc')// kicc 예외처리 by hed
 					){
 					$jsonParam = base64_encode(json_encode($this->pg_param));
-					echo("<form name='".$pgCompany."_settle_form' method='post' action='../".$pgCompany."/request'>");
+					echo("<form name='".$pgCompany."_settle_form' method='".$pgMethod."' action='../".$pgCompany."/request'>");
 					echo("<input type='hidden' name='jsonParam' value='".$jsonParam."' />");
 					echo("</form>");
 					echo("<script>document.".$pgCompany."_settle_form.submit();</script>");
 					exit;
 				}else if($pgCompany == 'payco' && $this->config_system['not_use_payco'] == 'n'){
 					$jsonParam = base64_encode(json_encode($this->pg_param));
-					echo("<form name='".$pgCompany."_settle_form' method='post' action='../".$pgCompany."/request'>");
+					echo("<form name='".$pgCompany."_settle_form' method='".$pgMethod."' action='../".$pgCompany."/request'>");
+					echo("<input type='hidden' name='jsonParam' value='".$jsonParam."' />");
+					echo("</form>");
+					echo("<script>document.".$pgCompany."_settle_form.submit();</script>");
+					exit;
+				}else if($pgCompany == 'naverpayment' && $this->config_system['not_use_naverpayment'] == 'n'){
+					$jsonParam = base64_encode(json_encode($this->pg_param));
+					echo("<form name='".$pgCompany."_settle_form' method='".$pgMethod."' action='../".$pgCompany."/request'>");
 					echo("<input type='hidden' name='jsonParam' value='".$jsonParam."' />");
 					echo("</form>");
 					echo("<script>document.".$pgCompany."_settle_form.submit();</script>");

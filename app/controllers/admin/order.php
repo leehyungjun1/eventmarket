@@ -460,6 +460,13 @@ class order extends admin_base {
 			if(!isset($shipping_provider[$val['provider_seq']]))	$shipping_provider[$val['provider_seq']]		= $val;
 		}
 
+		$return['show_refund_method'] = 'Y';
+
+		// 간편결제 환불방법 미노출 처리
+		if (is_order_simple_payment($order_info)) {
+			$return['show_refund_method'] = 'N';
+		}
+
 		$return['order_info']			= $order_info;
 		$return['shipping_provider']	= array_values($shipping_provider);
 
@@ -2666,6 +2673,10 @@ class order extends admin_base {
 			// 네이버 페이 표기 추가 2016-09-07 jhr
 			if	($orders['pg'] == 'npay') $orders['mpayment'] = 'naver pay('.$orders['mpayment'].')';
 
+			if ($orders['pg'] == 'naverpayment') {
+				$orders['mpayment'] = $this->arr_payment[$orders['pg'].'_'.$orders['payment']];
+			}
+
 			$orders['mstep'] 	= $this->arr_step[$orders['step']];
 
 			$arr = config_load('bank');
@@ -3455,8 +3466,13 @@ class order extends admin_base {
 			$show_refund_method = 'N';
 		}
 
+		// 간편결제 환불방법 미노출 처리
+		if (is_order_simple_payment($orders)) {
+			$show_refund_method = 'N';
+		}
+
 		// @todo 톡구매클레임 연동개발 되면 삭제
-		if ($orders['pg'] === 'talkbuy') {
+		if ( in_array($orders['pg'], ['talkbuy']) ) {
 			$show_refund_method = 'N';
 		}
 
@@ -3969,9 +3985,15 @@ class order extends admin_base {
 
 			// 비현금성 주문일 경우 환불방법 미노출 처리 (신용카드, 휴대폰결제) :: 2018-07-20
 			$show_refund_method = 'Y';
-			if($orders['payment'] == 'card' || $orders['payment'] == 'cellphone'){
+			if (in_array($orders['payment'], ['card', 'cellphone'])) {
 				$show_refund_method = 'N';
 			}
+
+			// 간편결제 환불방법 미노출 처리
+			if (is_order_simple_payment($orders)) {
+				$show_refund_method = 'N';
+			}
+
 			$orders['show_refund_method'] = $show_refund_method;
 
 

@@ -595,6 +595,10 @@
 					f.attr("target","actionFrame");
 					$("iframe[name='actionFrame']").hide();
 					// window.open('about:blank','childwin','width=420,height=550');
+				} else if ( sel_payment == 'naverpayment' ) {
+					// 네이버페이
+					f.attr("target","_self");
+					$("iframe[name='actionFrame']").hide();
 				} else {
 					if(gl_pg_company != 'inicis' && gl_pg_company != 'kspay') {
 						if(mobile_new == 'y' && gl_mobile && gl_pg_company && $("input[name='payment']:checked").val() != 'bank'){
@@ -634,6 +638,9 @@
 					f.attr("target","actionFrame");
 					$("iframe[name='actionFrame']").hide();
 					// window.open('about:blank','childwin','width=420,height=550');
+				} else if ( sel_payment == 'naverpayment' ) { // 네이버페이
+					f.attr("target","actionFrame");
+					$("iframe[name='actionFrame']").hide();
 				}
 			}
 

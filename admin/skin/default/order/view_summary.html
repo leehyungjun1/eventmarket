@@ -216,7 +216,14 @@
 						{? orders.depositor}{=orders.depositor}{/}
 						{? orders.npay_order_id }<span class="icon-pay-npay" title="naver pay"><span>npay</span></span>{ / }
 						{? orders.talkbuy_order_id }<span class="icon-pay-talkbuy-simple" title="talkbuy pay"><span>talkbuy</span></span>{ / }
-						{? orders.pg=='kakaopay'}<span class="icon-pay-kakaopay" /><span>kakaopay</span></span>{:}{orders.mpayment}{/}
+						{? orders.pg=='kakaopay'}
+						<span class="icon-pay-kakaopay" /><span>kakaopay</span></span>
+						{: orders.pg=='naverpayment'}
+						<span class="icon-pay-naverpayment-simple" /></span>
+						<span class="icon-pay-{orders.payment}"></span>
+						{:}
+						{orders.mpayment}
+						{/}
 						{?orders.bank_name}({orders.bank_name}){/}
 						<!--{ / }-->
 					</td>

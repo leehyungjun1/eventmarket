@@ -432,6 +432,9 @@ class setting extends admin_base {
 		$this->template->assign(array('rand'=>$rand));
 		$this->template->assign('navercheckout',$navercheckout);
 
+		$naverpayment = config_load('naverpayment');
+		$this->template->assign('naverpayment',$naverpayment);
+
 		$talkbuy = config_load('talkbuy');
 		$this->template->assign('talkbuy',$talkbuy);
 
@@ -1162,6 +1165,16 @@ class setting extends admin_base {
 
 		$filePath	= $this->template_path();
 		$this->template->define(array('tpl'=>$filePath));
+		$this->template->print_("tpl");
+	}
+
+	// 네이버페이 결제형 설정
+	public function naverpayment(){
+		$filePath = $this->template_path();
+		$naverpayment_config = config_load('naverpayment');
+
+		$this->template->define(array('tpl'=>$filePath));
+		$this->template->assign($naverpayment_config);
 		$this->template->print_("tpl");
 	}
 

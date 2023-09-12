@@ -9432,6 +9432,7 @@ class Goodsmodel extends CI_Model {
 		$possible_pay = str_replace("bank", "무통장 입금", $possible_pay);
 		$possible_pay = str_replace("kakaopay", "카카오페이", $possible_pay);
 		$possible_pay = str_replace("payco", "페이코", $possible_pay);
+		$possible_pay = str_replace("naverpayment", "네이버페이 결제형", $possible_pay);
 		$possible_pay = str_replace("paypal", "페이팔", $possible_pay);
 		$possible_pay = str_replace("alipay", "알리페이", $possible_pay);
 		$possible_pay = str_replace("axes", "엑시즈", $possible_pay);

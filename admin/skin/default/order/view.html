@@ -1,0 +1,924 @@
+{ #layout_header }
+
+<!-- <link rel="stylesheet" type="text/css" href="../css/layer_stock.css" />
+<style>
+	.price {padding-right:5px;text-align:right}
+	table.order-inner-table,
+	table.order-inner-table td,table.order-inner-table th {border:0 !important;height:9px !important;}
+	.ea {font-family:dotum; color:#a400ff;}
+	.title_order_number {font-family:dotum;font-size:13px;}
+	.provider_name {font-weight:bold;}
+
+	table.detail_price { background-color:#ffffff !important; border-collapse:collapse !important; border:2px solid #bcbfc1 !important; }
+	table.detail_price th { background-color:#efefef; height:20px !important; border:1px solid #bcbfc1 !important; }
+	table.detail_price td { height:20px !important; border:1px solid #bcbfc1 !important; }
+
+	table.order-summary-table tbody td.pvtd{border:1px solid #dcdde1;text-align:center;background-color:#fff;}
+	.coupon_status{color:red}
+	.coupon_status_all{color:red}
+	.coupon_order_status{color:gray}
+	.coupon_status_use{color:blue}
+	.coupon_input_value{color:green}
+
+	.url-helper{border:1px solid #424242;background-color:#fff;line-height: 14px;}
+	.open-link a:link, a:active, a:visited{color: #a7a7a7;}
+	.open-link a:hover {color:#f63;}
+	.warehouse-info-lay { padding:5px;margin:2px 10px 5px 0;border:1px solid #c5c5c5;background-color:#fff; }
+</style> -->
+<script type="text/javascript">
+	/*
+	var order_seq				= "{=orders.order_seq}";
+	var orign_order_seq			= "{=orders.orign_order_seq}";
+	var order_hidden			= "{=orders.hidden}";
+	var order_hidden_date		= "{=orders.hidden_date}";
+	var	order_npay				= "{=npay_use}";
+	var	order_pg				= "{=orders.pg}";
+	var nomatch_goods_cnt		= "{items_tot.nomatch_goods_cnt}";
+	var private_masking			= "{=orders.private_masking}";
+
+	var nowDate					= "{=date('Ymd')}";
+	var deposit_day				= "{=date('Ymd',strtotime(orders.deposit_date))}";
+	var step					= "{orders.step}";
+
+	var able_return_ea			= parseInt("{=orders.able_return_ea}");
+	var able_refund_ea			= parseInt("{=orders.able_refund_ea}");
+	var able_export_ea			= parseInt("{=orders.able_export_ea}");
+
+	var linkage_mallnames		= "{=linkage_mallnames}";
+	var order_linkage_id		= "{=orders.linkage_id}";
+
+	var referer_name			= encodeURIComponent('{orders.referer_name}');
+	var referer_domain			= encodeURIComponent('{orders.referer_domain}');
+	var referer					= encodeURIComponent('{? orders.referer_naver }{orders.referer_naver}{:}{orders.referer}{/}');
+
+	var directExport			= "{_GET.directExport}";
+	var	member_seq				= "{=members.member_seq}";
+	*/
+</script>
+<script type="text/javascript" src="/app/javascript/plugin/editor/js/editor_loader.js?dummy={=date('Ymd')}"></script>
+<script type="text/javascript" src="/app/javascript/plugin/editor/js/daum_editor_loader.js?dummy={=date('YmdH')}"></script>
+<script type="text/javascript" src="/app/javascript/js/admin-orderExportPopup.js?dummy={=date('Ymd')}"></script>
+<!--<script type="text/javascript" src="/app/javascript/js/admin-goodsRegist.js?dummy={=date('YmdHis')}"></script>
+<script type="text/javascript" src="/app/javascript/js/admin-orderView.js?dummy={=date('YmdHis')}"></script>
+-->
+
+<script type="text/javascript">
+	/* #16651 2018-07-10 ycg 관리자 메모 기능 개선 */
+	//관리메모 수정
+	function modify_order_memo(idx){
+		var memo_idx = idx;
+		$.ajax({
+			url: '../order_process/admin_memo_modify',
+			type: 'get',
+			data: { memo_idx:memo_idx },
+			success: function(data){
+				$("textarea[name='admin_memo']").val(data);
+				$("textarea[name='admin_memo']").after("<input type='hidden' name='memo_idx' value='"+memo_idx+"'>");
+			}
+		});
+	}
+	
+	//관리메모 삭제
+	function delete_order_memo(idx){
+		var memo_idx = idx;
+		openDialogConfirm("삭제된 메모는 복구할 수 없습니다. 정말로 삭제하시겠습니까?",400,150,function(){
+			$.ajax({
+				url: '../order_process/admin_memo_del',
+				type: 'post',
+				data: { memo_idx:memo_idx },
+				success: function(){
+					openDialogAlert("정상적으로 삭제되었습니다.",400,140,function(){parent.location.reload();});
+				}
+			});
+		});
+	}
+	/* #16651 2018-07-10 ycg 관리자 메모 기능 개선 */
+
+	//매출전표 처리
+	function receiptView(order_seq, pg_kind) {
+		if(pg_kind != '' && pg_kind == 'naverpayment') {
+			openDialogAlert("네이버페이 결제형 주문건의 영수증/매출전표는 결제 진행 고객의 네이버페이 계정으로만 확인 가능합니다.",380,140,'parent','');
+		} else {
+			location.href='./sales?keyword='+order_seq;
+		}
+	}
+
+	$(document).ready(function(){
+		/* #16651 2018-07-10 ycg 관리자 메모 기능 개선 */
+		//관리메모 등록
+		$("#memo_reg").click(function(){
+			var admin_memo = $("textarea[name='admin_memo']").val();
+			var memo_idx = $("input[name='memo_idx']").val();
+			if(admin_memo!=''){
+				$.ajax({
+					url:'../order_process/admin_memo',
+					type: 'post',
+					data: { seq : '{orders.order_seq}', mname : '{managerInfo.mname}', manager_id : '{managerInfo.manager_id}',admin_memo : admin_memo, memo_idx : memo_idx},
+					success:function(){
+						openDialogAlert("관리메모가 등록 되었습니다.",400,140,function(){parent.location.reload();});
+					}
+				});
+			}else{
+				openDialogAlert("메모 내용을 입력해주세요.",400,140,'parent','');
+			}
+		});
+		/* #16651 2018-07-10 ycg 관리자 메모 기능 개선 */
+
+		// 버튼 제어
+		<!--{ @ able_step_action }-->
+			$("#{.key_}").parent().parent().hide();
+			$("form[name=frm_{.key_}]").attr('disabled',true);
+			$("input,select,textarea",$("form[name=frm_{.key_}]")).each(function(){$(this).attr('readonly',true);});
+
+			<!--{ ? (.key_ == 'change_bank') && orders.payment == 'bank' }-->
+				<!--{ ? !in_array(orders.step,array('15')) }-->
+				// 크롬에서 주문접수 상태가 아닐때 결제정보 선택되는 문제로 추가 leewh 2014-09-01
+				if (!$.browser.msie) $("input,select,textarea",$("form[name=frm_{.key_}]")).each(function(){$(this).attr('disabled',true);});
+				<!--{ / }-->
+			<!--{ / }-->
+
+			<!--{ ? items_tot.coupontotal > 0 }-->
+			<!--{ ? (.key_ == 'return_coupon_list') }-->
+						<!--{ ? in_array(orders.step,.value_) || in_array(orders.step,array('50')) || in_array(orders.step,array('55')) || in_array(orders.step,array('75')) }-->
+						$("#{.key_}").parent().parent().show();
+						$("form[name=frm_{.key_}]").attr('disabled',false);
+						$("input,select,textarea",$("form[name=frm_{.key_}]")).each(function(){$(this).attr('readonly',false);});
+						<!--{ / }-->
+			<!--{ : (.key_ == 'order_deposit') || (.key_ == 'goods_export') }-->
+					<!--{ ? in_array(orders.step,.value_) }-->
+					$("#{.key_}").parent().parent().show();
+					$("form[name=frm_{.key_}]").attr('disabled',false);
+					$("input,select,textarea",$("form[name=frm_{.key_}]")).each(function(){$(this).attr('readonly',false);});
+					<!--{ / }-->
+				<!--{:}-->
+				<!--{ ? items_tot.goodstotal > 0}-->
+					<!--{ ? in_array(orders.step,.value_) }-->
+					<!--{ ? .key_ == 'enuri' }-->
+					<!--{ ? orders.payment == 'bank' }-->
+					$("#{.key_}").parent().parent().show();
+					$("form[name=frm_{.key_}]").attr('disabled',false);
+					$("input,select,textarea",$("form[name=frm_{.key_}]")).each(function(){$(this).attr('readonly',false);});
+					<!--{ / }-->
+					<!--{ : }-->
+					$("#{.key_}").parent().parent().show();
+					$("form[name=frm_{.key_}]").attr('disabled',false);
+					$("input,select,textarea",$("form[name=frm_{.key_}]")).each(function(){$(this).attr('readonly',false);});
+					<!--{ / }-->
+					<!--{ / }-->
+				<!--{:}-->
+					<!--{ ? in_array(orders.step,.value_) }-->
+					<!--{ ? (.key_ == 'enuri' && orders.payment == 'bank') || .key_ == 'cash_receipts' || .key_ == 'tax_bill' || .key_ == 'card_slips' }-->
+					// 티켓상품만 있을시에도 현금영수증, 세금계산서, 신용카드 전표 노출되도록 수정
+					$("#{.key_}").parent().parent().show();
+					$("form[name=frm_{.key_}]").attr('disabled',false);
+					$("input,select,textarea",$("form[name=frm_{.key_}]")).each(function(){$(this).attr('readonly',false);});
+					<!--{ / }-->
+					<!--{ / }-->
+					<!--{ / }-->
+				<!--{ / }-->
+			<!--{ : }-->
+				<!--{ ? in_array(orders.step,.value_) || (orders.step == '85' && ( (.key_ == 'goods_ready' && items_tot.step25 > 0) || (.key_ == 'goods_export' && orders.able_export_ea > 0) || (.key_ == 'cancel_payment' && orders.able_refund_ea > 0) ) )  }-->
+				<!--{ ? .key_ == 'enuri' }-->
+				<!--{ ? orders.payment == 'bank' }-->
+				$("#{.key_}").parent().parent().show();
+				$("form[name=frm_{.key_}]").attr('disabled',false);
+				$("input,select,textarea",$("form[name=frm_{.key_}]")).each(function(){$(this).attr('readonly',false);});
+				<!--{ / }-->
+				<!--{ : }-->
+				$("#{.key_}").parent().parent().show();
+				$("form[name=frm_{.key_}]").attr('disabled',false);
+				$("input,select,textarea",$("form[name=frm_{.key_}]")).each(function(){$(this).attr('readonly',false);});
+				<!--{ / }-->
+				<!--{ / }-->
+			<!--{ / }-->
+		<!--{ / }-->
+
+		$("#orderListBtn").on("click", function(){			
+			location.href="/admin/order/"+"{?_GET.callPage=='company_catalog'}company_catalog{:}catalog{/}?{query_string}";
+		})
+	});
+</script>
+
+<!-- 페이지 타이틀 바 : 시작 -->
+<div id="page-title-bar-area">
+	<div id="page-title-bar">
+		<!-- 타이틀 -->
+		<div class="page-title">
+			<h2>			
+			{orders.sitetypetitle} <span style="display:none;">{? orders.marketplacetitle} {orders.marketplacetitle} {/}</span>
+			<!--{ ? orders.important }-->
+			<span class="icon-star-gray hand checked list-important important-{orders.step}" id="important_{orders.order_seq}"></span>
+			<!--{ : }-->
+			<span class="icon-star-gray hand list-important important-{orders.step}" id="important_{orders.order_seq}"></span>
+			<!--{ / }-->
+			
+			<!--{ ? orders.step < 75 && orders.real_stock === '미매칭' }-->
+			<span class='gray fx16'>( 미매칭 )</span>
+			<!--{ : orders.step < 75 && orders.miss_stock == 'Y' }-->
+			<span class='gray fx16'>( 재고 부족 )</span>
+			<!--{ / }-->
+
+			<span class="bold ">{orders.order_seq}</span>
+			<a href="javascript:printOrderView('{orders.order_seq}', 'catalog')"><span class="icon-print-order"></span></a>
+			<span class='gray fx16 lsp0'>
+			<span class="icon-order-step-{orders.step}">{orders.mstep}</span>
+			<!--{ ? orders.orign_order_seq }-->
+			( 맞교환 주문 )
+			<!--{ / }-->
+
+			<!--{ ? orders.admin_order }-->
+			( <span style="letter-spacing: -1px;">{orders.admin_order}</span> 관리자 주문 )
+			<!--{ / }-->
+			<!--{ ? orders.label === 'present' }-->
+			( 선물하기 주문 )
+			<!--{ / }-->
+			</span>
+			<span style="font-size:9pt">결제취소 {orders.cancel_list_ea}</span>
+			<span style="font-size:9pt">반품 {orders.return_list_ea}</span>
+			<span style="font-size:9pt">교환 {orders.exchange_list_ea}</span>
+			<span style="font-size:9pt">환불 {orders.refund_list_ea}</span>	
+			</h2>
+		</div>	
+		
+		<!-- 우측 버튼 -->
+		<ul class="page-buttons-right">
+			<!--{ ? !orders.disable_order_back_action == 'POS' && !orders.present_no_receipt_address }-->
+				<!--{ ? items_tot.step25 > 0 }-->
+				<li><span class="btn large icon green"><button type="button" id="goods_ready" class="resp_btn v2 size_L">상품준비 처리</button></span></li>
+				<!--{ / }-->
+				<!--{ ? !is_partner_order && orders.step == 15 }-->
+				<li><span class="btn large icon orange"><button type="button" id="order_deposit" class="resp_btn active size_L">결제확인</button></span></li>
+				<!--{ / }-->
+			<!--{ / }-->
+			<!--{ ? orders.able_export_ea > 0 && !orders.present_no_receipt_address }-->
+			<li><span class="btn large icon cyanblue"><button type="button" id="goods_export"  class="resp_btn active size_L">출고처리</button></span></li>
+			<!--{ / }-->
+		</ul>
+
+		<!-- 좌측 버튼 -->
+		<ul class="page-buttons-left">
+			<!-- ######################## 16.12.15 gcs yjy : 검색조건 유지되도록 -->
+			<li><span class="btn large icon"><button type="button" id="orderListBtn"  class="resp_btn v3 size_L"><span class="arrowleft"></span>주문리스트</button></span></li>
+			<!--{ ? !orders.disable_order_back_action == 'POS' }-->
+				<!--{ ? in_array(orders.step,able_step_action['cancel_order']) }-->
+				<li><span class="btn large icon"><button type="button" id="cancel_order" class="resp_btn v3 size_L"><span class="arrowleft"></span>주문무효</button></span></li>
+				<!--{/}-->
+				<!--{ ? orders.able_refund_ea > 0 && orders.pg != 'talkbuy' }-->
+				<li><span class="btn large icon"><button type="button" id="cancel_payment" onclick="order_refund('{orders.order_seq}');" class="resp_btn v3 size_L"><span class="arrowleft"></span>결제취소</button></span></li>
+				<!--{/}-->
+				<!--{ ? items_tot.coupontotal > 0 }-->
+				<li><span class="btn large icon"><button type="button" id="return_coupon_list" onclick="order_return_coupon('{orders.order_seq}');" class="resp_btn active size_L"><span class="arrowleft"></span>티켓상품 환불</button></span></li>
+				<!--{/}-->
+				<!--{ ? (orders.able_return_ea > 0 || orders.able_after_return_ea > 00) && orders.pg != 'talkbuy' }-->
+				<li><span class="btn large icon"><button type="button" id="return_list" onclick="order_return('{orders.order_seq}');" class="resp_btn v3 size_L"><span class="arrowleft"></span>반품</button></span></li>
+				<!--{/}-->
+				<!--{ ? orders.able_return_ea > 0 && (orders.pg != 'npay' && orders.pg != 'talkbuy') }-->
+				<li><span class="btn large icon"><button type="button" id="exchange_list" onclick="order_exchange('{orders.order_seq}');" class="resp_btn v3 size_L"><span class="arrowleft"></span>맞교환</button></span></li>
+				<!--{/}-->
+			<!--{ / }-->
+		</ul>
+	</div>
+</div>
+<!-- 페이지 타이틀 바 : 끝 -->
+
+
+{ ? orders.order_seq }
+<!-- Order_Statistics -->
+<div id="Order_Statistics" class="mt15 mb10"></div>
+{ / }
+
+{? !orders.present_no_receipt_address }
+<div>
+	<span class="order_reverse hand resp_btn v3 {? !revert_btn}hide{/}" autodepositKey="{?bankChk=='Y'}{orders.autodeposit_key}{/}">
+		<span class="helpicon" title="{=revert_btn['description']}"></span> '{=revert_btn["title"]}' 상태로 되돌리기 <img src="../images/common/icon_arrow_back.gif" align="absmiddle" />
+	</span>
+</div>
+{ / }
+<!----- [주문정보 공통] 여기서부터 view_summery.html 과 중복 시작 >>>>>  --->
+{#ORDER_INFO}
+<!----- [주문정보 공통]여기서부터 view_summery.html 과 중복 종료 >>>>>  --->
+
+<!--{? gift_target_goods }-->
+<br class="table-gap" />
+<div class="contents_dvs v2">
+	<div class="item-title">사은품 지급 사유</div>
+	<div align="center">
+		<table class="simplelist-table-style table_row_basic" width="100%" border=0>
+			<colgroup>
+				<col width="30%" />
+				<col width="40%" />
+				<col width="40%" />
+			</colgroup>
+			<thead class="oth">
+				<tr>
+					<th>본 주문의 사은품 지급 대상 상품</th>
+					<th>사은품 지급 조건 만족</th>
+					<th>대상 상품의 반품 발생시 사은품 회수</th>
+				</tr>
+			</thead>
+			<tbody class="otb">
+			<!--{ @ gift_target_goods }-->
+				<tr>
+					<td>
+						<div style="float:left;margin-left:10px;">
+						<a href='/goods/view?no={.goods_seq}' target='_blank'><span class="order-item-image"><img class="small_goods_image" src="{.image}" width="40" /></span></a></div>
+						<div style="float:left;margin:5px 0 0 8px;">
+							{.goods_name}
+							<!--{?.option1}-->
+							<div class="goods_option">
+								<img src="/admin/skin/default/images/common/icon_option.gif" align="absmiddle" />
+								<!--{?.title1}-->{.title1}:<!--{ / }-->{.option1}
+								<!--{?.option2 }{?.title2}-->{.title2}:<!--{ / }-->{.option2}<!--{ / }-->
+								<!--{?.ption3 }{?.title3}-->{.title3}:<!--{ / }-->{.option3}<!--{ / }-->
+								<!--{?.option4 }{?.title4}-->{.title4}:<!--{ / }-->{.option4}<!--{ / }-->
+								<!--{?.option5 }{?.title5}-->{.title5}:<!--{ / }-->{.option5}<!--{ / }-->
+							</div>
+							<!--{ / }-->
+						</div>
+					</td>
+					{? .gift_seq != .after_gift_seq  }
+					<td {?.row_cnt > 1 }rowspan="{.row_cnt}"{/} style="border-left:1px solid #ddd;">
+						<div style="margin:5px 10px;line-height:16px;" >
+							<div class="bold" style="line-height:20px;">[{.gift_title}]</div>
+							{.gift_rule_text2}
+							{? .gift_goods }<div>-> {=implode("<br />-> ",.gift_goods)}</div> {/}
+						</div>
+					</td>
+					<td {?.row_cnt > 1 }rowspan="{.row_cnt}"{/} style="border-left:1px solid #ddd;">
+					<div style="padding:5px;">
+						{? .gift_rule == 'lot' }별도처리
+						{ : }
+						대상 상품의 반품으로 인해 사은품 지급 조건이 성립되지 않을 경우 해당 사은품 이벤트 정책이 회수되어야 한다면 <span class='red'>구매자에게 사은품도 함께 반품되도록 요청</span>하십시오.
+						{ / }
+					</div></td>
+					{ / }
+				</tr>
+			<!--{ / }-->
+			</tbody>
+		</table>
+	</div>
+</div>
+<!--{ / }-->
+
+<div class="contents_dvs v2">
+	<div class="item-title">배송지 정보</div>
+	<style>
+		.order_shipping_box {border:2px solid #547bb7;}
+		table.order_shipping_table {border-collapse:collapse;border:1px solid #a0def3;}
+		table.order_shipping_table th,
+		table.order_shipping_table td {padding:2px;}
+		table.order_shipping_table th {background-color:#f3fcff;  border:1px solid #a0def3;}
+		table.order_shipping_table td {}
+
+		table.order_shipping_item_table  {}
+		table.order_shipping_item_table  tr.ositHeader		th {height:28px; border-top:1px solid #a0def3; border-bottom:1px solid #a0def3; background-color:#f3fcff; font-weight:normal;}
+		table.order_shipping_item_table  tr.ositRecord		td {height:26px; padding:5px 0; border-top:1px dashed #ddd;}
+		table.order_shipping_item_table  tr.ositRecordFirst td {border-top:0px;}
+		table.order_shipping_item_table  tr.ositRecord		td.delivery {border-left:1px dashed #ddd}
+	</style>
+	<div class="order_shipping_box">
+		<form name="frm_shipping_region" method="post" action="../order_process/shipping?seq={orders.order_seq}&international={orders.international}" target="actionFrame">
+		<table width="100%" class="order_shipping_table table_row_basic tdl">
+			<col width="48%" />
+			<thead>
+			<tr>
+				<th height="25" colspan="2"  colspan="2">
+					<div class="left relative ml10">
+						{orders.recipient_user_name}님의
+						<!--{ ? orders.international == 'domestic' }-->
+						배송지정보(국내)
+						<!--{ : }-->
+						배송지정보(해외)
+						<!--{ / }-->
+						<!--{? !orders.linkage_id }-->
+						<div class="absolute" style="top:-4px; right:3px;"><span class="btn small cyanblue"><button type="submit" id="shipping_region" class="resp_btn active">변경</button></span></div>
+						<!--{/}-->
+					</div>
+				</th>
+			</tr>
+			</thead>
+			<tr>
+				<td colspan="2" class="pdt10 pdl10">
+					<input type="text" name="recipient_user_name" value="{orders.recipient_user_name}" class="line" /> /
+					<input type="text" name="recipient_phone[]" value="{orders.recipient_phone[0]}" size="5" maxlength="4" class="line" />
+					- <input type="text" name="recipient_phone[]" value="{orders.recipient_phone[1]}" size="5" maxlength="4" class="line" />
+					- <input type="text" name="recipient_phone[]" value="{orders.recipient_phone[2]}" size="5" maxlength="4" class="line" /> /
+
+
+					<input type="text" name="recipient_cellphone[]" value="{orders.recipient_cellphone[0]}" size="5" class="line" />
+					- <input type="text" name="recipient_cellphone[]" value="{orders.recipient_cellphone[1]}" size="5" class="line" />
+					- <input type="text" name="recipient_cellphone[]" value="{orders.recipient_cellphone[2]}" size="5" class="line" />
+					<span class="btn small cyanblue"><input type="button" value="보내기" class="send_recipient_sms resp_btn v2" /></span>
+					{ ? orders.recipient_email }
+					/ {orders.recipient_email}
+					<span class="btn small cyanblue"><input type="button" id="send_recipient_email"  class="resp_btn v2" value="보내기" email="{orders.recipient_email}" /></span>
+					{ / }
+				</td>
+			</tr>
+			{?goods_kind_arr['goods']}
+			<tr>
+				<td  class="pdl10">
+					<!--{ ? orders.international == 'international' }-->
+					<span style="display:inline-block; width:60px">지역</span>
+						<select name="region">
+						<!--{ @ shipping_policy.policy[1][0].region }-->
+						<!--{ ? .key_ == orders.region }-->
+						<option value="{.key_}">{.value_}</option>
+						<!--{ / }-->
+						<!--{ / }-->
+					</select><br />
+					<span style="display:inline-block; width:60px">주소</span> <input type="text" name="international_address"  value="{orders.international_address}" size="30" class="line" /><br />
+					<span style="display:inline-block; width:60px">시도</span> <input type="text" name="international_town_city"  value="{orders.international_town_city}" size="30" class="line" /><br />
+					<span style="display:inline-block; width:60px">주</span> <input type="text" name="international_county"  value="{orders.international_county}" size="30" class="line" /><br />
+					<span style="display:inline-block; width:60px">우편번호</span> <input type="text" name="international_postcode"  value="{orders.international_postcode}" size="30" class="line" /><br />
+					<span style="display:inline-block; width:60px">국가</span> <input type="text" name="international_country"  value="{orders.international_country}" size="30" class="line" /><br />
+				<!--{ : }-->
+					<table class="delivery_address">
+						<tr>
+							<td>
+								<input type="text" style="text-align:center;" name="recipient_zipcode" value="{orders.recipient_zipcode}" size="7" maxlength="7" class="line" />
+								<span class="btn small"><button type="button" id="recipient_zipcode_button" class="resp_btn">주소찾기</button></span>
+							</td>
+							<td>
+								<input type="hidden" name="recipient_address_type" value="{orders.recipient_address_type}">
+								<table cellpadding="0" cellspacing="0" border="0">
+									<tr>
+										<td><span {? orders.recipient_address_type == "street"}style="font-weight:bold;"{/}>(도로명)</span></td>
+										<td><input type="text" name="recipient_address_street" value="{orders.recipient_address_street}" style="width:366px;" class="line" /></td>
+									</tr>
+									<tr>
+										<td><span {? orders.recipient_address_type != "street"}style="font-weight:bold;"{/}>(지번)</span></td>
+										<td><input type="text" name="recipient_address"  value="{orders.recipient_address}" style="width:366px;" class="line" /></td>
+									</tr>
+									<tr>
+										<td>(공통상세)</td>
+										<td><input type="text" name="recipient_address_detail" value="{orders.recipient_address_detail}" style="width:366px;" class="line" /></td>
+									</tr>
+								</table>
+							</td>
+						</tr>
+					</table>
+				<!--{ / }-->
+
+				</td>
+				<td valign="top">					
+					<textarea class="line" style="width:98%; height:100px" name="memo" title="배송 메시지"><!--{ ? orders.each_msg_yn == 'Y' }--><!--{ @ orders.memo.ship_message }-->{.key_+1}. {orders.memo.goods_info[.index_]} : [{.value_}]<!--{ / }--><!--{ : }-->{orders.memo}<!--{ / }--></textarea>
+				</td>
+			</tr>
+			{/}
+		</table>
+		</form>
+	</div>
+</div>
+<div class="contents_dvs v2">
+	<div class="item-title">해외배송상품 구매에 따른 개인통관고유부호</div>
+	<form name="frm_change_unique_personal_code" method="post" action="../order_process/unique_personal_code?seq={orders.order_seq}" target="actionFrame" >
+		<table class="info-table-style table_basic" style="width: 100%;">
+		<colgroup>
+			<col width="150" />
+			<col />
+		</colgroup>
+
+		<tr>
+			<th class="its-th-align center">개인통관 고유부호</th>
+			<td class="its-td">
+				<table cellspacing="0" cellpadding="0" border="0">
+				<tr>
+					<td>
+						<input type="text" name="clearance_unique_personal_code" value="{orders.clearance_unique_personal_code}" { ? !orders.is_option_international_shipping}disabled="disabled"{/} />
+					</td>
+					<td class="pdl5">
+						<span class="btn small { ? !orders.is_option_international_shipping}gray{:}cyanblue{/}"><button type="submit" { ? !orders.is_option_international_shipping}disabled="disabled"{/} class="resp_btn active">변경</button></span>
+					</td>
+					<td class="pdl5">
+						<span class="desc">
+							관세청 통관을 위해 수집된 구매고객의 개인통관 고유부호입니다.<br/>
+							본 주문에서 해외배송상품을 판매하는 모든 판매자에게 개인통관고유부호를 제공합니다.<br/>
+							불가피하게 변경해야 하는 경우에만 변경하십시오. (예 : 구매자가 잘못 기재한 경우)
+						</span>
+					</td>
+
+				</tr>
+				</table>
+			</td>
+		</tr>
+		</table>
+	</form>
+</div>
+
+<!-- 주문자 정보 테이블 : 시작 -->
+<div class="contents_dvs v2">
+<table class="order-detail-table table_row_basic tdl">
+	<colgroup>
+		<col width="33%" />
+		<col width="33%" />
+		<col width="33%" />
+	</colgroup>
+	<thead class="odt-head">
+		<tr>
+			<th>주문자정보</th>
+			<th>결제정보</th>
+			<th>처리 내역 (처리일시/행위자/처리내용)</th>
+		</tr>
+	</thead>
+	<tbody class="odt-body">
+		<tr>
+			<td class="odt-body-cell" valign="top">
+				<table class="odt-info-table">
+				<col width="80" />
+				<tr>
+					<th>주문자</th>
+					<td class="hand" onclick="open_crm_summary(this,'{members.member_seq}','{orders.order_seq}','right');">
+					<!--{ ? members.member_seq }-->
+					<div>
+						{?members.type=='개인'}<img src="../images/common/icon/icon_personal.gif" />
+						{:members.type=='기업'}<img src="../images/common/icon/icon_besiness.gif" />{/}
+						{orders.order_user_name}
+						{? orders.sns_rute }
+							(<img src="../images/sns/sns_{=substr(orders.sns_rute,0,1)}0.gif" align="absmiddle" snscd="{=orders.sns_rute}" class="btnsnsdetail hand" no=2>/<span class="blue">{members.group_name}</span>)
+							<div id="snsdetailPopup2" class="absolute hide"></div>
+						{ : }
+						<!--{ ? members.rute == 'facebook' //facebook 회원인경우 }-->
+							(<span style="color:#d13b00;"><img src="../images/board/icon/sns_f0.gif" align="absmiddle">{members.email}</span>/<span class="blue">{members.group_name}</span>)
+						<!--{ : }-->
+							(<span style="color:#d13b00;">{members.userid}</span>/<span class="blue">{members.group_name}</span>)
+						<!--{ / }-->
+						{ / }
+					</div>
+					<!--{ : }-->
+					<img src="../images/common/icon/icon_personal.gif" /> {orders.order_user_name}(<span class="desc">비회원</span>)
+					<!--{ / }-->
+					</td>
+				</tr>
+				<!--{ ? members.type=='기업' }-->
+				<tr>
+					<th>사업자번호</th>
+					<td>{members.bno}</td>
+				</tr>
+				<tr>
+					<th>업체명</th>
+					<td>{members.bname}</td>
+				</tr>
+				<tr>
+					<th>대표자</th>
+					<td>{members.bceo}</td>
+				</tr>
+				<!--{ / }-->
+				<tr>
+					<th>전화</th>
+					<td>{orders.order_phone}</td>
+				</tr>
+				<tr>
+					<th>휴대폰</th>
+					<td>
+						{orders.order_cellphone}
+						{ ? orders.order_cellphone}<span class="btn small cyanblue"><input type="button" value="보내기" id="send_sms" class="resp_btn v2" cellphone="{=str_replace('-','',orders.order_cellphone)}" /></span>{ / }
+					</td>
+				</tr>
+				<tr>
+					<th>이메일</th>
+					<td>
+						{orders.order_email}
+						{ ? orders.order_email}<span class="btn small cyanblue"><input type="button" id="send_email" class="resp_btn v2" value="보내기" email="{orders.order_email}" /></span>{ / }
+					</td>
+				</tr>
+				</table>
+
+
+				<div class="pdt20 center">
+					<span class="btn medium gray"><a href='../member/email_history?order_seq={orders.order_seq}' class="resp_btn" target='_blank'>메일발송내역</a></span>
+					<span class="btn medium gray"><a href='../member/sms_history?order_seq={orders.order_seq}' class="resp_btn" target='_blank'>SMS발송내역</a></span>
+					<!--{ ? members.userid }-->
+					<span class="btn medium gray"><a href='../board/board?id=mbqna&search_text={members.userid}'class="resp_btn" target='_blank'>1:1문의</a></span>
+					<!--{ / }-->
+				</div>
+
+			</td>
+			<td class="odt-body-cell" valign="top" style="padding-bottom:35px;">
+				<!--{? orders.payment == 'bank' || (is_partner_order) }-->
+				<form name="frm_change_bank" method="post" action="../order_process/bank?seq={orders.order_seq}" target="actionFrame">
+				<div style="position:relative;">
+				<div style="position:absolute;top:-40px; right:0px;">
+				<span class="btn small cyanblue"><button type="submit" id="change_bank" class="resp_btn active">변경</button></span>
+				</div>
+				<!--{ / }-->
+				</div>
+
+
+				<table class="odt-info-table">
+				<col width="80" />
+				<tr>
+					<th>결제수단</th>
+					<td>
+					<!--{? orders.npay_order_id }-->
+						<span class="icon-pay-npay"></span>
+					<!--{ / }-->
+					<!--{? orders.talkbuy_order_id }-->
+						<span class="icon-pay-talkbuy-simple"></span>
+					<!--{ / }-->					
+					<!--{ ? orders.pg == 'kakaopay' }-->
+						<span class="icon-pay-{orders.pg}"></span>
+					<!--{ : orders.pg == 'naverpayment' }-->
+						<span class="icon-pay-{orders.pg}-simple"></span>
+						<span class="icon-pay-{orders.payment}"></span>
+					<!--{ : }-->
+						{orders.mpayment}
+						<!--{ ? orders.payment == 'escrow_account' }-->
+						<span class="icon-pay-escrow"></span>
+						<span class="icon-pay-account"></span>
+						<!--{ : orders.payment == 'escrow_virtual' }-->
+						<span class="icon-pay-escrow"></span>
+						<span class="icon-pay-virtual"></span>
+						<!--{ : orders.payment == 'point' }-->
+						<span class="icon-pay-kakaomoney"></span>
+						<!--{ : }-->
+						<span class="icon-pay-{orders.payment}"></span>
+						<!--{ / }-->
+					<!--{ / }-->
+					</td>
+				</tr>
+				<!--{ ? orders.payment == 'bank' }-->
+				<tr>
+					<th>입금계좌</th>
+					<td>{orders.bank_account}
+						<select name="bank_account" class="line" style="width:150px;">
+							<!--{ @ bank }-->
+							<!--{ ? .accountUse == 'y' }-->
+							<option value="{.bank} {.account} 예금주:{.bankUser}">{.bank} {.account} 예금주:{.bankUser}</option>
+							<!--{ / }-->
+							<!--{ / }-->
+						</select>
+						<script type="text/javascript">
+						$("select[name='bank_account']").val('{orders.bank_account}');
+						</script>
+					</td>
+				</tr>
+				<tr>
+					<th>입금자명</th>
+					<!--{ ? orders.step == 15 }-->
+					<td><input type="text" name="depositor" value="{orders.depositor}" size="40" class="line" /></td>
+					<!--{ : }-->
+					<td>{orders.depositor}</td>
+					<!--{ / }-->
+				</tr>
+				<!--{ / }-->
+
+				<!--{ @ orders.pg_log }-->
+				<!--{ ? .pg }-->
+				<tr>
+					<th>pg사</th>
+					<td>{.pg} ({.regist_date})</td>
+				</tr>
+				<!--{ / }-->
+				<!--{ ? .tno }-->
+				<tr>
+					<th>거래번호</th>
+					<td>{.tno}</td>
+				</tr>
+				<!--{ / }-->
+				<!--{ ? .amount }-->
+				<tr>
+					<th>거래금액</th>
+					<td>{=get_currency_price(.amount,3,orders.pg_currency)}</td>
+				</tr>
+				<!--{ / }-->
+				<!--{ ? .app_time }-->
+				<tr>
+					<th>승인시간</th>
+					<td>{.app_time }</td>
+				</tr>
+				<!--{ / }-->
+				<!--{ ? .app_no }-->
+				<tr>
+					<th>승인번호</th>
+					<td>{.app_no}</td>
+				</tr>
+				<!--{ / }-->
+				<!--{ ? .card_name }-->
+				<tr>
+					<th>카드사</th>
+					<td>{.card_name} {.card_cd}</td>
+				</tr>
+				<!--{ / }-->
+				<!--{ ? .noinf }-->
+				<tr>
+					<th>무이자</th>
+					<td>{.noinf}</td>
+				</tr>
+				<!--{ / }-->
+				<!--{ ? .quota }-->
+				<tr>
+					<th>할부</th>
+					<td>{.quota}</td>
+				</tr>
+				<!--{ / }-->
+				<!--{ ? .bank_name }-->
+				<tr>
+					<th>은행</th>
+					<td>{.bank_name } {.bank_code }</td>
+				</tr>
+				<!--{ / }-->
+				<!--{ ? .depositor }-->
+				<tr>
+					<th>예금주</th>
+					<td>{.depositor }</td>
+				</tr>
+				<!--{ / }-->
+				<!--{ ? .account }-->
+				<tr>
+					<th>계좌</th>
+					<td>{.account }</td>
+				</tr>
+				<!--{ / }-->
+				<!--{ ? .va_date }-->
+				<tr>
+					<th>예정일</th>
+					<td>{.va_date}</td>
+				</tr>
+				<!--{ / }-->
+				<!--{ ? .commid }-->
+				<tr>
+					<th>이통사코드</th>
+					<td>{.commid}</td>
+				</tr>
+				<!--{ / }-->
+				<!--{ ? .mobile_no }-->
+				<tr>
+					<th>휴대폰번호</th>
+					<td>{.mobile_no}</td>
+				</tr>
+				<!--{ / }-->
+				<!--{ ? .escw_yn }-->
+				<tr>
+					<th>에스크로</th>
+					<td>{.escw_yn}</td>
+				</tr>
+				<!--{ / }-->
+				<!--{ ? .res_msg  }-->
+				<tr>
+					<th>결과메시지</th>
+					<td>[{.res_cd}] {.res_msg }</td>
+				</tr>
+				<!--{ / }-->
+				<!--{ / }-->
+
+				<!--{? orders.typereceipt == 1 }-->
+				<tr>
+					<th>세금계산서</th>
+					<td><!--{sales_cash_msg}--></td>
+				</tr>
+				<!--{ / }-->
+
+				<!--{? orders.typereceipt == 2 }-->
+				<tr>
+					<th>현금영수증</th>
+					<td><!--{sales_cash_msg}--></td>
+				</tr>
+				<!--{ / }-->
+				</table>
+
+				</form>
+
+				<div align="center" class="pdt10 {? orders.pg == 'paypal' || is_partner_order || (orders.linkage_id == 'pos')}hide{/}">
+				<span class="btn medium gray"><button type="button" id="card_slips" onclick="receiptView('{orders.order_seq}','{orders.pg}');" class="resp_btn">{?orders.payment=='card'}신용카드 전표{:}매출증빙{/}<span class="arrowright"></span></button></span>
+				<!--{? orders.typereceipt == 1 }-->
+				<span class="btn medium gray "><button type="button" id="tax_bill"  onclick="location.href='./sales?keyword={orders.order_seq}'" class="resp_btn">세금계산서<span class="arrowright"></span></button></span><!--{ / }-->
+				<!--{? orders.typereceipt == 2 }-->
+				<span class="btn medium gray"><button type="button" id="cash_receipts"  onclick="location.href='./sales?keyword={orders.order_seq}'" class="resp_btn">현금영수증<span class="arrowright"></span></button></span><!--{ / }-->
+				<span class="btn medium gray"><button type="button" id="cash_receipts"  onclick="window.open('/prints/form_print_trade?no={orders.order_seq}')" class="resp_btn">거래명세서<span class="arrowright"></span></button></span>
+				</div>
+			</td>
+			<td class="odt-body-cell" valign="top">
+				<div style="position:relative;width:100%">
+				<div style="position:absolute;top:-39px;left:83%;">
+				<span class="btn small orange"><button type="button" onclick="viewLogManual('proc');" class="resp_btn active3" id="viewLogManualBtn">안내) 처리내역</button></span>
+				</div>
+				</div>
+				<div class="pdb5 resp_radio">
+				<label><input type="radio" name="view_log" onclick="view_log('order_log');" checked="checked" /> 주문처리</label>
+				<label><input type="radio" name="view_log" onclick="view_log('export_log');" /> 출고실패</label>
+				{? npay_use || talkbuy_use }
+				<label><input type="radio" name="view_log" onclick="view_log('partner_log');" /> 간편결제 API 통신내역</label>
+				{ / }
+				</div>
+				<div id="order_log">
+					<textarea style="background-color:#f9f9f9;width:100%;" rows="10" readOnly="readOnly">{ @process_log }[{.regist_date}] [{.actor}] {.add_info} {.title}{=chr(10)}{ / }</textarea>
+				</div>
+				<div id="export_log"  class="hide">
+					<textarea style="background-color:#f9f9f9;width:100%;"  rows="10" readOnly="readOnly">
+					{ @ error_export_log }[{.regist_date}]{?.manager_seq}[{.manager_id}({.manager_name})]{:.provider_seq}[{.provider_id}({.provider_name})]{:}시스템{/}{.add_info}{.process_title}({.export_type_title}){=chr(10)}오류 : {.msg}{=chr(10)}{ / }
+					</textarea>
+				</div>
+				<div id="partner_log" class="hide">
+					<textarea style="background-color:#f9f9f9;width:100%;" rows="10" readOnly="readOnly">{ @partner_log }[{.regist_date}][{.actor}] {.add_info}{.title}{=chr(10)}{? .detail }└ {=.detail}{/}{/}</textarea>
+				</div>
+
+			</td>
+		</tr>
+	</tbody>
+	</table>
+	<table class="table_row_basic tdl mt10" width="100%">
+	<thead class="odt-head">
+		<tr>
+			<th colspan="3">관리메모</th>
+		</tr>
+	</thead>
+	<!-- #16651 2018-07-10 ycg 관리자 메모 기능 개선 -->
+	<tbody class="odt-body">
+		<tr>
+			<td class="odt-body-cell" valign="top" colspan="3">
+				<!-- <form name="frm_admin_memo" method="post" action="../order_process/admin_memo?seq={orders.order_seq}" target="actionFrame">-->
+				<table class="simpledata-table-style table_row_basic v4" style="width:100%;margin-bottom:20px !important;" id="memo_list">
+				<colgroup>
+					<col width="55" />
+					<col width="100" />
+					{? serviceLimit('H_AD')}
+					<col width="100" />
+					{/}
+					<col width="150" />
+					<col width="*"  />
+					<col width="150" />
+					<col width="150" />
+				</colgroup>
+				<thead>
+					<tr>
+						<th>번호</th>
+						<th>작성일자</th>
+						{? serviceLimit('H_AD')}
+						<th>구분</th>
+						{/}
+						<th>작성자</th>
+						<th>내용</th>
+						<th>IP</th>
+						<th>관리</th>
+					</tr>
+				</thead>
+					<!-- {? order_memo != false } -->
+						<!-- {@ order_memo} -->
+						<tr class="center">
+							<td>{.size_-.index_} <input type="hidden" value="{order_memo.memo_idx}" name="order_memo"></td>
+							<td>{=substr(order_memo.regist_date,0,16)}</td>
+							{? serviceLimit('H_AD')}
+							<td>{order_memo.provider_name}</td>
+							{/}
+							<td>{order_memo.mname}<!-- {? order_memo.manager_id } -->({order_memo.manager_id})<!-- {/} --></td>
+							<td class="left" style="word-break:break-all;">{order_memo.admin_memo}</td>
+							<td>{order_memo.ip}</td>
+							<td>
+								<div style="position:relative;width:100%">
+									<span class="btn small cyanblue"><button type="button" id="admin_order_memo" onclick="modify_order_memo({order_memo.memo_idx})" class="resp_btn">수정</button></span>
+									<span class="btn small red"><button type="button" onclick="delete_order_memo({order_memo.memo_idx})" class="resp_btn v2">삭제</button></span>
+								</div>
+							</td>
+						</tr>
+						<!-- {/} -->
+					<!-- {:} -->
+					<tr>
+						<td colspan="7" class="center"> 등록된 메모가 없습니다. </td>
+					</tr>
+					<!-- {/} -->
+				</table>
+
+				<table class="info-table-style table_basic" style="width: 100%;">
+				<colgroup>
+					<col width="150" />
+					<col />
+				</colgroup>
+				<tr>
+					<th class="its-th-align center">메모</th>
+					<td class="its-td">
+						<textarea class="odt-memo-textarea line" name="admin_memo" style="background:#f9f9f9;width:95% ;margin-left:4px;"></textarea>
+						<div style="position:relative;width:100%">
+							<div style="margin:5px;">
+								<span class="btn small cyanblue"><button id="memo_reg" class="resp_btn active">등록</button></span>
+							</div>
+						</div>
+					</td>
+				</tr>
+				</table>
+				<!-- </form> -->
+			</td>
+		</tr>
+	</tbody>
+</table>
+<!-- #16651 2018-07-10 ycg 관리자 메모 기능 개선 -->
+</div>
+<!-- 주문자 정보 테이블 : 끝 -->
+
+<div id="goods_ready_dialog"></div>
+<div id="goods_export_dialog"></div>
+
+<!-- 출고용 폼 시작-->
+<div class="hide">
+	<form name="goods_export_frm" id="goods_export_frm" method="get" action="../order/order_export_popup" target="export_popup">
+	</form>
+</div>
+<!-- 출고용 폼 끝-->
+<div id="goods_matching_dialog"></div>
+<div id="sendPopup"><div id="sms_form"></div></div>
+<div id="choice_goods_selected_"></div>
+<!-- 상품처리 레이어 -->
+<div id="order_refund_layer" class="hide"></div>
+<div id="sendPopup2" class="hide"></div>
+<div id="logManual" class="hide"></div>
+{ #layout_footer }

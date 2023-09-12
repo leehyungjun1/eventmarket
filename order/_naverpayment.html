@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>네이버페이 결제 페이지</title>
+	<meta http-equiv="cache-control" content="no-cache"/>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+	<script src="/app/javascript/jquery/jquery.min.js"></script>
+	<script src="https://nsp.pay.naver.com/sdk/js/naverpay.min.js"></script>
+	<script>
+	var oPay = Naver.Pay.create({
+		"mode" : "{params.mode}", // development or production
+		"payType" : "normal", // normal or recurrent
+		"clientId": "{params.clientId}", // clientId
+		"openType": "{openType}",
+		"onAuthorize" : function(oData) {
+			if(oData.resultCode === "Success") {
+				$.ajax({
+					type	: "GET",
+					url		: "/naverpayment/auth",
+					data	: oData,
+					success	: function(result){
+						if(typeof result != "undefined" && result.result != "success") {
+							$("body").html(result);
+						}
+					}
+				});
+			} else {
+				if(oData.resultMessage) {
+					var queryStr = new URLSearchParams(oData).toString();
+					document.location.href="/naverpayment/payfail?"+queryStr;
+				}
+			}
+		},
+		"payload": {
+			"merchantPayKey": "{params.merchantPayKey}",
+			"productName": "{params.productName}",
+			"totalPayAmount": {params.totalPayAmount},
+			"taxScopeAmount": {params.taxScopeAmount},
+			"taxExScopeAmount": {params.taxExScopeAmount},
+			"productCount": {params.productCount},
+			"returnUrl": "{params.returnUrl}",
+			"productItems": [
+				{ @ options }
+				{
+					"categoryType": "PRODUCT",
+					"categoryId" : "GENERAL",
+					"uid" : "{.goods_seq}",
+					"name" : "{.goods_name}",
+					"count" : {.ea}
+				},
+				{ / }
+				{ @ suboptions }
+				{
+					"categoryType": "PRODUCT",
+					"categoryId" : "GENERAL",
+					"uid" : "{.goods_seq}",
+					"name" : "{.goods_name}",
+					"count" : {.ea}
+				},
+				{ / }
+			]
+		}
+	});
+	</script>
+</head>
+<body>
+</body>
+<script>oPay.open();</script>
+</html>

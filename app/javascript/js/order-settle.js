@@ -200,7 +200,7 @@ function typereceipt_layout_toggle(payment) {
 		$("#typereceiptcardlay").hide();
 		$("#typereceipttablelay").show();
 
-		if( payment == "card" ||  payment == "cellphone" || payment == "kakaopay" || payment == "payco" ){
+		if( jQuery.inArray(payment, ['card', 'cellphone', 'kakaopay', 'payco', 'naverpayment']) !== -1 ){
 			$("#typereceiptcardlay").show();
 			$("#typereceipttablelay").hide();
 			$(".typereceiptlay").hide();

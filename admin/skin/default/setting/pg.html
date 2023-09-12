@@ -1,0 +1,750 @@
+{ #layout_header }
+
+<script type="text/javascript" src="/app/javascript/jquery/jquery.ajax.form.js"></script>
+<script type="text/javascript" src="/app/javascript/js/ajaxFileUpload.js"></script>
+<script type="text/javascript">
+	function set_pg_popup(){
+		$("input[name='nonInterestTerms[]']:checked").each(function(){
+			$(this).attr('checked',false);
+		});
+	}
+
+	function view_virtual_info(){
+		var sel = $("input[name='virtual_info']:checked").val();
+		$(".virtual_info").addClass("hide");
+		$("#virtual_info_"+sel).removeClass("hide");
+	}
+
+	//PG사 설정 저장
+	function setPaymentSeeting(){
+		if($('input[name=settingArgee]').attr('type') == 'checkbox'){
+			if(!$('input[name=settingArgee]').attr('checked')){
+				alert('동의 내용에 동의해 주세요.');
+				return false;
+			}
+		}
+
+		var form = document.pgSettingForm;
+
+		form.submit();
+	}
+
+	//카카오 페이, 페이팔, 엑심베이, 네이버페이 설정 적용
+	function setOtherPay(payment){
+		$('input[name=otherPay]').val(payment);
+		setPaySetting();
+	}
+
+	function setNotUsePg(){
+		var form = document.notUsePgForm
+		form.submit();
+	}
+
+	function setPGCompany(){
+		$('input[name=otherPay]').val('');
+		setPaySetting();
+	}
+
+	//PG별 설정창 레이어 창으로 호출
+	function setPaySetting(){
+		var otherpgCompany = $('input[name=otherPay]').val();
+		var pgCompany =  '';
+
+		if(otherpgCompany != ''){
+			pgCompany = otherpgCompany;
+			var preHtml = '<div class="content"><form name="pgSettingForm" method="post" enctype="multipart/form-data" action="../pg_process/' + pgCompany + '" target="actionFrame"><input type="hidden" name="pgCompany" value="' + pgCompany + '" />';
+
+		}else{
+			pgCompany =  $('input[name=pay]').val();
+			var preHtml = '<div style="width:100%;text-align:center;margin-bottom:10px;"><span class="btn large" style="margin-right:10px;"><button type="button" class="board_emoneyt_btn" id="pgSetByn" rel="not">사용 안함</button></span><span class="btn large" style="margin-right:10px;"><button type="button" class="board_emoneyt_btn" id="pgSetByn" rel="kicc">이지페이</button></span><span class="btn large" style="margin-right:10px;"><button type="button" class="board_emoneyt_btn" id="pgSetByn" rel="inicis">이니시스</button></span><span class="btn large" style="margin-right:10px;"><button type="button" class="board_emoneyt_btn" id="pgSetByn" rel="lg">토스페이먼츠</button></span><span class="btn large" style="margin-right:10px;"><button type="button" class="board_emoneyt_btn" id="pgSetByn" rel="allat">모빌리언스</button></span><span class="btn large" style="margin-right:10px;"><button type="button" class="board_emoneyt_btn" id="pgSetByn" rel="kcp">KCP</button></span><span class="btn large" style="margin-right:10px;"><button type="button" class="board_emoneyt_btn" id="pgSetByn" rel="kspay">KSNET</button></span></div><div class="content"><form name="pgSettingForm" method="post" enctype="multipart/form-data" action="../pg_process/' + pgCompany + '" target="actionFrame"><input type="hidden" name="pgCompany" value="' + pgCompany + '" /><input type="hidden" name="not_use_pg" value="n" />';
+		}
+
+		var htmlTitle = '';
+		var addHtml = '<div id="settingArgeeDiv" style="padding-top:20px;text-align:center; line-height:1.7;">설정 저장 후 반드시 결제 테스트를 진행하여 결제 이상유무를 확인하시기 바랍니다.<br/><label class="resp_checkbox"><input type="checkbox" value="Y" name="settingArgee" id="settingArgee" /> 상기 내용에 동의 합니다.</label></div></div><div id="saveBtn" class="footer"><button type="button" id="btnPaySetting" onclick="setPaymentSeeting();" class="resp_btn active size_XL" >저장</button> <button type="button" onclick="closeDialogEvent(this);" class="resp_btn v3 size_XL" >취소</button></div>';
+		var htmlUrl = '/admin/setting/' + pgCompany;
+
+		switch (pgCompany) {
+		case 'allat':
+			htmlTitle = '모빌리언스';
+			popupHeight = '700';
+			break;
+		case 'inicis':
+			htmlTitle = '이니시스';
+			popupHeight = '700';
+			break;
+		case 'kcp':
+			htmlTitle = 'KCP';
+			popupHeight = '700';
+			break;
+		case 'kspay':
+			htmlTitle = 'KSNET';
+			popupHeight = '700';
+			break;
+		case 'lg':
+			htmlTitle = '토스페이먼츠';
+			popupHeight = '700';
+			break;
+		case 'naverpay':
+			var useYn =$('input[name=navercheckout_use]').val();
+			htmlTitle = '네이버페이 주문형';
+			if(useYn == 'y' || useYn == 'test'){
+				popupHeight = '900';
+			}else{
+				popupHeight = '780';
+			}
+
+			break;
+		case 'naverpayment':
+			htmlTitle = '네이버페이 결제형';
+			popupHeight = '720';
+			break;
+		case 'kakaopay':
+			htmlTitle = '카카오페이';
+			popupHeight = '540';
+			break;
+		case 'daumkakaopay':
+			htmlTitle = '카카오페이';
+			popupHeight = '520';
+			break;
+		case 'paypal':
+			htmlTitle = '페이팔';		
+			popupHeight = '620';
+			break;
+		case 'eximbay':
+			htmlTitle = '엑심베이';
+			popupHeight = '700';
+			break;
+		case 'kicc':
+			htmlTitle = '이지페이';
+			popupHeight = '700';
+			break;
+		case 'payco':
+			htmlTitle = '페이코';
+			popupHeight = '520';
+			break;
+		case 'talkbuy':
+			var useYn =$('input[name=talkbuy_use]').val();
+			htmlTitle = '카카오페이 구매';
+			if(useYn == 'y'){
+				popupHeight = '900';
+			}else{
+				popupHeight = '780';
+			}
+			break;			
+		default : 
+			popupHeight = '800';
+		
+		break;
+		}		
+		
+		if (jQuery.inArray(pgCompany, ['payco', 'kakaopay', 'daumkakaopay', 'paypal', 'eximbay', 'naverpayment']) !== -1) {
+
+			$.get(htmlUrl, function(data) {
+				data = preHtml + data + addHtml + '</form>';
+				$('#pg_setting_div').html(data);
+			});
+
+			if(pgCompany == 'paypal' || pgCompany == 'eximbay')
+			{
+				htmlTitle = "해외결제 설정 - " + htmlTitle;
+			}else{
+				htmlTitle = "간편결제 설정 - " + htmlTitle;
+			}
+
+			openDialog(htmlTitle, "pg_setting_div", {"width":"850","height":popupHeight,"show" : "fade","hide" : "fade"});
+		}
+		
+		else if(jQuery.inArray(pgCompany, ['naverpay', 'talkbuy']) !== -1){
+
+			$.get(htmlUrl, function(data) {
+				data = preHtml + data + addHtml + '</form>';		
+				$('#pg_setting_div').html(data);
+			});
+
+			openDialog("간편결제 설정 - " + htmlTitle, "pg_setting_div", {"width":"1200","height":popupHeight,"show" : "fade","hide" : "fade"});
+		}else{
+			$('#pg_setting_div').html(preHtml + '<div id="pgSetting"></div>' + addHtml + '</form>');
+			openDialog("전자결제 설정", "pg_setting_div", {"width":"1200","height":popupHeight,"show" : "fade","hide" : "fade"});
+			setPgBtnColor();
+			var pgVal = $('input[name=pay]').val();
+			if(pgVal != 'not'){
+				var htmlUrl = '/admin/setting/' + pgVal;
+
+				$.get(htmlUrl, function(data) {
+					$('#pgSetting').empty();
+					$('#pgSetting').html(data);
+					$('#settingArgeeDiv').empty();										
+					$('#settingArgeeDiv').html('설정 저장 후 반드시 결제 테스트를 진행하여 결제 이상유무를 확인하시기 바랍니다.<br/><label class="resp_checkbox"><input type="checkbox" value="Y" name="settingArgee" id="settingArgee" /> 상기 내용에 동의 합니다.</label><br/><br/><br/>');
+					$('#saveBtn').empty();
+					$('#saveBtn').html('<button type="button" class="resp_btn active size_XL"id="btnPaySetting" onclick="setPaymentSeeting();" >저장</button> <button type="button" onclick="closeDialogEvent(this);" class="resp_btn v3 size_XL" >취소</button></div>');
+				});
+			}else{
+				$('form[name=pgSettingForm]').attr('action','../pg_process/notPg');
+				var notHtml = '<div class="not_wrap">구매자의 70%는 신용카드로 결제하고 있습니다.<br />신용카드, 계좌이체, 가상계좌, 에스크로, 휴대폰의 결제방법을<br />구매자에게 제공하는 ‘전자결제 서비스’는 쇼핑몰 운영의 필수입니다.<br /><br /><ul class="clearbox"><li><span>설치 없는<br /><strong>표준결제</strong></span></li><li><span>다양한<br /><strong>결제수단</strong></span></li><li><span>최적화<br /><strong>모바일 결제</strong></span></li><li><span>구매안전<br /><strong>에스크로</strong></span></li><li><span>업계 최저<br /><strong>카드수수료</strong></span></li><li><span>무료 발급<br /><strong>현금영수증</strong></span></li><li><span>신용카드<br /><strong>무이자행사</strong></span></li></ul></div>';
+				$('#pgSetting').empty();
+				$('#pgSetting').html(notHtml);
+				$('#settingArgeeDiv').empty();
+				$('#saveBtn').empty();
+				$('#saveBtn').html('<input type="hidden" name="settingArgee" value="Y"/><button type="button" id="btnPaySetting" class="resp_btn active size_XL" onclick="setPaymentSeeting();" >저장</button> <button type="button" onclick="closeDialogEvent(this);" class="resp_btn v3 size_XL" >취소</button> </div>');
+			}
+		}
+	}
+
+	function setPgBtnColor(){
+		var pgCompany = $('input[name=pay]').val();
+		$('button[id *= pgSetByn]').each(function(){
+			var thisPgCom = $(this).attr('rel');
+			if(pgCompany == thisPgCom){
+				$(this).parent().addClass('orange');
+			}else{
+				$(this).parent().removeClass('orange');
+			}			
+		});
+	}
+
+	function setVirtualinfo(){
+		var selectVirtual = '{ config_system.pgCompany }';
+		var overwrite_selectVirtual = $('input[name=pay]').val();
+		if(typeof(overwrite_selectVirtual) !== "undefined" && selectVirtual != overwrite_selectVirtual){
+			selectVirtual = overwrite_selectVirtual;
+		}
+		$('input[name=virtual_info]').each(function(){
+			$virtualVal = $(this).val();
+
+			if($virtualVal == selectVirtual){
+				$(this).attr('checked',true);
+			}else{
+				$(this).attr('checked',false);
+			}
+		});
+	}
+
+	$(document).ready(function() {
+
+		/* 설정하기 */
+		$("button[name='pgSetting']").live("click",function(){
+			set_pg_popup();
+			openDialog("통합 전자결제 설정 <span class='desc'>전자결제 정보를 설정합니다.</span>", "pgSettingContents", {"width":"95%","height":800});
+			event.preventDefault();
+			return false;
+		});
+
+		<!--{? config_system.not_use_payco == 'y' || config_system.not_use_payco == '' }-->
+		//	$("input[name='not_use_payco']").attr("checked",true);
+		<!--{ / }-->
+
+		$("button.button_virtual_info").live("click",function(){
+			setVirtualinfo();
+			view_virtual_info();
+			openDialog("입금확인 URL 세팅 방법", "virtual_info", {"width":"900", "height":"700", "show" : "fade","hide" : "fade"});
+		});
+		$("input[name='virtual_info']").live("click",function(){
+			view_virtual_info();
+		});
+
+		$("#pgSetByn").live("click",function(){
+			var pgVal = $(this).attr('rel');
+			var htmlUrl = '/admin/setting/' + pgVal;			
+			var formUrl = '../pg_process/' + pgVal;
+			var notHtml = '<div class="not_wrap">구매자의 70%는 신용카드로 결제하고 있습니다.<br />신용카드, 계좌이체, 가상계좌, 에스크로, 휴대폰의 결제방법을<br />구매자에게 제공하는 ‘전자결제 서비스’는 쇼핑몰 운영의 필수입니다.<br /><br /><ul class="clearbox"><li><span>설치 없는<br /><strong>표준결제</strong></span></li><li><span>다양한<br /><strong>결제수단</strong></span></li><li><span>최적화<br /><strong>모바일 결제</strong></span></li><li><span>구매안전<br /><strong>에스크로</strong></span></li><li><span>업계 최저<br /><strong>카드수수료</strong></span></li><li><span>무료 발급<br /><strong>현금영수증</strong></span></li><li><span>신용카드<br /><strong>무이자행사</strong></span></li></ul></div>';
+			$('input[name=pay]').val(pgVal);
+			setPgBtnColor();
+
+			if(pgVal != 'not'){
+				$.get(htmlUrl, function(data) {
+					$('#pgSetting').empty();
+					$('#pgSetting').html(data);
+					$('#settingArgeeDiv').empty();
+					$('#settingArgeeDiv').html('설정 저장 후 반드시 결제 테스트를 진행하여 결제 이상유무를 확인하시기 바랍니다.<br/><label class="resp_checkbox"><input type="checkbox" value="Y" name="settingArgee" id="settingArgee" /> 상기 내용에 동의 합니다.</label><br/><br/><br/>');
+					$('#saveBtn').empty();
+					$('#saveBtn').html('<button type="button" class="resp_btn active size_XL"id="btnPaySetting" onclick="setPaymentSeeting();" >저장</button> <button type="button" onclick="closeDialogEvent(this);" class="resp_btn v3 size_XL" >취소</button></div>');
+				});
+
+				$('form[name=pgSettingForm]').attr('action',formUrl);
+				$('input[name=pgCompany]').val(pgVal);
+			}else{
+				$('form[name=pgSettingForm]').attr('action','../pg_process/notPg');
+				$('#pgSetting').empty();
+				$('#pgSetting').html(notHtml);
+				$('#settingArgeeDiv').empty();
+				$('#saveBtn').empty();
+				$('#saveBtn').html('<input type="hidden" name="settingArgee" value="Y"/><button type="button" id="btnPaySetting" class="resp_btn active size_XL" onclick="setPaymentSeeting();" >저장</button> <button type="button" onclick="closeDialogEvent(this);" class="resp_btn v3 size_XL" >취소</button></div>');
+			}
+		})
+
+		// 카카오페이 상태 값 설명
+		$(".detailDescriptionLayerBtn").click(function(){
+			$('div.detailDescriptionLayer').not($(this).next('div.detailDescriptionLayer')).hide();
+			$(this).next('div.detailDescriptionLayer').show();
+		});
+		$(".detailDescriptionLayerCloseBtn").click(function(){
+			$(this).closest('div.detailDescriptionLayer').hide();
+		});
+		daumkakaopayGetCorporation('');
+		paycoGetCorporation('');
+
+	});
+	function daumkakaopayGetCorporation(mode){
+		if($("#daumkakaopay_status").length){
+			var kakaopay_status_name = {
+				'NOTYET' : '신청전',			
+				'WAITING' : '심사대기',			
+				'ON_REVIEW' : '심사중',			
+				'REVIEWED' : '심사완료',		
+				'REJECTED' : '심사반려',		
+				'REVIEW_COMPLETE' : '준비완료',	
+				'LINK_COMPLETE' : '연동완료',	
+				'NOT_EXIST_ERROR' : '조회결과없음'
+			};
+			$.ajax({
+				type: 'GET',
+				url : "./daumkakaopayGetCorporation",
+				error: function (XMLHttpRequest, textStatus, errorThrown) {
+					//alert ("통신 중 에러가 발생했습니다.");
+					$("#daumkakaopay_status").html("[조회전]");
+				},
+				success: function(res){
+					var json = $.parseJSON(res);
+					$("#daumkakaopay_status").html("["+kakaopay_status_name[json.kakaopay_status]+"]");
+					if(mode!=''){
+						alert("현재 다음 카카오페이의 상태는 ["+kakaopay_status_name[json.kakaopay_status]+"]입니다.");
+					}
+				}
+			});
+		}
+	}
+
+	function paycoGetCorporation(mode){
+		if($("#payco_status").length){
+			var payco_status_name = {
+				'NOTYET'			: '신청전',			
+				'ACCEPT'			: '신청접수',			
+				'CONTRACT_WAIT'		: '계약대기',			
+				'CONTRACT_CMPL'		: '계약완료',		
+				'EVALUATE'			: '심사중',		
+				'APPROVAL_CMPL'		: '승인완료',	
+				'REJECT'			: '계약불가',	
+				'NOT_EXIST_ERROR'	: '조회결과없음'
+			};
+			$.ajax({
+				type: 'GET',
+				url : "./paycoGetCorporation",
+				error: function (XMLHttpRequest, textStatus, errorThrown) {
+					//alert ("통신 중 에러가 발생했습니다.");
+					$("#payco_status").html("[조회전]");
+				},
+				success: function(res){
+					var json = $.parseJSON(res);
+					$("#payco_status").html("["+payco_status_name[json.payco_status]+"]");
+					if(mode!=''){
+						alert("현재 페이코의 상태는 ["+payco_status_name[json.payco_status]+"]입니다.");
+					}
+				}
+			});
+		}
+	}
+</script>
+<style>
+	ul.varturnl_url_contens li {padding-top:5px;}
+	.option-message ul {list-style-type: disc; padding-left:20px;}
+	.item-title2 {
+	    margin-top: 20px;
+	    margin-left: 5px;
+	    line-height: 30px;
+	    font-size: 14px;
+	    font-weight: bold;
+	    vertical-align: middle;
+	}
+	.not_wrap {border:1px solid #e1e1e1; background:#fff; padding:30px; text-align:center; font-size:14px; line-height:1.6;}
+	.not_wrap ul {width:100%; margin:0 auto;}
+	.not_wrap ul li {float:left; width:14.2%;}
+	.not_wrap ul li span {display:block; margin:10px; border:1px solid #dadada; background:#fafafa; padding:20px 10px; min-width:80px; font-size:13px; color:#e;}
+
+	table.info-table-style {border-right: 0; border-top:0;}
+	table.info-table-style td:first-child {border-left:0;}
+	table.info-table-style td {border-bottom: 0 !important;}
+	.pg_kor table.info-table-style tr:first-child {border-bottom: 1px solid #dadada;}
+	.ui-dialog .content, .contents_container .content{position: relative;}
+</style>
+<form name="notUsePgForm" method="post" action="../pg_process/notPg" target="actionFrame">
+	<input type="hidden" name="not_use_pg" value="y" />
+</form>
+<button class="hide" id="copy_btn"></button>
+<input type="hidden" name="otherPay" value=""/>
+<!--{? config_system.not_use_pg == 'y'}-->
+<input type="hidden" name="pay" value="not"/>
+<!--{ : }-->
+<input type="hidden" name="pay" value="{config_system.pgCompany}"/>
+<!--{ / }-->
+
+<!-- 페이지 타이틀 바 : 시작 -->
+<div id="page-title-bar-area">
+	<div id="page-title-bar">
+		{#require_info}
+
+		<!-- 타이틀 -->
+		<div class="page-title">
+			<h2>전자결제</h2>
+		</div>
+
+	</div>
+</div>
+<!-- 페이지 타이틀 바 : 끝 -->
+
+<!-- 서브 레이아웃 영역 : 시작 -->
+	<!-- 서브메뉴 바디 : 시작-->
+	<div class="contents_dvs pg_kor">
+		<div class="item-title">
+			국내 결제
+		</div>
+	<!--{? config_system.not_use_pg == 'y' }-->
+		<table class="table_basic v7 thl ">		
+			<tr>
+				<th class="pay-title">전자결제 미사용중<br/><button type="button" class="resp_btn v2" id="btnPaySetting" onclick="setPGCompany()" >설정</button></th>
+				<td class="clear bdr0">
+					<!--/ 대한민국 전자 결제 :: START /-->
+					<div id="pgSettingContents" class="gabia-pannel-pay" isdemo="{isdemo.isdemo}" service="s" group="p" pc="pg_kor"></div>
+				</td>
+			</tr>
+		</table>
+	<!--{ : }-->
+		<table class="table_basic thl">
+			<tr>
+				<th class="pay-title">
+					<!--{? config_system.pgCompany == "inicis"}-->
+					이니시스
+					<!--{ : config_system.pgCompany == "allat"}-->
+					모빌리언스
+					<!--{ : config_system.pgCompany == "lg"}-->
+					토스 페이먼츠
+					<!--{ : config_system.pgCompany == "kcp"}-->
+					KCP
+					<!--{ : config_system.pgCompany == "kspay"}-->
+					KSNET
+					<!--{ : config_system.pgCompany == "kicc"}-->
+					이지페이
+					<!--{ / }-->
+
+					사용중<br/><button type="button" id="btnPaySetting" class="resp_btn v2" onclick="setPGCompany()" >설정</button>
+					</th>
+				<td class="clear">
+					<div class="pgInfoContents" code="{config_system.pgCompany}"  isdemo="{isdemo.isdemo}"></div>
+				</td>
+			</tr>
+		</table>
+	<!--{/}-->
+	</div>
+	
+	<div class="contents_dvs">
+		<div class="item-title">간편 결제</div>
+		<input type="hidden" name="navercheckout_use" value="{navercheckout.use}" />
+		<input type="hidden" name="talkbuy_use" value="{talkbuy.use}" />
+		<table class="table_basic thl">	
+		<tr>
+			<th>
+				네이버페이 주문형 <!--{?navercheckout.use=='y'}-->사용<!--{:navercheckout.use=='test'}-->테스트<!--{:}-->미사용<!--{/}--> 
+				<span class="tooltip_btn" onclick="showTooltip(this, '/admin/tooltip/pg', '#tip5', 450)"></span>
+				<br/><button type="button" class="resp_btn v2" id="btnPaySetting" onclick="setOtherPay('naverpay');">설정</button>
+			</th>
+			<td class="clear">
+				<!--/ 네이버페이 주문형 :: START /-->
+				<!--{ ? navercheckout.use=='y' || navercheckout.use=='test' }-->
+				<div class="pgInfoContents" code="naverpay" isdemo="{isdemo.isdemo}"></div>
+				<!--{ : }-->
+				<div id="pgSettingContents" class="gabia-pannel-pay" isdemo="{isdemo.isdemo}" service="s" group="p" pc="pg_naverpay"></div>
+				<!--{ / }-->
+			</td>
+		</tr>
+
+		<tr>
+			<th>
+				네이버페이 결제형 <!--{?naverpayment.use=='y'}-->사용<!--{:naverpayment.use=='test'}-->테스트<!--{:}-->미사용<!--{/}--> 
+				<span class="tooltip_btn" onclick="showTooltip(this, '/admin/tooltip/pg', '#tip5', 450)"></span>
+				<br/><button type="button" class="resp_btn v2" id="btnPaySetting" onclick="setOtherPay('naverpayment');">설정</button>
+			</th>
+			<td class="clear">
+				<!--/ 네이버페이 결제형 :: START /-->
+				<!--{ ? naverpayment.use=='y' || naverpayment.use=='test' }-->
+				<div class="pgInfoContents" code="naverpayment" isdemo="{isdemo.isdemo}"></div>
+				<!--{ : }-->
+				<div id="pgSettingContents" class="gabia-pannel-pay" isdemo="{isdemo.isdemo}" service="s" group="p" pc="pg_naverpayment"></div>
+				<!--{ / }-->
+			</td>
+		</tr>
+
+		<tr>
+			<th>카카오페이 구매 <!--{?talkbuy.use=='y'}-->사용<!--{:}-->미사용<!--{/}--> <br/><button type="button" class="resp_btn v2" id="btnPaySetting" onclick="setOtherPay('talkbuy');">설정</button></th>
+			<td class="clear">
+				<!--{? talkbuy.use == 'y'}-->
+				<div class="pgInfoContents" code="talkbuy"  isdemo="{isdemo.isdemo}"></div>
+				<!--{ : }-->
+				<div id="pgSettingContents" class="gabia-pannel-pay" isdemo="{isdemo.isdemo}" service="s" group="p" pc="pg_talkbuy"></div>
+				<!--{ / }-->
+			</td>
+		</tr>
+
+	<!--{ ? config_system.not_use_kakao == 'n' }-->	
+		<tr>
+			<th>구)카카오페이 사용 <br/><button type="button" class="resp_btn v2" id="btnPaySetting" onclick="setOtherPay('kakaopay');">설정</button></th>
+			<td class="clear"><div class="pgInfoContents" code="kakaopay"  isdemo="{isdemo.isdemo}"></div></td>
+		</tr>		
+	<!--{ / }-->
+		
+	<!--{ ? config_system.not_use_daumkakaopay == 'n' }-->	
+		<tr>
+			<th>카카오페이 사용 <br/><button type="button" class="resp_btn v2" id="btnPaySetting" onclick="setOtherPay('daumkakaopay');">설정</button></th>
+			<td class="clear"><div class="pgInfoContents" code="daumkakaopay"  isdemo="{isdemo.isdemo}"></div></td>
+		</tr>	
+	<!--{ : }-->		
+		<tr>
+			<th>
+				카카오페이 미사용 
+				<br/>
+				<button type="button" id="btnPaySetting" class="resp_btn v2 mb10" onclick="setOtherPay('daumkakaopay');">설정</button><br/>
+			
+				<b><span id="daumkakaopay_status" class="blue"></span></b>
+				<span class="tooltip_btn" onClick="showTooltip(this, '/admin/tooltip/pg', '#tip2', 'sizeM')"></span><br/>
+				<button type="button" class="resp_btn v2" id="daumkakaopay_get_corporation" onclick="daumkakaopayGetCorporation('again');">조회</button>
+				
+			</th>
+			<td class="clear">
+				<!--/ 다음카카오 페이 :: START /-->
+				<div id="pgSettingContents" class="gabia-pannel-pay" isdemo="{isdemo.isdemo}" service="s" group="p" pc="pg_daumkakaopay"></div>
+			</td>
+		</tr>		
+	<!--{ / }-->
+
+	<!--{ ? config_system.not_use_payco == 'n' }-->	
+		<tr>
+			<th class="pay-title">
+				페이코 사용
+				<br/>
+				<button type="button" class="resp_btn v2" id="btnPaySetting" onclick="setOtherPay('payco');">설정</button>
+			</th>
+			<td class="clear"><div class="pgInfoContents" code="payco"  isdemo="{isdemo.isdemo}"></div></td>
+		</tr>		
+	<!--{ : }-->		
+		<tr>
+			<th class="pay-title">
+				페이코 미사용 
+				<br/>
+				<button type="button" class="resp_btn v2 mb10" id="btnPaySetting" onclick="setOtherPay('payco');">설정</button>
+				<br/>
+				<b><span id="payco_status" class="blue"></span></b>
+				<span class="tooltip_btn" onclick="showTooltip(this, '/admin/tooltip/pg', '#tip3', 'sizeM')"></span>						
+				<br/>
+				<button type="button" id="payco_get_corporation" class="resp_btn v2" onclick="paycoGetCorporation('again');">조회</button>
+			</th>
+			<td class="clear">
+				<!--/ 페이코 :: START /-->
+				<div id="pgSettingContents" class="gabia-pannel-pay" isdemo="{isdemo.isdemo}" service="s" group="p" pc="pg_payco"></div>
+			</td>
+		</tr>		
+	<!--{ / }-->
+	</table>
+	</div>
+
+	<div class="contents_dvs">
+		<div class="item-title">해외 전자결제</div>
+		<table class="table_basic thl">
+
+		<!--{ ? config_system.not_use_paypal == 'n' }-->				
+			<tr>
+				<th>페이팔 사용 <br/><button type="button" class="resp_btn v2" id="btnPaySetting" onclick="setOtherPay('paypal');">설정</button></th>
+				<td class="clear"><div class="pgInfoContents" code="paypal"  isdemo="{isdemo.isdemo}"></div></td>
+			</tr>			
+		<!--{ : }-->		
+			<tr>
+				<th>페이팔 미사용 <br/><button type="button" class="resp_btn v2" id="btnPaySetting" onclick="setOtherPay('paypal');">설정</button></th>
+				<td class="clear">
+					<!--/ 페이팔 :: START /-->
+					<div id="pgSettingContents" class="gabia-pannel-pay" isdemo="{isdemo.isdemo}" service="s" group="p" pc="pg_paypal"></div>
+				</td>
+			</tr>		
+		<!--{ / }-->		
+
+		<!--{ ? config_system.not_use_eximbay == 'n' }-->			
+			<tr>
+				<th>엑심베이 사용 <br/><button type="button" class="resp_btn v2" id="btnPaySetting" onclick="setOtherPay('eximbay');">설정</button></th>
+				<td class="clear"><div class="pgInfoContents" code="eximbay"  isdemo="{isdemo.isdemo}"></div></td>
+			</tr>
+		<!--{ : }-->			
+			<tr>
+				<th>엑심베이 미사용 <br/><button type="button" class="resp_btn v2" id="btnPaySetting" onclick="setOtherPay('eximbay');">설정</button></th>
+				<td class="clear">
+					<!--/ eximbay :: START /-->
+					<div id="pgSettingContents" class="gabia-pannel-pay" isdemo="{isdemo.isdemo}" service="s" group="p" pc="pg_eximbay"></div>
+				</td>
+			</tr>			
+		<!--{ / }-->
+		
+	</table>
+	</div>
+
+	<div class="box_style_05 mt20">
+		<div class="title">안내</div>
+		<ul class="bullet_circle">
+			<li>
+				결제 통화 및 결제 수단은 PG사에 따라 달라질 수 있습니다.
+				<span class="tooltip_btn" onClick="showTooltip(this, '/admin/tooltip/pg', '#tip1', 'sizeR')"></span>
+			</li>
+			<li>전자결제 연동을 위해서는 반드시 퍼스트몰에서 신청 및 계약해야 합니다. PG사에 직접 신청한 경우 퍼스트몰과 연동 되지 않습니다.</li>
+			<li>퍼스트몰에서 제공 하는 곳 이외의 PG사와의 연동은 불가합니다.</li>	
+		</ul>
+	</div>
+	<!-- 서브메뉴 바디 : 끝 -->
+
+
+<!-- 각 PG 설정 창 -->
+<div id="pg_setting_div" class="hide"></div>
+<!-- 각 PG 설정 창 -->
+
+<!-- 가상계좌 입금통보 url 안내 컨텐츠 -->
+<div id="virtual_info" class="hide">
+	<div class="bold">전자결제(pg)별 가상계좌 입금확인 URL 세팅 방법</div>
+	<div style="padding-top:20px;"></div>
+	<table width="100%" cellpadding="0" cellspacing="0">
+		<tr>
+			<td>
+				<label>
+					<input type="radio" name="virtual_info" value="kicc" checked />
+					이지페이 이용 상점
+				</label>
+				<span class="pdl5"></span>
+				<label>
+					<input type="radio" name="virtual_info" value="kcp" checked />
+					KCP 이용 상점
+				</label>
+				<span class="pdl5"></span>
+				<label>
+					<input type="radio" name="virtual_info" value="inicis" />
+					이니시스 이용 상점
+				</label>
+				<span class="pdl5"></span>
+				<label>
+					<input type="radio" name="virtual_info" value="lg" />
+					토스페이먼츠 이용 상점
+				</label>
+				<span class="pdl5"></span>
+				<label>
+					<input type="radio" name="virtual_info" value="allat" />
+					모빌리언스 이용 상점
+				</label>
+				<span class="pdl5"></span>
+				<label>
+					<input type="radio" name="virtual_info" value="kspay" />
+					KSNET 이용 상점
+				</label>
+			</td>
+		</tr>
+		<tr><td height="14"></td></tr>
+		<tr><td style="height:1px;background-color:#dadada"></td></tr>
+		<tr><td height="15"></td></tr>
+		<tr>
+			<td>
+				<div id="virtual_info_kicc" class="virtual_info">
+					<ul class="varturnl_url_contens">
+					<li>
+						이지페이 관리자 페이지(<a href="https://office.easypay.co.kr" target="_blank"><span class="blue">https://office.easypay.co.kr</span></a>)에서 가상계좌 입금확인 URL을 입력해주세요.
+					</li>
+					<li>
+						가상계좌 입금 시, 퍼스트몰 관리자화면의 주문상태(주문접수→결제확인)가 자동 변경 됩니다.
+					</li>
+					<li>
+						가상계좌 입금확인 URL : <strong>http://<span class="red">쇼핑몰도메인입력</span>/payment/kicc_return</strong>
+					</li>
+					<li>
+						※ 이지페이의 경우 PG 신청 시 입력한 쇼핑몰 URL이 자동 저장되오니, 최초 신청한 URL과 사용 중인 쇼핑몰 URL이 다른 경우 아래의 방법으로 수정해주시기 바랍니다.
+					</li>
+					</ul>
+					<div style="padding-top:16px;"></div>
+					<div style="border-top:1px dashed #dddddd;width:100%;"></div>
+					<div style="padding-top:36px;"></div>
+					<div>
+						<img src="../images/design/pg/img_setting_url_kicc.gif" />
+					</div>
+				</div>
+				<div id="virtual_info_kcp" class="virtual_info">
+					<ul class="varturnl_url_contens">
+					<li>
+						KCP관리자페이지(<a href="https://admin.kcp.co.kr" target="_blank"><span class="blue">https://admin.kcp.co.kr</span></a>)에서 가상계좌 입금확인 URL을 입력해주세요.
+					</li>
+					<li>
+						가상계좌 입금 시, 퍼스트몰 관리자화면의 주문상태(주문접수→결제확인)가 자동 변경 됩니다.
+					</li>
+					<li>
+						가상계좌 입금확인 URL : <strong>http://<span class="red">쇼핑몰도메인입력</span>/payment/kcp_return</strong>
+					</li>
+					</ul>
+
+					<div style="padding-top:16px;"></div>
+					<div style="border-top:1px dashed #dddddd;width:100%;"></div>
+					<div style="padding-top:36px;"></div>
+					<div>
+						<img src="../images/design/pg/img_setting_url_kcp.gif" />
+					</div>
+				</div>
+				<div id="virtual_info_inicis" class="virtual_info" class="hide">
+					<ul class="varturnl_url_contens">
+						<li>
+							KG Inicis관리자페이지(<a href="https://iniweb.inicis.com" target="_blank"><span class="blue">https://iniweb.inicis.com</span></a>) 에서 가상계좌 입금확인 URL을 입력해주세요.
+						</li>
+						<li>
+							가상계좌 입금 시, 퍼스트몰 관리자화면의 주문상태(주문접수→결제확인)가 자동 변경 됩니다.
+						</li>
+						<li>
+							가상계좌 입금확인 URL : <strong>http://<span class="red">쇼핑몰도메인입력</span>/payment/inicis_return</strong>
+						</li>
+						<li>
+							이니시스는 일반결제와 에스크로결제 관리자가 분리되어 있어, 일반결제 관리자 계정과 에스크로관리자 계정에
+						</li>
+						<li>
+							각각 로그인하여 URL을 입력해 주셔야 합니다.
+						</li>
+					</ul>
+					<div style="padding-top:16px;"></div>
+					<div style="border-top:1px dashed #dddddd;width:100%;"></div>
+					<div style="padding-top:36px;"></div>
+					<div>
+						<img src="../images/design/pg/img_setting_url_inisis.gif" />
+					</div>
+				</div>
+				<div id="virtual_info_lg" class="virtual_info" class="hide">
+					<ul class="varturnl_url_contens">
+						<li>
+							토스페이먼츠는 가상계좌 입금확인은 별도의 설정 없이 동작됩니다.
+						</li>
+					</ul>
+				</div>
+				<div id="virtual_info_allat" class="virtual_info" class="hide">
+					<ul class="varturnl_url_contens">
+						<li>
+							모빌리언스 고객센터(1800-0678)에 가상계좌 입금확인 URL 추가를 요청하여 주세요.
+						</li>
+						<li>
+							가상계좌 입금 시, 퍼스트몰 관리자화면의 주문상태(주문접수→결제확인)가 자동 변경 됩니다.
+						</li>
+						<li>
+							가상계좌 입금확인 URL : <strong>http://<span class="red">쇼핑몰도메인입력</span>/payment/allat_return</strong>
+						</li>
+					</ul>
+				</div>
+				<div id="virtual_info_kspay" class="virtual_info" class="hide">
+					<ul class="varturnl_url_contens">
+						<li>
+							KSNET 고객센터(1544-6030 )에 가상계좌 입금확인 URL 추가를 요청하여 주세요.
+						</li>
+						<li>
+							가상계좌 입금 시, 퍼스트몰 관리자화면의 주문상태(주문접수→결제확인)가 자동 변경 됩니다.
+						</li>
+						<li>
+							가상계좌 입금확인 URL : <strong>http://<span class="red">쇼핑몰도메인입력</span>/payment/kspay_return</strong>
+						</li>
+					</ul>
+				</div>
+			</td>
+		</tr>
+	</table>
+</div>
+
+{ #layout_footer }

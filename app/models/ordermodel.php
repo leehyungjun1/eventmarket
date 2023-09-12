@@ -836,6 +836,9 @@ class ordermodel extends CI_Model
 		}elseif($orders['pg']=='payco'){
 			$orders['mpayment']	= '페이코';
 			$orders['pg_kind']	= 'payco';
+		}elseif($orders['pg']=='naverpayment'){
+			$orders['mpayment']	= '네이버페이';
+			$orders['pg_kind']	= 'naverpayment';
 		}
 	}
 
@@ -3431,8 +3434,7 @@ class ordermodel extends CI_Model
 		$order_cfg = ($this->cfg_order) ? $this->cfg_order : config_load('order');
 
 		$tax_price				= 0;			// 과세 상품 금액
-		$exempt_price			= 0;			// 비과세 액
-		$exempt_shipping_price	= 0;			// 비과세상품 배송비
+		$exempt_price			= 0;			// 비과세 금액
 
 		$shipping_cost			= 0;
 
@@ -3440,7 +3442,7 @@ class ordermodel extends CI_Model
 		$items = $this->get_item($order_seq);
 
 		// 환불 정보 추출 :: 2017-08-23 lwh
-		unset($tot_refund);
+		$tot_refund = [];
 		$this->load->model('refundmodel');
 		$data_refund = $this->refundmodel->get_refund_item_for_order($order_seq);
 		if ($data_refund){
@@ -3452,13 +3454,13 @@ class ordermodel extends CI_Model
 				}
 				if($sum_refund){
 					$tot_refund[$refund['tax']]['price']	+= $refund['refund_goods_price'];
-					$tot_refund[$refund['tax']]['delivery']	+= $refund['refund_delivery_price'];
+					$tot_refund['delivery']	+= $refund['refund_delivery_price'];
 					$tmp_refund[$refund['refund_code']]['emoney']	= $refund['refund_emoney'];
 					$tmp_refund[$refund['refund_code']]['cash']		= $refund['refund_cash'];
 				}
 			}
 
-			foreach($tmp_refund as $refund_code => $data){
+			foreach($tmp_refund as $data){
 				$tot_refund['emoney']	+= $data['emoney'];
 				$tot_refund['cash']		+= $data['cash'];
 			}
@@ -3496,53 +3498,31 @@ class ordermodel extends CI_Model
 		}
 
 		$shipping_cost					= array();
-		$tax_goods						= array();
-		$shipping_delivery_total_cnt	= 0;	//기본배송의 총 건수
-		$shipping_delivery_tax_cnt		= 0;	//기본배송의 과세 상품 건수
-		$shipping_delivery_exempt_cnt	= 0;	//기본배송의 비과세 상품 건수
+		$shipping_delivery_tax_cnt		= 0;	//과세 상품 건수
+		$shipping_delivery_exempt_cnt	= 0;	//비과세 상품 건수
 
-		foreach($items as $key=>$item){
+		foreach($items as $item){
 
 			$options 	= $this->get_option_for_item($item['item_seq']);
 			$suboptions = $this->get_suboption_for_item($item['item_seq']);
 
-			if($options) foreach($options as $k => $data){
-
-				// 비과세 상품 금액
-				if($item['tax']!="tax"){
-					//세일금액
+			if($options) foreach($options as $data){
+				if($item['tax'] == "tax"){
+					// 과세
+					$shipping_delivery_tax_cnt++;
+				}else{
+					// 비과세 상품 금액 (상품금액-할인금액)
 					$sale_total = ($data['member_sale']*$data['ea'])
-									+$data['event_sale']	// 이벤트 할인으로 인한 면세금액이 줄어듬이 누락되어 있었음 by hed
-									+$data['coupon_sale']
-									+$data['promotion_code_sale']+$data['fblike_sale']
-									+$data['mobile_sale']+$data['referer_sale'];
+					+$data['event_sale']	// 이벤트 할인으로 인한 면세금액이 줄어듬이 누락되어 있었음 by hed
+					+$data['coupon_sale']
+					+$data['promotion_code_sale']+$data['fblike_sale']
+					+$data['mobile_sale']+$data['referer_sale'];
 					$exempt_price += ($data['price']*$data['ea'])-$sale_total;
-				}
-
-				// 개별배송 상품
-				if(preg_match('/^each/', $data['shipping_method'])){
-
-					// 과세 상품의 배송비
-					if($item['tax'] == "tax"){
-						$shipping_cost['tax'][$data['shipping_group']] += $item['goods_shipping_cost'];
-					// 비과세 상품의 배송비
-					}else{
-						$shipping_cost['exempt'][$data['shipping_group']] += $item['goods_shipping_cost'];
-					}
-
-				// 기본 배송상품 선불
-				}elseif( $data['shipping_method'] == "delivery"){
-
-					// 과세 상품의 배송비
-					if($item['tax'] == "tax"){
-						$shipping_delivery_tax_cnt++;
-					}else{
-						$shipping_delivery_exempt_cnt++;
-					}
+					$shipping_delivery_exempt_cnt++;
 				}
 			}
 
-			if($suboptions) foreach($suboptions as $k => $data){
+			if($suboptions) foreach($suboptions as $data){
 
 				// 비과세 상품 금액
 				if($item['tax']!="tax"){
@@ -3558,28 +3538,28 @@ class ordermodel extends CI_Model
 			$shipping_delivery_tax_cost = $order['shipping_cost'];
 		}
 
-		# 기본배송의 과세상품이 1개 이상일때 배송비는 과세
+		# 과세상품이 1개 이상일때 배송비는 과세
 		if($shipping_delivery_tax_cnt > 0){
-			$shipping_cost['tax']['delivery'] = $shipping_delivery_tax_cost;
-		# 기본배송의 과세상품이 0개이고, 비과세 상품이 1개 이상일때 배송비는 비과세
+			$shipping_cost['tax'] = $shipping_delivery_tax_cost;
+		# 과세상품이 0개이고, 비과세 상품이 1개 이상일때 배송비는 비과세
 		}elseif($shipping_delivery_tax_cnt == 0 && $shipping_delivery_exempt_cnt > 0){
-			$shipping_cost['exempt']['delivery'] = $shipping_delivery_tax_cost;
+			$shipping_cost['exempt'] = $shipping_delivery_tax_cost;
 		}
 
 		if($exempt_price){
 			# 총 비과세 상품가 = (비과세 상품가 + 비과세 배송비) - 마일리지/예치금 사용액
 			// 이미 차감된 에누리, 마일리지, 예치금 중복차감 방지 2017-07-06 lkh
 			//$exempt_price	+= array_sum($shipping_cost['exempt']) - $use_emoney_price - $exempt_sale;
-			$exempt_price	+= array_sum($shipping_cost['exempt']);
+			$exempt_price	+= $shipping_cost['exempt'];
 			# 총 과세 상품가 = 총 결제액 - 비과세액 - 과세 배송비
-			$tax_price		= $settle_price - $exempt_price - array_sum($shipping_cost['tax']);
+			$tax_price		= $settle_price - $exempt_price - $shipping_cost['tax'];
 			# 계산서 발행시
 			$exempt_price  += $exempt_in_price;
 		}else{
 			$exempt_price	= 0;
 			// 이미 차감된 에누리, 마일리지, 예치금 중복차감 방지 2017-07-06 lkh
 			//$tax_price		= $settle_price - array_sum($shipping_cost['tax']) - $use_emoney_price - $exempt_sale;
-			$tax_price		= $settle_price - array_sum($shipping_cost['tax']);
+			$tax_price		= $settle_price - $shipping_cost['tax'];
 			$tax_price		+= $exempt_in_price;
 		}
 
@@ -3589,7 +3569,10 @@ class ordermodel extends CI_Model
 		// * 비과세금액
 		$exempt_price	= $exempt_price - $tot_refund['exempt']['price'];
 		// * 과세 배송비
-		$tax_ship_cost	= array_sum($shipping_cost['tax']) - $tot_refund['tax']['delivery'];
+		$tax_ship_cost	= 0;
+		if($shipping_cost['tax'] > 0) {
+			$tax_ship_cost = $shipping_cost['tax'] - $tot_refund['delivery'];
+		}
 		// * 과세금액이 음수이면 아직 에누리, 마일리지, 예치금 제외가 남았다는 의미이므로 과세 배송비에서도 차감해줘야함
 		if( $tax_price < 0 ) {
 			$tax_ship_cost 	= $tax_ship_cost + $tax_price;
@@ -3604,7 +3587,6 @@ class ordermodel extends CI_Model
 		$debug_log[] = "exempt_in_price(마일리지/예치금 포함금액) : ".$exempt_in_price;
 		$debug_log[] = "sum price(비과세+과세+과세배송비)\t : ".$exempt_price + $tax_price + $tax_ship_cost;
 		$debug_log[] = "tax shipping(과세배송비)\t\t : ".$tax_ship_cost;
-
 
 		$result = array(
 			'tax'				=> $tax_price,

@@ -146,8 +146,17 @@
 		$('.selected_order_seq').show();
 
 		$.get('../order/get_order_info',params, function(response){
+			set_refund_method(response.show_refund_method);
 			set_provider_list(response.shipping_provider);
 		},'json');
+	}
+
+	function set_refund_method(show_refund_method){
+		if (show_refund_method == 'N') {
+			$('.refund_method').hide();
+		} else {
+			$('.refund_method').show();
+		}
 	}
 
 	function set_provider_list(provider_list){
@@ -430,7 +439,7 @@
 						<input id="refund_reason_detail" value="" size="50"/>
 					</td>
 				</tr>
-				<tr >
+				<tr class="refund_method">
 					<th class="its-th-align left" style="padding-left:10px">환불방법(무통장)</th>
 					<td class="its-td">
 

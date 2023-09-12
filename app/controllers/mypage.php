@@ -1011,6 +1011,19 @@ class mypage extends board
 			$orders['kspay_authty']	= '2010';	// KSPAY - 계좌이체
 		elseif	($orders['payment'] == 'cellphone')
 			$orders['kspay_authty']	= 'M110';	// KSPAY - 휴대폰
+		
+		// 비현금성 주문일 경우 환불방법 미노출 처리 (신용카드, 휴대폰결제) :: 2018-07-20 pjw
+		$show_refund_method = 'Y';
+		if (in_array($orders['payment'], ['card', 'kakaomoney', 'cellphone'])){
+			$show_refund_method = 'N';
+		}
+
+		// 간편결제 환불방법 미노출 처리
+		if (is_order_simple_payment($orders)) {
+			$show_refund_method = 'N';
+		}
+
+		$orders['show_refund_method'] = $show_refund_method;
 
 		$this->template->assign(array('pg'				=> $pg));
 		$this->template->assign(array('orders'			=> $orders));
@@ -1512,9 +1525,15 @@ class mypage extends board
 
 		// 비현금성 주문일 경우 환불방법 미노출 처리 (신용카드, 휴대폰결제) :: 2018-07-20 pjw
 		$show_refund_method = 'Y';
-		if($orders['payment'] == 'card' || $orders['payment'] == 'kakaomoney' || $orders['pg'] == 'payco' || $orders['payment'] == 'cellphone'){
+		if (in_array($orders['payment'], ['card', 'kakaomoney', 'cellphone'])){
 			$show_refund_method = 'N';
 		}
+
+		// 간편결제 환불방법 미노출 처리
+		if (is_order_simple_payment($orders)) {
+			$show_refund_method = 'N';
+		}
+
 		$orders['show_refund_method'] = $show_refund_method;
 
 		$this->template->assign(array('orders'		=> $orders));
@@ -3192,6 +3211,10 @@ class mypage extends board
 		$data_refund['mrefund_type'] = $this->refundmodel->arr_refund_type[$data_refund['refund_type']];
 		$data_refund['mcancel_type'] = $this->refundmodel->arr_cancel_type[$data_refund['cancel_type']];
 		$data_order['mpayment'] = $this->arr_payment[$data_order['payment']];
+
+		if($data_order['pg'] === 'naverpayment') {
+			$data_order['mpayment'] = '네이버페이';
+		}
 
 		if($data_order['international']=='international'){
 			$data_order['real_shipping_cost'] = $data_order['international_cost'];

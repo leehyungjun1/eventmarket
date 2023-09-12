@@ -1,0 +1,1822 @@
+<style type="text/css">
+	.waybill_number {font-size:11px;width:70px;}
+	.delivery_number {width:90%; padding:0px !important; text-indent:2px; line-height:20px; height:20px;}
+	</style>
+	<script type="text/javascript" src="/app/javascript/js/admin-shipping.js?mm={=date('Ymd')}"></script>
+	<script type="text/javascript">
+	var member_seq	= "{=members.member_seq}";
+	var mode		= "{=mode}";
+	var pagemode	= "{=pagemode}";
+	
+	{? _GET.mode != 'order_list' }
+	function coupon_use_btn(bobj)
+	{
+		var Bobj = $(bobj);
+		$("#coupon_use_lay").html("");
+		closeDialog("coupon_use_lay");
+		$.ajax({
+			type: "post",
+			url: "../export/coupon_use",
+			data: "order_seq="+Bobj.attr('order_seq'),
+			success: function(result){
+				if	(result){
+					$("#coupon_use_lay").html(result);
+					openDialog("티켓사용 확인 / 티켓번호 재발송 <span class='desc'></span>", "coupon_use_lay", {"width":"1000","height":"700"});
+				}
+			}
+		});
+	}
+	{/}
+	</script>
+	
+	<!-- 주문상세/출고상세/반품상세/환불상세 에서만 노출 시작 -->
+	<!--{ ? pagemode != "catalog" && pagemode != "company_catalog" }-->	
+		<!-- 반품상세/환불상세 에서만 노출 시작 -->
+		<!-- { ? in_array(mode,array('refund_view','return_view')) } -->
+	<div class="center btn_destory">
+		<span id="order_summary_open" class="btn medium" mode="{=mode}"><button type="button" class="resp_btn v3">원주문({orders.order_seq}) 정보 펼쳐보기  ▼</button></span>
+		<span id="order_summary_close" class="btn medium" mode="{=mode}" style="display:none"><button  type="button" class="resp_btn v3">원주문({orders.order_seq}) 정보 닫기 ▲</button></span>
+	</div>
+	<div class="order-summary">
+		<!-- { / } -->
+		<!-- 반품상세/환불상세 에서만 노출 끝 -->
+	<div class="contents_dvs v2">
+		<div class="item-title">
+			주문정보
+			<!--{ ? orders.orign_order_seq }-->
+			<span class="desc" style="font-weight:normal">(본 주문은 원래 주문 <strong><a href="/selleradmin/order/view?no={orders.orign_order_seq}" target="_blank">{orders.orign_order_seq}</a></strong>에 대한 맞교환으로 발생한 주문입니다.)</span>
+			<!--{ / }-->
+			<!--{ ? child_order_seq }-->
+			<span class="desc" style="font-weight:normal">(본 주문상품의 교환으로 인해 생성된 맞교환 주문은 <strong>{@child_order_seq}<a href="/selleradmin/order/view?no={.value_}" target="_blank">{.value_}</a>{/}</strong>입니다.)</span>
+			<!--{ / }-->
+		</div>
+		
+		<!-- 주문정보 테이블 : 시작 -->
+		<table width="100%" class="simplelist-table-style table_row_basic">
+			<thead>
+				<tr>
+					<!--{? linkage_mallnames && orders.linkage_id }-->
+					<th>연동</th>
+					<!--{ : }-->
+					<th>유입</th>
+					<!--{ / }-->
+					<th>마켓</th>
+					<th>주문번호</th>
+					<th>주문일</th>
+					<!--{? linkage_mallnames && orders.linkage_id }-->
+					<th>수집일시</th>
+					<!--{ / }-->
+					<th>주문자</th>
+					<th>수령자</th>
+					<th>결제</th>
+					<th>결제일</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr class="center">
+					<!--{? linkage_mallnames && orders.linkage_id }-->
+					<td>{linkage.linkage_name}</td>
+					<!--{ / }-->
+					<td>
+						<!--{ ? orders.linkage_id }-->
+							{ ? orders.connector_market_name }{orders.connector_market_name}{ : }
+								<!--{ ? orders.linkage_id == 'pos' }-->
+								매장판매
+								<!--{ : }-->
+								샵링커
+								<!--{ / }-->
+							{ / }
+						<!--{ : }-->
+						{ ? orders.referer }<a href="{? orders.referer_naver }{orders.referer_naver}{:}{orders.referer}{/}" target="_blank">{ / }
+						<span class="help" title="{orders.referer_name} {? orders.referer_naver }{orders.referer_naver}{:}{orders.referer}{/}" style="font-size:11px;font-weight:bold;color:#006666;">{=getstrcut(orders.referer_name, 1, '')}</span>
+						{ ? orders.referer }</a>{ / }
+						{? orders.linkage_mallname }
+						<!--{ / }-->
+					</td>
+					<td>
+						<!--{ ? orders.linkage_id }-->
+						{linkage_mallnames[orders.linkage_mall_code]}
+						<!--{ : }-->
+						<span class="help blue bold" title="{=orders.linkage_mallname}" style="font-size:11px;">{=getstrcut(orders.linkage_mallname,1,'')}</span>{/}
+						<!--{ / }-->
+					</td>
+					<td><a href="../order/view?no={orders.order_seq}" target="_blank"><span class="blue">{orders.order_seq}</span></a> <a href="javascript:printOrderView('{orders.order_seq}', 'view')"><span class="icon-print-order"></span></a>
+					{? npay_use && orders.npay_order_id}<div class="ngreen bold">{=orders.npay_order_id}<span style="font-size:11px;font-weight:normal"> (Npay주문번호)</span></div>{/}
+					{?orders.talkbuy_order_id}<div class="kyellow bold">{orders.talkbuy_order_id}<span style="font-size:11px;font-weight:normal;"> (Kpay주문번호)</span></div>{/}
+					{?orders.linkage_mall_order_id}<div class="blue bold">{orders.linkage_mall_order_id}({linkage_mallnames[orders.linkage_mall_code]})</div>{/}			
+					</td>
+					<!--{? linkage_mallnames && orders.linkage_id }-->
+					<td>{orders.linkage_order_reg_date}</td>
+					<!--{ / }-->
+					<td>{=substr(orders.regist_date,2)}</td>
+					<td>
+						<!--{ ? members.member_seq }-->
+						<div>
+							{?members.type=='개인'}<img src="../images/common/icon/icon_personal.gif" />
+							{:members.type=='기업'}<img src="../images/common/icon/icon_besiness.gif" />{/}
+							{orders.order_user_name}
+							{? orders.sns_rute }
+								(
+								<img src="../images/sns/sns_{=substr(orders.sns_rute,0,1)}0.gif" align="absmiddle" snscd="{=orders.sns_rute}" class="btnsnsdetail hand">/<span class="blue">{members.group_name}</span>)
+								<div id="snsdetailPopup1" class="absolute hide"></div>
+							{ : }
+							<!--{ ? members.rute == 'facebook' //facebook 회원인경우 }-->
+								(<span style="color:#d13b00;"><img src="../images/board/icon/sns_f0.gif" align="absmiddle">{members.email}</span>/<span class="blue">{members.group_name}</span>)
+							<!--{ : }-->
+								({members.userid}</span>/<span class="blue">{members.group_name}</span>)
+							<!--{ / }-->
+							{ / }
+						</div>
+						<!--{ : }-->
+						<img src="../images/common/icon/icon_personal.gif" /> {orders.order_user_name}(<span class="desc">비회원</span>)
+						<!--{ / }-->
+					</td>
+					<td>{orders.recipient_user_name}</td>
+					<!-- <td>{orders.mshipping}</td> -->
+					<td>
+						<!--{? orders.linkage_id=='connector'}-->
+						오픈마켓
+						<!--{ : }-->
+						{? orders.depositor}{=orders.depositor}{/}
+						{? orders.npay_order_id }<span class="icon-pay-npay" title="naver pay"><span>npay</span></span>{ / }
+						{? orders.pg=='kakaopay'}
+						<span class="icon-pay-kakaopay" /><span>kakaopay</span></span>
+						{: orders.pg=='naverpayment'}
+						<span class="icon-pay-naverpayment-simple" /></span>
+						<span class="icon-pay-{orders.payment}"></span>
+						{:}
+						{orders.mpayment}
+						{/}
+						{?orders.bank_name}({orders.bank_name}){/}
+						<!--{ / }-->
+					</td>
+					<td>{=substr(orders.deposit_date,2)}</td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+
+	<div class="contents_dvs v2">
+	<div class="item-title">주문<span class="title_order_number">({orders.order_seq})</span>의 출고내역
+		<span class="desc" style="font-weight:normal"> - 본 주문의 출고내역을
+			<a href="../export/catalog?hsb_kind=export&header_search_keyword={orders.order_seq}" target="_blank"><img src="../images/common/btn_list_release.gif" align="absmiddle" alt="해당 출고의 주문을 기준으로 모든 출고리스트를 확인합니다"></a>에서 한눈에 보기
+		</span>
+	</div>
+	<table width="100%" class="simplelist-table-style table_row_basic">
+		<colgroup>
+			<col width="100px" /><!--출고일-->
+			<col width="150px" /><!--출고번호-->
+			<col width="150" /><!--출고상품금액-->
+			<col width="200px" /><!--출고정보-->
+			<col width="80px" /><!--출고수량-->
+			<col width="100px" /><!--출고완료일시-->
+			<col width="100px" /><!--배송완료일시-->
+			<col width="100px" /><!--출고상태-->
+			<col width="100px" /><!--마일리지지급-->
+		</colgroup>
+		<thead>
+			<tr>
+				<th>출고일</th>
+				<th>출고번호</th>
+				<th>출고상품금액</th>
+				<th>출고정보</th>
+				<th>출고수량</th>
+				<th>출고완료일시</th>
+				<th>배송완료일시</th>
+				<th>출고상태</th>
+				<th>마일리지 지급</th>
+			</tr>
+		</thead>
+		<tbody>
+		<!--{ ? data_export }-->
+			<!--{ @ data_export }-->
+			<tr align="center">
+				<!--출고일-->
+				<td>{.export_date}</td>
+				<!--출고번호-->
+				<td>
+					<!--{? .is_bundle_export == 'Y'}--><span class="bold red">[합포장(묶음배송)]</span><br/><!--{/}-->
+					<a href='../export/view?no={.export_code}'><span class="blue hand">{.export_code}</span></a>
+					<a href="javascript:printExportView('{.order_seq}','{.export_code}', 'view')"><span class="icon-print-export"></span></a>
+				</td>
+				<!--출고상품금액-->
+				<td>{=get_currency_price(.price)}</td>
+				<!--운송장번호-->
+				<!--{ ? .goods_kind == 'coupon' }-->
+				<td>
+					<div>티켓번호 : {.coupon_serial} (
+					{?.coupon_input_type=='price'}{=get_currency_price(.coupon_input,3)}{:}{=number_format(.coupon_input)}회{/} /
+					<span class="red">잔여 {?.coupon_input_type=='price'}{=get_currency_price(.coupon_remain_value,3)}{:}{=number_format(.coupon_remain_value)}회{/}</span>)</div>
+					<!--{ @ .mail_send_log }-->
+						<div>{=date('Y-m-d H:i', strtotime(..regist_date))}
+						{..send_val}[{?..status=='y'}성공{:}실패{/}] /
+						{.sms_send_log[..key_]['send_val']}[{?.sms_send_log[..key_]['status']=='y'}성공{:}실패{/}]</div>
+					<!--{ / }-->
+				</td>
+				<!--{ : }-->
+				<td align="left" class="pdl5 shipping_info_{.export_code}">
+					<!-- 배송 정보 :: START -->
+					<input type="hidden" name="export_shipping_group[{.export_code}]" class="export_shipping_group" value="{.shipping_group}" />
+					<input type="hidden" id="export_shipping_method_{.export_code}" name="export_shipping_method[{.export_code}]" class="export_shipping_method" value="{.shipping_method}" />
+					<input type="hidden" name="export_shipping_set_name[{.export_code}]" class="export_shipping_set_name" value="{.shipping_set_name}" />
+					<div>{.provider_name}</div>
+					<div class="blue">
+						<!--{ ? orders.pg == 'talkbuy' }-->
+						<span class="hand shipping_set_name_{.export_code}" onclick='openDialog("카카오페이 구매", "talkbuy_delivary_dialog", {"width":"450","height":"150"});'>{.shipping_set_name}</span>
+						<!--{ : }-->
+						<span class="hand shipping_set_name_{.export_code}" onclick="ship_chg_popup('{.export_code}','export','after');">{.shipping_set_name}</span>
+						<!--{ / }-->
+					</div>
+					<div class="delivery_lay {?!in_array(.shipping_method, array('delivery', 'postpaid'))}hide{/}">
+						<!--{ ? .international == 'domestic' }-->
+						<select name="delivery_company_code[{.export_code}]" class="waybill_number delivery_company_code" style="width:110px; ">
+							<!--{ @ .delivery_company_array }-->
+								<!--{ ? substr(..key_,0,5)=='auto_' && ..key_ == .delivery_company_code }-->
+							<option value='{..key_}' style='background-color:yellow' selected>{..company}</option>
+								<!--{ : ..key_ == .delivery_company_code }-->
+							<option value='{..key_}' selected="selected">{..company}</option>
+								<!--{ : }-->
+							<option value='{..key_}' {?substr(..key_,0,5)=='auto_'}style='background-color:yellow'{/}>{..company}</option>
+								<!--{ / }-->
+							<!--{ / }-->
+						</select>
+						<input type="text" name="delivery_number[{.export_code}]" class="line waybill_number delivery_number" value="{.delivery_number}" style="width:100px;"/>
+							<!--{ ? .delivery_company_code && .delivery_number }-->
+						<span class="btn small cyanblue"><button type="button" class="hand resp_btn active" onclick="goDeliverySearch(this);">조회</button></span>
+							<!--{ : .delivery_company_code=='auto_hlc' && .delivery_number }-->
+						<a href="{.tracking_url}" target="_blank"><span class="btn small cyanblue"><button type="button" class="hand resp_btn active">조회</button></span></a>
+							<!--{ / }-->
+							<!--{ ? (.delivery_company_code=='auto_hlc' || .delivery_company_code=='auto_epostnet') && !.delivery_number }-->
+						<div><a href="javascript:;" onclick="invoice_export_resend(this,'{.export_code}')"><span class='red'>[송장재발급]</span></a></div>
+							<!--{ / }-->
+						<!--{ : }-->
+						<select name="international_shipping_method[{.export_code}]" class="waybill_number {?.international!='international' || !.international_company_array }hide{/}">
+							<!--{ @.international_company_array }-->
+								<!--{ ? ..company == .international_shipping_method }-->
+							<option value='{..company}' style='background-color:yellow' selected>{=str_replace('선불 > ','',..method)}</option>
+								<!--{ : }-->
+							<option value='{..company}'>{=str_replace('선불 > ','',..method)}</option>
+								<!--{ / }-->
+							<!--{ / }-->
+						</select>
+						<input type="text" name="international_delivery_no[{.export_code}]" class="line waybill_number delivery_number" value="{.international_delivery_no}" style="width:90%;" />
+						<!--{ / }-->
+					</div>
+	
+					<input type="hidden" name="shipping_provider_seq" class="shipping_provider_seq" value="{=.shipping_provider_seq}" />
+	
+					<!-- 매장선택 :: START -->
+					<div class="store_lay {?.shipping_method!='direct_store'}hide{/}">
+						<input type="hidden" class="store_scm_type_{.export_code}" name="export_store_scm_type[{.export_code}]" value="{.store_scm_type}" />
+						<select name="export_address_seq[{.export_code}]" onchange="store_set(this, '{.export_code}');">
+						<!--{ @ .shipping_store_info }-->
+							<option value="{..shipping_address_seq}" scm_type="{..store_scm_type}" {?..shipping_address_seq==.shipping_address_seq}selected{/}>{..shipping_store_name}</option>
+						<!--{ / }-->
+						</select>
+					</div>
+					<!-- 매장선택 :: END -->
+	
+					<!-- 출고지 정보 :: START -->
+					<div class="address_lay {?.shipping_method=='direct_store'}hide{/}">
+						<span class="hand" onclick="address_pop('{.sending_address['address_category']}','{.sending_address['address_name']}','{.sending_address['view_address']}','{.sending_address['shipping_phone']}');">{.sending_address['address_name']}</span>
+					</div>
+					<!-- 출고지 정보 :: END -->
+	
+					<!-- 배송 정보 :: END -->
+	
+					<div class="hide">
+					<!--{ ? .international == 'domestic' }-->
+					<!--{ : }-->
+					{ ? .international_shipping_method != 'ups' }
+					<a href="{=get_delivery_company(get_international_method_code(strtoupper(.international_shipping_method)),'url')}{.international_delivery_no}" target="_blank"><span class="blue">{.international_delivery_no} 배송추적</span></a>
+					{ : }
+					{.international_delivery_no} 배송추적
+					{ / }
+					<!--{ / }-->
+	
+					<!--{ ? .delivery_number }-->
+					<a href="{.tracking_url}" target="_blank"><span class="blue">
+					{.delivery_company_array[.delivery_company_code].company} {.delivery_number} 배송추적</span></a>
+					<!--{ : }-->
+					<a href="javascript:alert('운송장번호가 없습니다.');"><span class="blue">배송추적</span></a>
+					<!--{ / }-->
+					<!--{ ? .invoice_send_yn=='y' }-->
+					<a href="javascript:printInvoiceView('{.order_seq}','{.export_code}')"><span class="icon-print-invoice"></span></a>
+					<!--{ / }-->
+					</div>
+				</td>
+				<!--{ / }-->
+				<!--출고수량-->
+				<td>{.ea}</td>
+				<!--출고완료일-->
+				<td>{?strtotime(.complete_date)>0}{.complete_date}{/}</td>
+				<!--배송완료일-->
+				<td  nowrap="nowrap" >
+					<!--{ ? .goods_kind == 'coupon' }-->
+						<div class="coupon_use_log_hand hand">
+							<!--{? .coupon_use_log }-->
+								<div style="width:100%;" class="orange">
+								<!--{ @ .coupon_use_log }-->
+									<div  class="underline">
+										<span class="left">
+											{=date('Y-m-d', strtotime(..regist_date))}
+										</span>
+										<span class="right">
+											{?..coupon_value_type == 'price'}{=get_currency_price(..coupon_use_value,3)}{:}{=number_format(..coupon_use_value)}회{/}
+										</span>
+									</div>
+								<!--{ / }-->
+								</div>
+							<!--{ / }-->
+							<div class="coupon_use_log_table hide" >
+								<!--{? .coupon_use_log }-->
+									<div style="width:100%;margin-top:10px;" class="hand">
+										<table width="100%" class="simpledata-table-style" >
+										<thead >
+										<tr>
+											<th>사용 일시</th>
+											<th>사용</th>
+											<th>지역(수수료)</th>
+											<th>확인자</th>
+										</tr>
+										</thead>
+										<tbody>
+									<!--{ @ .coupon_use_log }-->
+										<tr>
+											<td class="center">
+												{=date('Y-m-d H:i', strtotime(..regist_date))}
+											</td>
+											<td class="center">
+												{?..coupon_value_type == 'price'}{=get_currency_price(..coupon_use_value,3)}{:}{=number_format(..coupon_use_value)}회{/}
+											</td>
+											<td class="center">{..coupon_use_area}({=number_format(..address_commission)}%)</td>
+											<td class="center">{?..confirm_user}{..confirm_user}{:}{..manager_id}{/}</td>
+										</tr>
+									<!--{ / }-->
+										</tbody>
+										</table>
+									</div>
+								<!--{ / }-->
+							</div>
+						</div>
+					<!--{ : }-->
+					{?strtotime(.shipping_date)>0}{.shipping_date}{/}
+					<!--{ / }-->
+				</td>
+				<!--출고상태-->
+				<td>
+					<div class="{ ? .goods_kind == 'coupon' } coupon_status_btn hand {/}" { ? .goods_kind == 'coupon' } socialcp_status="{.socialcp_status}" {/} >
+						<!--{?_GET.export_code==.export_code}-->
+						<span style="background-color:yellow">{.mstatus}</span>
+						<!--{ : }-->
+						{.mstatus}
+						<!--{ / }-->
+					</div>
+				</td>
+				<!--마일리지 지급-->
+				<td>
+					<table class="order-inner-table">
+						<col /><col width="40" />
+						<tr>
+							<td><img src="../images/common/icon/icon_ord_emn.gif" title="마일리지" /></td>
+							<td class="right">{=get_currency_price(.reserve)}</td>
+						</tr>
+						<tr>
+							<td><img src="../images/common/icon/icon_ord_point.gif" title="포인트" /></td>
+							<td class="right">{=get_currency_price(.point)}</td>
+						</tr>
+					</table>
+				</td>
+			</tr>
+			<!--{ / }-->
+			<!--{ : }-->
+			<tr align="center">
+				<td colspan="11">출고 내역이 없습니다.</td>
+			</tr>
+			<!--{ / }-->
+	
+	
+		</tbody>
+	</table>
+	</div>
+
+	{?goods_kind_arr['coupon'] >= 50 }
+	<div style="margin:20px 0;width:100%;text-align:center;" class="btn_destory">
+		<span class="btn large icon red"><button type="button" class="coupon_use_btn resp_btn active3" order_seq="{orders.order_seq}" onclick="coupon_use_btn(this)">티켓 사용확인 및 티켓 재발송</button></span>
+	</div>
+	{/}
+	<div class="contents_dvs v2">
+	<div class="item-title">주문<span class="title_order_number">({orders.order_seq})</span>의 무효/취소/반품 내역</div>
+	<table width="100%" class="simplelist-table-style table_row_basic">
+		<thead>
+			<tr>
+				<th colspan="2">무효/취소/반품</th>
+				<th>처리 금액</th>
+				<th>처리 수량</th>
+				<th>처리 상태</th>
+				<th>접수일</th>
+				<th>완료일</th>
+				<th>처리 완료자</th>
+			</tr>
+		</thead>
+		<tbody>
+			<!--{ ? data_refund }-->
+			<!--{ @ data_refund }-->
+			<tr class="center">
+				<td>
+				환불
+				<!--{ ? .is_return == 1 }-->
+				(반품)
+				<!--{ : }-->
+				(취소)
+				<!--{ / }-->
+				</td>
+				<td><span class="blue">{.refund_code}</span></a>
+				</td>
+				<td>{=get_currency_price(.refund_price)}</td>
+				<td>{=number_format(.ea)}</td>
+				<td>
+					{?_GET.refund_code == .refund_code}
+					<span style="background-color:yellow">{.mstatus}</span>
+					{ : }
+					{.mstatus}
+					{ / }
+				</td>
+				<td>{.regist_date}</td>
+				<td>{? .refund_date && .refund_date!='0000-00-00 00:00:00'}{.refund_date}{/}</td>
+				<td>{.mname}</td>
+			</tr>
+			<!--{ / }-->
+	
+			<!--{ @ data_return }-->
+			<tr class="center">
+				<td>
+				반품
+				</td>
+				<td>
+					<a href="../returns/view?no={.return_code}" target="_blank">
+						{?_GET.return_code == .return_code}
+						<span class="blue" style="background-color:yellow">{.return_code}</span>
+						{ : }
+						<span class="blue">{.return_code}</span>
+						{ / }
+					</a>
+				</td>
+				<td>{=get_currency_price(.return_price)}</td>
+				<td>{=number_format(.ea)}</td>
+				<td>
+					{?_GET.return_code == .return_code}
+					<span style="background-color:yellow">{.mstatus}</span>
+					{ : }
+					{.mstatus}
+					{ / }
+				</td>
+				<td>{.regist_date}</td>
+				<td>{? .return_date && .return_date!='0000-00-00 00:00:00'}{.return_date}{/}</td>
+				<td>{.mname}</td>
+			</tr>
+			<!--{ / }-->
+	
+			<!--{ @ data_exchange }-->
+			<tr class="center">
+				<td>
+				반품
+				(맞교환)
+				</td>
+				<td>
+				<a href="../returns/view?no={.return_code}" target="_blank"><span class="blue">{.return_code}</span></a>
+				</td>
+				<td>{=get_currency_price(.return_price)}</td>
+				<td>{=number_format(.ea)}</td>
+				<td>{.mstatus}</td>
+				<td>{.regist_date}</td>
+				<td>{? .return_date && .return_date!='0000-00-00 00:00:00'}{.return_date}{/}</td>
+				<td>{.mname}</td>
+			</tr>
+			<!--{ / }-->
+	
+			<!--{ : }-->
+			<tr align="center">
+				<td colspan="11">무효/취소/반품 내역이 없습니다.</td>
+			</tr>
+			<!--{ / }-->
+		</tbody>
+	</table>
+	</div>
+	<!--{ / }-->
+	
+	<!-- 출고상세/반품상세/환불상세 에서만 노출 시작 -->
+	<!-- { ? in_array(pagemode,array('export_view','refund_view','return_view'))} -->
+	<script type="text/javascript">
+	$(function(){
+		$("#order_summary_open").bind("click",function(){
+			$(this).hide();
+			$("#order_summary_close").show();
+			$("#order-summary").stop(true,true).slideDown();
+			if($(this).attr("mode") == "refund_view" || $(this).attr("mode") == "return_view"){
+				$("#order-summary2").stop(true,true).slideDown();
+			}
+		});
+		$("#order_summary_close").bind("click",function(){
+			$(this).hide();
+			$("#order_summary_open").show();
+			$("#order-summary").stop(true,true).slideUp();
+			if($(this).attr("mode") == "refund_view" || $(this).attr("mode") == "return_view"){
+				$("#order-summary2").stop(true,true).slideUp();
+			}
+		});
+	
+		$(".export_order_summary_open").bind("click",function(){
+			$(this).hide();
+			order_seq	= $(this).attr('order_seq');
+			$("#order_summary_close_" + order_seq).show();
+			$("#order-summary-dvs_" + order_seq).stop(true,true).slideDown();
+		});
+		$(".export_order_summary_close").bind("click",function(){
+			$(this).hide();
+			order_seq	= $(this).attr('order_seq');
+			$("#order_summary_open_" + order_seq).show();
+			$("#order-summary-dvs_" + order_seq).stop(true,true).slideUp();
+		});
+	})
+	</script>
+	</div>
+		<!-- { ? pagemode == 'export_view'} -->
+	<div class="center btn_destory">
+		<span id="order_summary_open_{orders.order_seq}" order_seq="{orders.order_seq}" class="export_order_summary_open btn medium"><button type="button" class="resp_btn v3">원주문({orders.order_seq}) 정보 펼쳐보기  ▼</button></span>
+		<span id="order_summary_close_{orders.order_seq}" order_seq="{orders.order_seq}" class="export_order_summary_close btn medium" style="display:none"><button  type="button" class="resp_btn v3">원주문({orders.order_seq}) 정보 닫기 ▲</button></span>
+	</div>
+		<!--{ / }-->
+	<!-- { / } -->
+	<!-- 출고상세/반품상세/환불상세 에서만 노출 끝 -->
+	<div id="order-summary-dvs{ ? pagemode == 'export_view'}_{orders.order_seq}{/}" class="contents_dvs v2" { ? pagemode == 'export_view'}style="display:none;"{/}>		
+		<!-- 주문상세/출고상세/반품상세/환불상세 에서만 노출 시작 -->		
+		<div id="order-summary-title{ ? pagemode == 'export_view'}_{orders.order_seq}{/}" class="item-title item-title-order-item order-summary">주문상품
+			{?linkage_mallnames && orders.linkage_mall_code && orders.step < 40}
+				<span class="fx11 red">본 주문은 {linkage_mallnames[orders.linkage_mall_code]}의 주문입니다. 수집된 주문 상품 중 부정확한 주문 상품은 반드시 매칭을 해 주셔야만 출고가 가능합니다.</span>
+			{/}
+		</div>			
+		<!-- 주문상품 상세 -->
+		<div id="order-summary{ ? pagemode == 'export_view'}_{orders.order_seq}{/}" class="order-summary">
+		<table class="order-summary-table table_row_basic" width="100%" border=0>
+			<colgroup>
+				<col /><!--주문상품-->
+				<col width="5%" /><!--수량-->
+				<col width="5%" /><!--정가-->
+				<col width="5%" /><!--할인가-->
+				<col width="5%" /><!--할인-->
+				<col width="7%" /><!--마일리지-->
+				<col width="5%" /><!--재고-->
+				<col width="3%" /><!--결제확인-->
+				<col width="3%" /><!--상품준비-->
+				<col width="3%" /><!--출고준비-->
+				<col width="3%" /><!--출고완료-->
+				<col width="3%" /><!--배송중-->
+				<col width="3%" /><!--취소-->
+				<col width="3%" /><!--배송완료-->
+				<col width="8%" /><!--상품상태-->
+				<col width="8%" /><!--배송-->
+			</colgroup>
+			<thead class="oth">
+				<tr>
+					<th class="dark">주문상품</th>
+					<th class="dark">수량</th>
+					<th class="dark">상품금액</th>
+					<th class="dark">할인금액<br /><span class="desc">(정산차감)</span></th>
+					<th class="dark">할인적용금액<br /><span class="desc">(단가)</span></th>
+						<th class="dark">예상마일리지
+							<span class="helpicon2 detailDescriptionLayerBtn" title="예상마일리지/예상포인트"></span>
+							<div class="detailDescriptionLayer hide">주문서 기준의 예상 마일리지입니다.<br />취소/반품/소멸 시 마일리지액이 없을 수 있습니다.</div>
+						</th>
+					<th class="dark">
+						재고/가용<br/>
+							<span class="helpicon2 detailDescriptionLayerBtn" title="재고/가용"></span>
+						<!--{ @config_load('order','ableStockStep') }-->
+						<!--{ ? .value_ == '25' }-->
+							<div class="detailDescriptionLayer hide">가용 = 재고-출고예약량-불량재고<br/>출고예약량 = 결제확인+상품준비+출고준비</div>
+						<!--{ : }-->
+							<div class="detailDescriptionLayer hide">가용 = 재고-출고예약량-불량재고<br/>출고예약량 = 주문접수+결제확인+상품준비+출고준비</div>
+						<!--{ / }-->
+						<!--{ / }--></th>
+					<th class="dark">결제<br />확인</th>
+					<th class="dark">상품<br />준비</th>
+					<th class="dark">출고<br />준비</th>
+					<th class="dark">출고<br />완료</th>
+					<th class="dark">배송<br/>중</th>
+					<th class="dark">배송<br />완료</th>
+						<th class="dark">취소<br />
+							<span class="helpicon2 detailDescriptionLayerBtn" title="취소"></span>
+							<div class="detailDescriptionLayer hide">[주문상품 기준 합계] 결제취소</div>
+					<th class="dark">상품상태</th>
+					<th class="dark">배송</th>
+				</tr>
+			</thead>
+		
+			<tbody class="otb">
+				<!--{ @ shipping_group_items }-->
+					<!--{ @ .items }-->
+					<!--{ @ ..options }-->
+		
+					<!--{ ? ..index_ == 0  && .index_}-->
+						<!--{?..goods_type == 'gift'}-->
+							<tr class="order-item-row order-item-row-topline" bgcolor="#f6f6f6">
+						<!--{:}-->
+							<tr class="order-item-row order-item-row-topline">
+						<!--{/}-->
+					<!--{ : }-->
+						<!--{?..goods_type == 'gift'}-->
+							<tr class="order-item-row" bgcolor="#f6f6f6">
+						<!--{:}-->
+							<tr class="order-item-row">
+						<!--{/}-->
+					<!--{ / }-->
+						<td class="info" >
+						<table width="100%" border="0" cellpadding="0" cellspacing="0" class="noborder-table">
+						<col width="40" /><col />
+							<tr>
+								<td class="left" valign="top" style="border:none;"><a href='/goods/view?no={..goods_seq}' target='_blank'><span class="order-item-image"><img class="small_goods_image" src="{..image}" /></span></a></td>
+								<td class="left" valign="top" style="border:none;">
+									<div class="goods_name" >
+										{? ...npay_product_order_id}<div class="ngray bold">{...npay_product_order_id}<span style="font-size:11px;font-weight:normal"> (Npay상품주문번호)</span></div>{/}
+										{@...order_goodstype }
+										<img src="../images/design/icon_order_{=....key_}.gif" align="absmiddle" title="{=....value_}" />
+										{ / }
+										<!--{?..goods_kind == 'coupon'}-->
+										<a href='../goods/social_regist?no={..goods_seq}' target='_blank'>
+										<!--{:..goods_type == 'gift'}-->
+										<a href='../goods/gift_regist?no={..goods_seq}' target='_blank'>
+										<!--{:}-->
+										<a href='../goods/regist?no={..goods_seq}' target='_blank'>
+										<!--{/}-->
+											<span class="goods_name1" style="color:#000000;">
+		
+		
+											{?.shipping.provider_seq==1 && ..provider_seq && ..provider_seq !=1}<span class="red">[위탁배송 : {..provider_name}]</span>{/}{..goods_name}
+											</span>
+										</a>
+									</div>
+									<div>
+										<!--{ ? ..tax == 'exempt' }-->
+										<img src="../images/common/icon/taxfree.gif" alt="비과세" style="vertical-align: middle;"/>
+										<!--{ / }-->
+									</div>
+		
+									<!--{ ? ..event_seq && ..event_title }-->
+										<div>
+											<span class="btn small gray"><button type="button" class="goods_event hand resp_btn v2">{..event_title}</button></span>
+										</div>
+									<!--{ / }-->
+									<!--{? ...option1!=null}-->
+									<div class="goods_option" style="padding-top:3px;">
+										<img src="/admin/skin/default/images/common/icon_option.gif" />
+										<!--{?...title1}-->{...title1}:<!--{ / }-->{...option1}
+										<!--{? ...option2!=null }{?...title2}-->{...title2}:<!--{ / }-->{...option2}<!--{ / }-->
+										<!--{? ...option3!=null }{?...title3}-->{...title3}:<!--{ / }-->{...option3}<!--{ / }-->
+										<!--{? ...option4!=null }{?...title4}-->{...title4}:<!--{ / }-->{...option4}<!--{ / }-->
+										<!--{? ...option5!=null }{?...title5}-->{...title5}:<!--{ / }-->{...option5}<!--{ / }-->
+									</div>
+									<!--{ / }-->
+		
+									<!--{ ? ...inputs }-->
+										<!--{ @ ...inputs }-->
+											<!--{ ? ....value }-->
+									<div class="goods_input" style="padding-top:3px;">
+										<img src="/admin/skin/default/images/common/icon_input.gif" />
+										<!--{?....title}-->{....title}:<!--{ / }-->
+										<!--{?....type=='file'}-->
+										<img src="/data/order/{....value}" style="width:25px;" align="absmiddle">
+										<a href="../order_process/filedown?file={....value}" target="actionFrame">{....value}</a>
+										<!--{:}-->{....value}<!--{ / }-->
+									</div>
+											<!--{ / }-->
+										<!--{ / }-->
+									<!--{ / }-->
+		
+									<div>
+										{? ..goods_type == "gift" }
+											{? ..gift_title }<div><span class="fx11">{..gift_title}</span> <span class="btn small gray"><button type="button" class="gift_log resp_btn v2" order_seq="{=..order_seq}" item_seq="{..item_seq}">자세히</button></span></div>{/}
+										{ / }
+									</div>
+		
+									<!--{ ? ...package_yn != 'y' && (...whinfo.wh_name || ...goods_code) }-->
+									<div class="warehouse-info-lay">
+									<ul>
+											<!--{ ? ...whinfo.wh_name }-->
+											<li>
+											{...whinfo.wh_name} {?...whinfo.location_code}({...whinfo.location_code}){ / } : {=number_format(...whinfo.ea)}({=number_format(...whinfo.badea)})
+											</li>
+											<!--{ / }-->
+											{?...goods_code}<li>상품코드 : {...goods_code}</li>{ / }
+									</ul>
+									</div>
+									<!--{ / }-->
+								</td>
+							</tr>
+							</table>
+						</td>
+						<td class="center info ea">{ ? ...package_yn == 'y' }[{ / }{...ea}{ ? ...package_yn == 'y' }]{ / }</td>
+						<td class="price info right">{=get_currency_price(...out_price)}</td>
+						<td class="price info right">
+							<div class="hand underline under_div_view">
+								{=get_currency_price(...out_tot_sale)}
+								<div class="relative under_div_view_contents  hide">
+									<div class="sale_price_layer" style="width:400px;">
+										<div class="title_line">할인내역</div>
+										<br style="line-height:10px;" />
+										<table width="100%" border="0" cellpadding="0" cellspacing="0">
+										<col width="55" />
+										<col width="115" />
+										<col width="70" />
+										<col width="70" />
+										<col />
+										<tr>
+											<th colspan="2">구분</th>
+											<th class="bolds">할인</th>
+											<th>본사 부담</th>
+											<th class="ends">입점사 부담</th>
+										</tr>
+										<tr>
+											<td class="gr">이벤트</td>
+											<td class="gr"></td>
+											<td class="bolds  prices">
+												{= get_currency_price( ...out_event_sale )}
+											</td>
+											<td class="prices">
+												{= get_currency_price( ...out_event_sale - ...event_provider )}
+											</td>
+											<td class="ends prices">
+												{= get_currency_price( ...event_provider )}
+											</td>
+										</tr>
+		
+										<tr>
+											<td class="gr">복수구매</td>
+											<td class="gr"></td>
+											<td class="bolds  prices">
+												{=get_currency_price( ...out_multi_sale  )}
+											</td>
+											<td class="prices">
+												{=get_currency_price( ...out_multi_sale - ...multi_provider )}
+											</td>
+											<td class="ends prices">
+												{=get_currency_price( ...multi_provider )}
+											</td>
+										</tr>
+										<tr>
+											<td class="gr">쿠폰</td>
+											<td class="gr">
+												{? ...out_coupon_sale > 0 }
+													<div class="url-ctrl underline"><a href="javascript:open_saleinfo_layer('coupon_down','{...download_seq}','{...item_option_seq}')">{...coupon_info.coupon_name}</div>
+												{ / }
+												{? ...unit_ordersheet > 0 }
+													<div class="url-ctrl underline"><a href="javascript:open_saleinfo_layer('coupon_down','{orders.ordersheet_seq}','')">{orders.ordersheet_coupon_info.coupon_name}</div>
+												{ / }
+											</td>
+											<td class="bolds  prices">
+												{=get_currency_price( ...out_coupon_sale )}
+											</td>
+											<td class="prices">
+												{=get_currency_price( ...out_coupon_sale - ...coupon_provider )}
+											</td>
+											<td class="ends prices">
+												{=get_currency_price( ...coupon_provider )}
+											</td>
+										</tr>
+		
+										<tr>
+											<td class="gr">등급</td>
+											<td class="gr">{? ...out_member_sale > 0 }{members.group_name}{ / }</td>
+											<td class="bolds  prices">
+												{=get_currency_price( ...out_member_sale )}
+											</td>
+											<td class="prices">
+												{=get_currency_price( ...out_member_sale )}
+											</td>
+											<td class="ends prices">
+												0
+											</td>
+										</tr>
+		
+										<tr>
+											<td class="gr">모바일</td>
+											<td class="gr"></td>
+											<td class="bolds  prices">
+												{=get_currency_price( ...out_mobile_sale )}
+											</td>
+											<td class="prices">
+												{=get_currency_price( ...out_mobile_sale )}
+											</td>
+											<td class="ends prices">
+												0
+											</td>
+										</tr>
+		
+										<tr>
+											<td class="gr">코드</td>
+											<td class="gr">
+												{? ...out_promotion_code_sale > 0 }
+													<div class="url-ctrl underline"><a href="javascript:open_saleinfo_layer('promotion_code','{...promotion_code_seq}','{...item_option_seq}')">{...promotion_info.promotion_name}</a></div>
+												{ / }
+											</td>
+											<td class="bolds  prices">
+												{=get_currency_price( ...out_promotion_code_sale )}
+											</td>
+											<td class="prices">
+												{=get_currency_price( ...out_promotion_code_sale - ...promotion_provider )}
+											</td>
+											<td class="ends prices">
+												{=get_currency_price( ...promotion_provider )}
+											</td>
+										</tr>
+		
+										<tr>
+											<td class="gr">유입</td>
+											<td class="gr">
+												{? ...out_referer_sale > 0 }
+													<div class="url-ctrl underline">
+														<a target="_blank" href="{? orders.referer_naver }{orders.referer_naver}{:}{orders.referer}{/}">{orders.referer_domain}</a>
+														<div class="absolute url-helper" style="padding:1px 4px;display: none;"><a target="_blank" href="{? orders.referer_naver }{orders.referer_naver}{:}{orders.referer}{/}">{? orders.referer_naver }{orders.referer_naver}{:}{orders.referer}{/}</a></div>
+													</div>
+												{ / }
+											</td>
+											<td class="bolds  prices">
+												{=get_currency_price( ...out_referer_sale )}
+											</td>
+											<td class="prices">
+												{=get_currency_price( ...out_referer_sale - ...referer_provider )}
+											</td>
+											<td class="ends prices">
+												{=get_currency_price( ...referer_provider )}
+											</td>
+										</tr>
+										<tr>
+											<td class="gr">마일리지</td>
+											<td class="gr">
+												
+											</td>
+											<td class="bolds  prices">
+												{=get_currency_price( ...out_emoney_sale )}
+											</td>
+											<td class="prices">
+												{=get_currency_price( ...out_emoney_sale )}
+											</td>
+											<td class="ends prices">
+												0
+											</td>
+										</tr>
+										<tr>
+											<td class="gr">에누리</td>
+											<td class="gr">
+												
+											</td>
+											<td class="bolds  prices">
+												{=get_currency_price( ...out_enuri_sale )}
+											</td>
+											<td class="prices">
+												{=get_currency_price( ...out_enuri_sale )}
+											</td>
+											<td class="ends prices">
+												0
+											</td>
+										</tr>
+										
+										</table>
+									</div>
+								</div>
+							</div>
+							<span class="desc normal">({=get_currency_price(...tot_sale_provider )})</span>
+						</td>
+						<td class="price info right">{=get_currency_price(...out_sale_price)}<br /><span class="desc normal">({=get_currency_price(...sale_price)})</span></td>
+						<td class="price info right">
+							<!--{ ? ...reserve_log }-->
+							<div class="under_div_view hand underline">
+								{=get_currency_price(...out_reserve)}
+								<div class="relative hide under_div_view_contents">
+									<div class="sale_price_layer" style="width:150px;">
+										<div class="title_line">예상마일리지</div>
+										<br style="line-height:10px;" />
+										<table width="100%" border="0" cellpadding="0" cellspacing="0">
+											<col width="70" />
+											<tr>
+												<td class="ends">
+												<!--{ @...reserve_log }-->
+												{ ....value_ } * {...ea}&nbsp;&nbsp;
+												<!--{ / }-->
+												</td>
+											</tr>
+										</table>
+									</div>
+								</div>
+							</div>
+							<!--{ : }-->
+							<div>
+							{=get_currency_price(...out_reserve)}
+							</div>
+							<!--{ / }-->
+		
+							<!--{ ? ...point_log }-->
+							<div class="under_div_view hand underline">
+								<span class="desc underline">({=get_currency_price(...out_point)})</span>
+								<div class="relative hide under_div_view_contents">
+									<div class="sale_price_layer" style="width:150px;">
+										<div class="title_line">예상포인트</div>
+										<br style="line-height:10px;" />
+										<table width="100%" border="0" cellpadding="0" cellspacing="0">
+											<col width="70" />
+											<tr>
+												<td class="ends">
+												<!--{ @...point_log }-->
+												{ ....value_ } * {...ea}&nbsp;&nbsp;
+												<!--{ / }-->
+												</td>
+											</tr>
+										</table>
+									</div>
+								</div>
+							</div>
+							<!--{ : }-->
+							<div>
+							<span class="desc">({=get_currency_price(...out_point)})</span>
+							</div>
+							<!--{ / }-->
+		
+						</td>
+						<td class="info">
+						<!--{ ? ...package_yn == 'y' }-->
+							<div class="center"><span class="fx11 dotum blue">실제상품▼</span></div>
+						<!--{ : }-->
+							<div class="right">
+							<!--{ ? ...real_stock != '미매칭' }-->
+								<!--{ ? ...real_stock > 0 }-->
+								<span class="blue">{=number_format(...real_stock)}</span>
+								<!--{ : }-->
+								<span class="red">{=...real_stock}</span>
+								<!--{ / }-->
+							<!--{ : }-->
+								<span class="red">{=...real_stock}</span>
+							<!--{ / }-->
+							</div>
+							<div class="right">
+							<!--{ ? ...stock != '미매칭' }-->
+								<!--{ ? ...stock > 0 }-->
+								<span class="blue bold">{=number_format(...stock)}</span>
+								<!--{ : }-->
+								<span class="red bold">{=number_format(...stock)}</span>
+								<!--{ / }-->
+							<!--{ : }-->
+								<span class="red">{=...stock}</span>
+							<!--{ / }-->
+							</div>
+							<div class="right">
+								<span class="wh_option hand" onclick="goods_option_btn('{..goods_seq}',this,{ ? scm_cfg['use'] == 'Y'}'{...provider_seq}'{ : }'2'{ / })" option_code1="{=...option1}" option_code2="{=...option2}" option_code3="{=...option3}" option_code4="{=...option4}" option_code5="{=...option5}">
+									<span class="option-stock" optType="option" optSeq="{...option_seq}"></span>
+									<span class="btn-administration goodsOptionBtn" goods_seq="{..goods_seq}"><span class="hide">옵션</span></span>
+								</span>
+							</div>
+						<!--{ / }-->
+						</td>
+						<td class="info ea" align="center">{ ? ...package_yn == 'y' }[{ / }{=number_format(...step25)}{ ? ...package_yn == 'y' }]{ / }</td>
+						<td class="info ea" align="center">{ ? ...package_yn == 'y' }[{ / }{=number_format(...step35)}{ ? ...package_yn == 'y' }]{ / }</td>
+						<td class="info ea" align="center">{ ? ...package_yn == 'y' }[{ / }{=number_format(...step45)}{ ? ...package_yn == 'y' }]{ / }</td>
+						<td class="info ea" align="center">{ ? ...package_yn == 'y' }[{ / }{=number_format(...step55)}{ ? ...package_yn == 'y' }]{ / }</td>
+						<td class="info ea" align="center">{ ? ...package_yn == 'y' }[{ / }{=number_format(...step65)}{ ? ...package_yn == 'y' }]{ / }</td>
+						<td align="center" class="info ea">
+							{ ? ...package_yn == 'y' }[{ / }{ ...step75 }{ ? ...package_yn == 'y' }]{ / }
+							{ ? ...cancel_list_ea || ...exchange_list_ea || ...return_list_ea  || ...refund_list_ea }
+							<div>
+								{ ? ...exchange_list_ea }
+									<a href="../returns/catalog?keyword={..order_seq}" target="_blank"><img src='../images/common/icon/icon_list_return_exchange.gif' align="absmiddle"><span style="font-size:11px;color:#ea3b91">{...exchange_list_ea}</span></a>
+								{ / }
+								{ ? ...return_list_ea }
+									<a href="../returns/catalog?keyword={..order_seq}" target="_blank"><img src='../images/common/icon/icon_list_return.gif' align="absmiddle"><span style="font-size:11px;color:#ea3b91">{...return_list_ea}</span></a>
+									<a href="../refund/catalog?keyword={..order_seq}" target="_blank"><img src='../images/common/icon/icon_list_refund.gif' align="absmiddle"><span style="font-size:11px;color:#ea3b91">{...return_list_ea}</span></a>
+								{ / }
+							</div>
+							{ / }
+						</td>
+						<td class="info ea" align="center">{ ? ...package_yn == 'y' }[{ / }{...step85}{ ? ...package_yn == 'y' }]{ / }</td>
+						<td class="info fx11" align="center">
+							{ ? ...step <= 45 || ...step > 75 }
+								{...mstep}
+							{ : }
+							<div class="under_div_view hand underline">
+								{...mstep}
+								<div class="absolute hide under_div_view_contents">
+		
+									<div class="sale_price_layer" style="width:150px;">
+										<div class="title_line">배송내역</div>
+										<br style="line-height:10px;" />
+										<table width="100%" border="0" cellpadding="0" cellspacing="0">
+										<col width="70" />
+										<col width="70" />
+										<col />
+										<tr>
+											<th>구분</th>
+											<th class="bolds ends">수량</th>
+										</tr>
+										<tr>
+											<td class="gr">택배선불</td>
+											<td class="bolds  prices ends">
+												{=number_format(...export_sum_ea.delivery)}
+											</td>
+										</tr>
+										<tr>
+											<td class="gr">택배착불</td>
+											<td class="bolds  prices ends">
+												{=number_format(...export_sum_ea.postpaid)}
+											</td>
+										</tr>
+										<tr>
+											<td class="gr">퀵서비스</td>
+											<td class="bolds  prices ends">
+												{=number_format(...export_sum_ea.quick)}
+											</td>
+										</tr>
+										<tr>
+											<td class="gr">직접수령</td>
+											<td class="bolds  prices ends">
+												{=number_format(...export_sum_ea.direct)}
+											</td>
+										</tr>
+										</table>
+									</div>
+		
+								</div>
+							</div>
+							{ / }
+							<!--{ ? ..goods_kind == 'coupon' && ...step >= 55 }-->
+							<span class="btn"><img src="../images/common/btn_ok_use.gif" class="coupon_use_btn" order_seq="{..order_seq}" /></span>
+							<!--{ / }-->
+						</td>
+						{ ? ...shipping_division }
+						<td class="fx11" align="right" rowspan="{=.rowspan}">
+		
+								<div><span class="blue">{?.shipping.provider_seq==1}본사{:}{.shipping.provider_name}{/}</span></div>
+		
+								<!--{ ? orders.sitetype == "POS" }-->
+									<!-- 기획적 요청에 의해 POS 주문은 강제적으로 별도의 노출 모양을 갖는다 -->
+									<div class="lsp-1">[{.shipping.shipping_set_name}]{.shipping.shipping_store_name}</div>
+								<!--{ : }-->
+									{ ? preg_match('/gift/',.shipping.shipping_group) }
+										사은품배송
+									{:}
+			
+										<div>
+										<span>{?.shipping.shipping_method_name == '쿠폰'}티켓{ : } {.shipping.shipping_set_name}{ / }
+										{? orders.international_country}<span class="pdl5 lsp-1">{=orders.international_country}</span>{/}
+									</div>
+			
+			
+									{ ? .shipping.shipping_set_code == 'direct_store' }
+									<div class="lsp-1">수령매장 : {.shipping.shipping_store_name}</div>
+									{ : }
+									<div class="detailDescriptionLayerBtn hand">
+										<span class="bold">
+										{? .shipping.shipping_cost > 0 }
+											{=get_currency_price(.shipping.shipping_cost,3)}
+										{:.shipping.postpaid > 0 }
+											{=get_currency_price(.shipping.postpaid,3)}
+										{ : }
+											무료
+										{ / }
+										</span>
+										{? .shipping.shipping_cost > 0 || .shipping.postpaid > 0}
+										{? .shipping.shipping_pay_type}<span class="lsp-1">({.shipping.shipping_pay_type})</span>{/}
+										{ / }
+									</div>
+									{ / }
+								<!--{ / }-->
+		
+								{ ? .shipping.shipping_hop_date }
+								<div class="lsp-1">희망배송일 : {.shipping.shipping_hop_date}</div>
+								{ : .shipping.reserve_sdate }
+								<div class="lsp-1">예약배송일 : {.shipping.reserve_sdate}</div>
+								<!--{ / }-->
+		
+									{ ? .shipping.shipping_coupon_sale > 0 }
+									<div class="desc">-{=get_currency_price(.shipping.shipping_coupon_sale,3)} 쿠폰</div>
+									{ / }
+									{ ? .shipping.shipping_promotion_code_sale  > 0 }
+									<div class="desc">-{=get_currency_price(.shipping.shipping_promotion_code_sale,3)} 코드</div>
+									{ / }
+								{ / }
+		
+							</td>
+							{ / }
+					</tr>
+		
+					<!--{ @ ...packages }-->
+					<tr class="order-item-row">
+						<td class="package-option" style="padding-left:22px;">
+		
+							<table border="0" cellpadding="0" cellspacing="0" width="100%">
+							<col /><col />
+							<tr>
+								<td valign="top" style="border:none;"><img src="../images/common/icon/ico_package.gif" border="0" /></td>
+								<td class="left" valign="top" style="border:none;">
+									<a href='/goods/view?no={....goods_seq}' target='_blank'><span class="order-item-image"><img class="small_goods_image" src="{....image}" /></span></a>
+								</td>
+								<td class="left" valign="top" style="border:none;">
+									<div class="goods_name">
+										<!--{ ? ....goods_kind == 'coupon'}-->
+										<a href='../goods/social_regist?no={....goods_seq}' target='_blank'>
+										<!--{ : }-->
+										<a href='../goods/regist?no={....goods_seq}' target='_blank'>
+										<!--{ / }-->
+											<span class="title">[실제상품 {....index_+1}]</span>
+											<span class="goods_name1 title">
+											{....goods_name}
+											</span>
+										</a>
+									</div>
+									<div>
+										<!--{ ? ....adult_goods == 'Y' }-->
+										<img src="../images/common/auth_img.png" alt="성인" style="vertical-align: middle;"/>
+										<!--{ / }-->
+										<!--{ ? ....option_international_shipping_status == 'y' }-->
+										<img src="../images/common/icon/plane_on.png" alt="해외배송상품" style="vertical-align: middle;" height="19" />
+										<!--{ / }-->
+										<!--{ ? ....cancel_type == '1' }-->
+										<img src="../images/common/icon/nocancellation.gif" alt="청약철회" style="vertical-align: middle;"/>
+										<!--{ / }-->
+										<!--{ ? ....tax == 'exempt' }-->
+										<img src="../images/common/icon/taxfree.gif" alt="비과세" style="vertical-align: middle;"/>
+										<!--{ / }-->
+									</div>
+		
+									<!--{ ? ....event_seq && ....event_title }-->
+									<div style="padding-top:3px;">
+										<a href="/admin/event/{ ? ....event_type == 'solo' }solo{ / }regist?event_seq={....event_seq}" target='_blank'><span class="btn small gray"><button type="button" class="goods_event hand resp_btn v2">{....event_title}</button></span></a>
+									</div>
+									<!--{ / }-->
+									<!--{? ....option1!=null}-->
+									<div class="goods_option" style="padding-top:3px;">
+										<img src="/admin/skin/default/images/common/icon_option.gif" align="absmiddle" />
+										<!--{?....title1}-->{....title1}:<!--{ / }-->{....option1}
+										<!--{? ....option2!=null }{?....title2}-->{....title2}:<!--{ / }-->{....option2}<!--{ / }-->
+										<!--{? ....option3!=null }{?....title3}-->{....title3}:<!--{ / }-->{....option3}<!--{ / }-->
+										<!--{? ....option4!=null }{?....title4}-->{....title4}:<!--{ / }-->{....option4}<!--{ / }-->
+										<!--{? ....option5!=null }{?....title5}-->{....title5}:<!--{ / }-->{....option5}<!--{ / }-->
+									</div>
+									<!--{ / }-->
+		
+									<!--{ ? ....inputs }-->
+										<!--{ @ ....inputs }-->
+											<!--{ ? .....value }-->
+									<div class="goods_input" style="padding-top:3px;">
+										<img src="/admin/skin/default/images/common/icon_input.gif" align="absmiddle" />
+										<!--{?.....title}-->{.....title}:<!--{ / }-->
+										<!--{?.....type=='file'}-->
+										<a href="../order_process/filedown?file={.....value}" target="actionFrame">{.....value}</a>
+										<!--{:}-->{.....value}<!--{ / }-->
+									</div>
+											<!--{ / }-->
+										<!--{ / }-->
+									<!--{ / }-->
+		
+									<div class="warehouse-info-lay">
+									<ul>
+										<!--{ ? ....whinfo.wh_name }-->
+										<li>
+										{....whinfo.wh_name} {?....whinfo.location_code}({....whinfo.location_code}){ / } : {=number_format(....whinfo.ea)}({=number_format(....whinfo.badea)})
+										</li>
+										<!--{ / }-->
+										<li>상품코드 : {....goods_code}</li>
+									</ul>
+									</div>
+								</td>
+							</tr>
+							</table>
+						</td>
+						<td class="package-option center">
+							<div>
+								<span class="ea">[{=number_format(...ea)}]</span>x{=number_format(....unit_ea)}={=number_format(...ea * ....unit_ea)}
+							</div>
+							<div class="center">
+								<span class="helpicon2 detailDescriptionLayerBtn" title="패키지/복합상품 주문수량"></span>
+								<div class="detailDescriptionLayer hide">해당 판매상품 주문수량 1개일때 해당 실제상품의 발송수량</div>
+							</div>
+						</td>
+						<td class="package-option center">-</td>
+						<td class="package-option center">-</td>
+						<td class="package-option center">-</td>
+						<td class="package-option center">-</td>
+						<td class="package-option center">-</td>
+						<td class="price package-option">
+							<div class="stock">{=number_format(....stock)}</div>
+							<div class="ablestock">{=number_format(....ablestock)}</div>
+							<div class="right">
+								<span class="wh_option hand" onclick="goods_option_btn('{....goods_seq}',this,{ ? scm_cfg['use'] == 'Y'}'{...provider_seq}'{ : }'2'{ / })" option_code1="{=.....option1}" option_code2="{=.....option2}" option_code3="{=.....option3}" option_code4="{=.....option4}" option_code5="{=.....option5}">
+									<span class="option-stock" optType="option" optSeq="{....option_seq}"></span>
+									<span class="btn-administration goodsOptionBtn" goods_seq="{....goods_seq}"><span class="hide">옵션</span></span>
+								</span>
+							</div>
+						</td>
+						<td class="package-option center">
+							<span class="ea">{=number_format(....unit_ea * ...step25)}</span>
+						</td>
+						<td class="package-option center">
+							<span class="ea">{=number_format(....unit_ea * ...step35)}</span>
+						</td>
+						<td class="package-option center">
+							<span class="ea">{=number_format(....unit_ea * ...step45)}</span>
+						</td>
+						<td class="package-option center">
+							<span class="ea">{=number_format(....unit_ea * ...step55)}</span>
+						</td>
+						<td class="package-option center">
+							<span class="ea">{=number_format(....unit_ea * ...step65)}</span>
+						</td>
+						<td class="package-option center">
+							<span class="ea">{=number_format(....unit_ea * ...step75)}</span>
+						</td>
+						<td class="package-option center">
+							<span class="ea">{=number_format(....unit_ea * ...step85)}</span>
+						</td>
+						<td class="package-option center">-</td>
+					</tr>
+					<!--{ / }-->
+		
+					<!--{ @ ...suboptions }-->
+					<tr class="order-item-row">
+						<td class="info suboption" style="padding-left:25px;">
+							<!--{ ? ....suboption }-->
+							<table width="100%" border="0" cellpadding="0" cellspacing="0">
+								<col width="40" /><col />
+								<tr>
+									<td valign="top" align="right" style="border:none;height:10px;"><img src="../images/common/icon_add_arrow.gif" /></td>
+									<td valign="top" style="border:none;height:10px;">
+										{? ....npay_product_order_id}<div class="ngray bold">{....npay_product_order_id}<span style="font-size:11px;font-weight:normal"> (Npay상품주문번호)</span></div>{/}
+										<img src="../images/common/icon_add.gif" align="absmiddle" />
+		
+										<span class="desc">{....title}:{....suboption}</span>
+										<!--{ ? ....package_yn != 'y' && (....goods_code || ....whinfo.wh_name)}-->
+										<div class="warehouse-info-lay">
+										<ul>
+											<!--{ ? ....whinfo.wh_name }-->
+											<li>
+											{....whinfo.wh_name} {?....whinfo.location_code}({....whinfo.location_code}){ / } : {=number_format(....whinfo.ea)}({=number_format(....whinfo.badea)})
+											</li>
+											<!--{ / }-->
+											{? ....goods_code}<li>상품코드 : {....goods_code}</li>{ / }
+										</ul>
+										</div>
+										<!--{ / }-->
+									</td>
+								</tr>
+							</table>
+							<!--{ / }-->
+						</td>
+						<td class="center info suboption ea">{ ? ....package_yn == 'y' }[{ / }{=number_format(....ea)}{ ? ....package_yn == 'y' }]{ / }</td>
+						<td class="price info suboption right">{=get_currency_price(....out_price)}</td>
+						<td class="price info suboption right">
+							<div class="under_div_view hand underline">
+								{=get_currency_price(....out_tot_sale)}
+								<div class="relative under_div_view_contents  hide">
+									<div class="sale_price_layer" style="width:300px;">
+										<div class="title_line">할인내역</div>
+										<br style="line-height:10px;" />
+										<table width="100%" border="0" cellpadding="0" cellspacing="0">
+										<col width="70" />
+										<col width="70" />
+										<col width="70" />
+										<col />
+										<tr>
+											<th>구분</th>
+											<th class="bolds">할인</th>
+											<th>본사 부담</th>
+											<th class="ends">입점사 부담</th>
+										</tr>
+		
+										<tr>
+											<td class="gr">이벤트</td>
+											<td class="bolds  prices">
+												{=get_currency_price( ....out_event_sale )}
+											</td>
+											<td class="prices">
+												{=get_currency_price( ....out_event_sale - ....event_provider )}
+											</td>
+											<td class="ends prices">
+												{=get_currency_price( ....event_provider )}
+											</td>
+										</tr>
+		
+										<tr>
+											<td class="gr">복수구매</td>
+											<td class="bolds  prices">
+												{=get_currency_price( ....out_multi_sale )}
+											</td>
+											<td class="prices">
+												{=get_currency_price( ...out_multi_sale - ...multi_provider )}
+											</td>
+											<td class="ends prices">
+												{=get_currency_price( ...multi_provider )}
+											</td>
+										</tr>
+										<tr>
+											<td class="gr">쿠폰</td>
+											<td class="bolds  prices">
+												{=get_currency_price( ....out_coupon_sale )}
+											</td>
+											<td class="prices">
+												{=get_currency_price( ....out_coupon_sale - ....coupon_provider )}
+											</td>
+											<td class="ends prices">
+												{=get_currency_price( ....coupon_provider )}
+											</td>
+										</tr>
+		
+										<tr>
+											<td class="gr">등급</td>
+											<td class="bolds  prices">
+												{=get_currency_price( ....out_member_sale )}
+											</td>
+											<td class="prices">
+												{=get_currency_price( ....out_member_sale )}
+											</td>
+											<td class="ends prices">
+												0
+											</td>
+										</tr>
+		
+										<tr>
+											<td class="gr">모바일</td>
+											<td class="bolds  prices">
+												{=get_currency_price( ....out_mobile_sale )}
+											</td>
+											<td class="prices">
+												{=get_currency_price( ....out_mobile_sale )}
+											</td>
+											<td class="ends prices">
+												0
+											</td>
+										</tr>
+		
+										<tr>
+											<td class="gr">코드</td>
+											<td class="bolds  prices">
+												{=get_currency_price( ....out_promotion_code_sale )}
+											</td>
+											<td class="prices">
+												{=get_currency_price( ....out_promotion_code_sale - ....promotion_provider )}
+											</td>
+											<td class="ends prices">
+												{=get_currency_price( ....promotion_provider )}
+											</td>
+										</tr>
+		
+										<tr>
+											<td class="gr">유입</td>
+											<td class="bolds  prices">
+												{=get_currency_price( ....out_referer_sale )}
+											</td>
+											<td class="prices">
+												{=get_currency_price( ....out_referer_sale - ....referer_provider )}
+											</td>
+											<td class="ends prices">
+												{=get_currency_price( ....referer_provider )}
+											</td>
+										</tr>
+										<tr>
+											<td class="gr">마일리지</td>
+											<td class="gr">
+												
+											</td>
+											<td class="bolds  prices">
+												{=get_currency_price( ....out_emoney_sale )}
+											</td>
+											<td class="prices">
+												{=get_currency_price( ....out_emoney_sale )}
+											</td>
+											<td class="ends prices">
+												0
+											</td>
+										</tr>
+										<tr>
+											<td class="gr">에누리</td>
+											<td class="gr">
+												
+											</td>
+											<td class="bolds  prices">
+												{=get_currency_price( ....out_enuri_sale )}
+											</td>
+											<td class="prices">
+												{=get_currency_price( ....out_enuri_sale )}
+											</td>
+											<td class="ends prices">
+												0
+											</td>
+										</tr>
+										</table>
+									</div>
+								</div>
+							</div>
+							<span class="desc normal">({=get_currency_price(....tot_sale_provider )})</span>
+						</td>
+						<td class="price info suboption right">{=get_currency_price(....out_sale_price)}<br /><span class="desc normal">({=get_currency_price(....sale_price)})</span></td>
+		
+						<td class="price info suboption right">
+							<!--{ ? ....reserve_log }-->
+							<div class="under_div_view hand underline">
+								{=get_currency_price(....out_reserve)}
+								<div class="relative hide under_div_view_contents">
+									<div class="sale_price_layer" style="width:150px;">
+										<div class="title_line">예상마일리지</div>
+										<br style="line-height:10px;" />
+										<table width="100%" border="0" cellpadding="0" cellspacing="0">
+											<col width="70" />
+											<tr>
+												<td class="ends">
+												<!--{ @....reserve_log }-->
+												{ .....value_ } * {...ea}&nbsp;&nbsp;
+												<!--{ / }-->
+												</td>
+											</tr>
+										</table>
+									</div>
+								</div>
+							</div>
+							<!--{ : }-->
+							<div>{=get_currency_price(....out_reserve)}</div>
+							<!--{ / }-->
+		
+							<!--{ ? ....point_log }-->
+							<div class="under_div_view hand underline">
+								<span class="desc underline">({=get_currency_price(....out_point)})</span>
+								<div class="relative hide under_div_view_contents">
+									<div class="sale_price_layer" style="width:150px;">
+										<div class="title_line">예상포인트</div>
+										<br style="line-height:10px;" />
+										<table width="100%" border="0" cellpadding="0" cellspacing="0">
+											<col width="70" />
+											<tr>
+												<td class="ends">
+												<!--{ @....point_log }-->
+												{ .....value_ } * {...ea}&nbsp;&nbsp;
+												<!--{ / }-->
+												</td>
+											</tr>
+										</table>
+									</div>
+								</div>
+							</div>
+							<!--{ : }-->
+							<div>
+							<span class="desc">({=get_currency_price(....out_point)})</span>
+							</div>
+							<!--{ / }-->
+						</td>
+						<td class="info suboption">
+						<!--{ ? ....package_yn == 'y' }-->
+							<div class="center"><span class="fx11 dotum blue">실제상품▼</span></div>
+						<!--{ : }-->
+							<div class="right">
+								<!--{ ? ....real_stock != '미매칭' }-->
+									<!--{ ? ....real_stock > 0 }-->
+										<span class="blue">{=number_format(....real_stock)}</span>
+									<!--{ : }-->
+										<span class="red">{=....real_stock}</span>
+									<!--{ / }-->
+								<!--{ : }-->
+									<span class="red">{=....real_stock}</span>
+								<!--{ / }-->
+							</div>
+							<div class="right">
+								<!--{ ? ....stock != '미매칭' }-->
+									<!--{ ? ....stock > 0 }-->
+									<span class="blue bold">{=number_format(....stock)}</span>
+									<!--{ : }-->
+									<span class="red bold">{=number_format(....stock)}</span>
+									<!--{ / }-->
+								<!--{ : }-->
+									<span class="red">{=....stock}</span>
+								<!--{ / }-->
+							</div>
+						<!--{ / }-->
+						</td>
+		
+						<td class="info suboption ea" align="center">{ ? ....package_yn == 'y' }[{ / }{=number_format(....step25)}{ ? ....package_yn == 'y' }]{ / }</td>
+						<td class="info suboption ea" align="center">{ ? ....package_yn == 'y' }[{ / }{=number_format(....step35)}{ ? ....package_yn == 'y' }]{ / }</td>
+						<td class="info suboption ea" align="center">{ ? ....package_yn == 'y' }[{ / }{=number_format(....step45)}{ ? ....package_yn == 'y' }]{ / }</td>
+						<td class="info suboption ea" align="center">{ ? ....package_yn == 'y' }[{ / }{=number_format(....step55)}{ ? ....package_yn == 'y' }]{ / }</td>
+						<td class="info suboption ea" align="center">{ ? ....package_yn == 'y' }[{ / }{=number_format(....step65)}{ ? ....package_yn == 'y' }]{ / }</td>
+		
+						<td class="info suboption ea" align="center">
+							{ ? ....package_yn == 'y' }[{ / }{ ....step75 }{ ? ....package_yn == 'y' }]{ / }
+							{ ? ....cancel_list_ea || ....exchange_list_ea || ....return_list_ea  || ....refund_list_ea }
+							<div>
+								{ ? ....exchange_list_ea }
+									<a href="../returns/catalog?keyword={..order_seq}" target="_blank"><img src='../images/common/icon/icon_list_return_exchange.gif' align="absmiddle"><span style="font-size:11px;color:#ea3b91">{....exchange_list_ea}</span></a>
+								{ / }
+								{ ? ....return_list_ea }
+									<a href="../returns/catalog?keyword={..order_seq}" target="_blank"><img src='../images/common/icon/icon_list_return.gif' align="absmiddle"><span style="font-size:11px;color:#ea3b91">{....return_list_ea}</span></a>
+									<a href="../refund/catalog?keyword={..order_seq}" target="_blank"><img src='../images/common/icon/icon_list_refund.gif' align="absmiddle"><span style="font-size:11px;color:#ea3b91">{....return_list_ea}</span></a>
+								{ / }
+							</div>
+							{ / }
+						</td>
+						<td class="info suboption ea" align="center">{ ? ....package_yn == 'y' }[{ / }{....step85}{ ? ....package_yn == 'y' }]{ / }</td>
+						<td class="info suboption" align="center">
+						{ ? ....step <= 45 || ....step > 75 }
+							{....mstep}
+						{ : }
+							<div class="under_div_view underline hand">
+								{....mstep}
+								<div class="absolute hide under_div_view_contents">
+									<div class="sale_price_layer" style="width:150px;">
+										<div class="title_line">배송내역</div>
+										<br style="line-height:10px;" />
+										<table width="100%" border="0" cellpadding="0" cellspacing="0">
+										<col width="70" />
+										<col width="70" />
+										<col />
+										<tr>
+											<th>구분</th>
+											<th class="bolds ends">수량</th>
+										</tr>
+										<tr>
+											<td class="gr">택배선불</td>
+											<td class="bolds  prices ends">
+												{=number_format(....export_sum_ea.delivery)}
+											</td>
+										</tr>
+										<tr>
+											<td class="gr">택배착불</td>
+											<td class="bolds  prices ends">
+												{=number_format(....export_sum_ea.postpaid)}
+											</td>
+										</tr>
+										<tr>
+											<td class="gr">퀵서비스</td>
+											<td class="bolds  prices ends">
+												{=number_format(....export_sum_ea.quick)}
+											</td>
+										</tr>
+										<tr>
+											<td class="gr">직접수령</td>
+											<td class="bolds  prices ends">
+												{=number_format(....export_sum_ea.direct)}
+											</td>
+										</tr>
+										</table>
+									</div>
+								</div>
+							</div>
+		
+						{ / }
+						</td>
+					</tr>
+		
+					<!--{ @ ....packages }-->
+					<tr class="order-item-row">
+						<td class="package-option" style="padding-left:55px;">
+							<table border="0" cellpadding="0" cellspacing="0" width="100%">
+							<col /><col />
+							<tr>
+								<td valign="top" style="border:none;"><img src="../images/common/icon/ico_package.gif" /></td>
+								<td class="left" valign="top" style="border:none;">
+									<a href='/goods/view?no={.....goods_seq}' target='_blank'><span class="order-item-image"><img class="small_goods_image" src="{.....image}" /></span></a>
+								</td>
+								<td class="left" valign="top" style="border:none;">
+									<div class="goods_name">
+										<!--{ ? .....goods_kind == 'coupon'}-->
+										<a href='../goods/social_regist?no={.....goods_seq}' target='_blank'>
+										<!--{ : }-->
+										<a href='../goods/regist?no={.....goods_seq}' target='_blank'>
+										<!--{ / }-->
+											<span class="title">[실제상품]</span>
+											<span class="goods_name1 title">
+											{.....goods_name}
+											</span>
+										</a>
+									</div>
+									<div>
+										<!--{ ? .....adult_goods == 'Y' }-->
+										<img src="../images/common/auth_img.png" alt="성인" style="vertical-align: middle;"/>
+										<!--{ / }-->
+										<!--{ ? .....option_international_shipping_status == 'y' }-->
+										<img src="../images/common/icon/plane_on.png" alt="해외배송상품" style="vertical-align: middle;" height="19" />
+										<!--{ / }-->
+										<!--{ ? .....cancel_type == '1' }-->
+										<img src="../images/common/icon/nocancellation.gif" alt="청약철회" style="vertical-align: middle;"/>
+										<!--{ / }-->
+										<!--{ ? .....tax == 'exempt' }-->
+										<img src="../images/common/icon/taxfree.gif" alt="비과세" style="vertical-align: middle;"/>
+										<!--{ / }-->
+									</div>
+		
+									<!--{ ? .....event_seq && .....event_title }-->
+									<div style="padding-top:3px;">
+										<a href="/admin/event/{ ? ....event_type == 'solo' }solo{ / }regist?event_seq={....event_seq}" target='_blank'><span class="btn small gray"><button type="button" class="goods_event hand">{....event_title}</button></span></a>
+									</div>
+									<!--{ / }-->
+									<!--{? .....option1!=null}-->
+									<div class="goods_option" style="padding-top:3px;">
+										<img src="/admin/skin/default/images/common/icon_option.gif" align="absmiddle" />
+										<!--{?.....title1}-->{.....title1}:<!--{ / }-->{.....option1}
+										<!--{? .....option2!=null }{?.....title2}-->{.....title2}:<!--{ / }-->{.....option2}<!--{ / }-->
+										<!--{? .....option3!=null }{?.....title3}-->{.....title3}:<!--{ / }-->{.....option3}<!--{ / }-->
+										<!--{? .....option4!=null }{?.....title4}-->{.....title4}:<!--{ / }-->{.....option4}<!--{ / }-->
+										<!--{? .....option5!=null }{?.....title5}-->{.....title5}:<!--{ / }-->{.....option5}<!--{ / }-->
+									</div>
+									<!--{ / }-->
+		
+									<!--{ ? .....inputs }-->
+										<!--{ @ .....inputs }-->
+											<!--{ ? ......value }-->
+									<div class="goods_input" style="padding-top:3px;">
+										<img src="/admin/skin/default/images/common/icon_input.gif" align="absmiddle" />
+										<!--{?......title}-->{......title}:<!--{ / }-->
+										<!--{?......type=='file'}-->
+										<a href="../order_process/filedown?file={.....value}" target="actionFrame">{......value}</a>
+										<!--{:}-->{......value}<!--{ / }-->
+									</div>
+											<!--{ / }-->
+										<!--{ / }-->
+									<!--{ / }-->
+		
+		
+									<div class="warehouse-info-lay">
+									<ul>
+										<!--{ ? .....whinfo.wh_name }-->
+										<li>
+										{.....whinfo.wh_name} {?....whinfo.location_code}({.....whinfo.location_code}){ / } : {=number_format(.....whinfo.ea)}({=number_format(.....whinfo.badea)})
+										</li>
+										<!--{ / }-->
+										<li>상품코드 : {.....goods_code}</li>
+									</ul>
+									</div>
+								</td>
+							</tr>
+							</table>
+						</td>
+						<td class="package-option center">
+							<div>
+								<span class="ea">[{=number_format(....ea)}]</span>x{=number_format(.....unit_ea)}={=number_format(.....unit_ea*....ea)}
+							</div>
+							<span class="helpicon2 detailDescriptionLayerBtn" title="패키지/복합상품 주문수량"></span>
+							<div class="detailDescriptionLayer hide">해당 판매상품 주문수량 1개일때 해당 실제상품의 발송수량</div>
+						</td>
+						<td class="package-option center">-</td>
+						<td class="package-option center">-</td>
+						<td class="package-option center">-</td>
+						<td class="package-option center">-</td>
+						<td class="package-option center">-</td>
+						<td class="price package-option">
+							<div class="stock">{=number_format(.....stock)}</div>
+							<div class="ablestock">{=number_format(.....ablestock)}</div>
+							<div class="right">
+								<span class="wh_option hand" onclick="goods_option_btn('{.....goods_seq}',this,{ ? scm_cfg['use'] == 'Y'}'{...provider_seq}'{ : }'2'{ / })" option_code1="{=......option1}" option_code2="{=......option2}" option_code3="{=......option3}" option_code4="{=......option4}" option_code5="{=......option5}">
+									<span class="option-stock" optType="option" optSeq="{.....option_seq}"></span>
+									<span class="btn-administration goodsOptionBtn" goods_seq="{.....goods_seq}"><span class="hide">옵션</span></span>
+								</span>
+							</div>
+						</td>
+						<td class="package-option center ea">
+							{=number_format(.....unit_ea*....step25)}
+						</td>
+						<td class="package-option center ea">
+							{=number_format(.....unit_ea*....step35)}
+						</td>
+						<td class="package-option center ea">
+							{=number_format(.....unit_ea*....step45)}
+						</td>
+						<td class="package-option center ea">
+							{=number_format(.....unit_ea*....step55)}
+						</td>
+						<td class="package-option center ea">
+							{=number_format(.....unit_ea*....step65)}
+						</td>
+						<td class="package-option center ea">
+							{=number_format(.....unit_ea*....step75)}
+						</td>
+						<td class="package-option center ea">
+							{=number_format(.....unit_ea*....step85)}
+						</td>
+						<td class="package-option center">-</td>
+					</tr>
+					<!--{ / }-->
+		
+					<!--{ / }-->
+					<!--{ / }-->
+					<!--{ / }-->
+				<!--{ / }-->
+				<tr class="order-item-row">
+					<td class="right bold">소계</td>
+					<td class="info right" align="right"><strong>{items_tot.ea} ({items_tot.cnt}종)</strong></td>
+					<td class="price info right"><strong>{=get_currency_price(items_tot.price)}</strong></td>
+					<td class="price info right">
+						<strong>{=get_currency_price(items_tot.enuri_sale + items_tot.event_sale + items_tot.multi_sale + items_tot.coupon_sale + items_tot.member_sale + items_tot.fblike_sale + items_tot.mobile_sale + items_tot.promotion_code_sale + items_tot.referer_sale + items_tot.emoney_sale )}</strong>
+						<div class="desc">({=get_currency_price(items_tot.coupon_provider + items_tot.promotion_provider + items_tot.referer_provider + items_tot.event_provider + items_tot.multi_provider )})</div>
+					</td>
+					<td class="price info right"><strong>{=get_currency_price(items_tot.out_sale_price)}</strong></td>
+					<td class="price info right">
+						<div class="bold">{=get_currency_price(items_tot.reserve)}</div>
+						<div class="desc">({=get_currency_price(items_tot.point)})</div>
+					</td>
+					<td class="info">
+					<div class="right">
+						<!--{ ? items_tot.real_stock > 0 }-->
+						<span class="blue bold">{=number_format(items_tot.real_stock)}</span>
+						<!--{ : }-->
+						<span class="red bold">{=number_format(items_tot.real_stock)}</span>
+						<!--{ / }-->
+					</div>
+					<div class="right">
+						<!--{ ? items_tot.stock > 0 }-->
+						<span class="blue bold">{=number_format(items_tot.stock)}</span>
+						<!--{ : }-->
+						<span class="red bold">{=number_format(items_tot.stock)}</span>
+						<!--{ / }-->
+					</div>
+					</td>
+					<td class="ea center bold">{=number_format(items_tot.step25)}</td>
+					<td class="ea center bold">{=number_format(items_tot.step35)}</td>
+					<td class="ea center bold">{=number_format(items_tot.step45)}</td>
+					<td class="ea center bold">{=number_format(items_tot.step55)}</td>
+					<td class="ea center bold">{=number_format(items_tot.step65)}</td>
+					<td class="ea center bold">{=number_format(items_tot.step75)}</td>
+					<td class="ea center bold">{=number_format(items_tot.step85)}</td>
+					<td > &nbsp; </td>
+					<td class="price info right"><b>{=get_currency_price(shipping_tot.shipping_cost+shipping_tot.goods_shipping_cost)}</b></td>
+				</tr>
+			</tbody>
+		</table>
+		</div>		
+	</div>
+	
+	<div id="coupon_use_lay" class="hide"></div>
+	<div id="coupon_use_log_dialog" class="hide"></div>
+	<!-- 출고지 정보 팝업 :: START -->
+	<div id="address_dialog" class="hide">
+		<table class="info-table-style" width="100%" border="0" cellspacing="0" cellpadding="0">
+		<colgroup>
+			<col width="75px" />
+			<col width="" />
+		</colgroup>
+		<tr>
+			<th class="its-th">분류</th>
+			<td class="its-td" id="address_category"></td>
+		</tr>
+		<tr>
+			<th class="its-th">명칭</th>
+			<td class="its-td" id="address_name"></td>
+		</tr>
+		<tr>
+			<th class="its-th">주소</th>
+			<td class="its-td" id="view_address"></td>
+		</tr>
+		<tr>
+			<th class="its-th">연락처</th>
+			<td class="its-td" id="shipping_phone"></td>
+		</tr>
+		</table>
+		<div class="pd10 center">
+			<span class="btn small cyanblue" ><button type="button" style="width:60px;" onclick="closeDialog('address_dialog');">닫기</button></span>
+		</div>
+	</div>
+	<!-- 출고지 정보 팝업 :: END -->
+	
+	<!-- { ? in_array(mode,array('refund_view','return_view')) } -->
+	<br style="line-height:20px;" />
+	<script>$("#order-summary").hide(); $("#order-summary2").hide();</script>
+	<!-- { / } -->
+	<!--{ ? mode == 'export_view'}-->
+		<script>$(".order-summary").hide();</script>
+	<!--{ / }-->
+	<!-- 주문자 정보 테이블 : 끝 -->
+	<script type="text/javascript">
+	setDatepicker();
+	
+	function openAdvancedStatistic(goods_seq){
+		$.ajax({
+			type: "get",
+			url: "../statistic/advanced_statistics",
+			data: "ispop=pop&goods_seq="+goods_seq,
+			success: function(result){
+				$(document).find('body').append('<div id="Advanced_Statistics"></div>');
+				$("#Advanced_Statistics").html(result);
+				openDialog("<span style='margin-left:410px;'>이 상품의 고급 통계</span>", "Advanced_Statistics", {"width":"1000","height":"700","show" : "fade","hide" : "fade"});
+			}
+		});
+	}
+	
+	$(".under_div_view").bind("mouseover",function(){
+		$(this).find("div.under_div_view_contents").removeClass("hide");
+	}).bind("mouseout",function(){
+		$(this).find("div.under_div_view_contents").addClass("hide");
+	});
+	chk_small_goods_image();
+	</script>
+	
+	<div id="gift_use_lay"></div>
+	<div id="coupon_status_dialog" class="hide">{#socialcp_status_guide}</div>
+	
+	<div id="talkbuy_delivary_dialog" class="hide">
+		<div class="center">
+			<p>카카오페이 구매 주문은 주문 시 선택된 배송방법을 변경할 수 없습니다.</p>
+		</div>
+		<div class="pd10 center">
+			<span class="btn medium" ><button type="button" onclick="closeDialog('talkbuy_delivary_dialog');">확인</button></span>
+		</div>
+	</div>

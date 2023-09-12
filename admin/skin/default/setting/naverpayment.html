@@ -1,0 +1,53 @@
+<table class="table_basic thl v8">
+	<tr>
+		<th class="center bold" colspan="3"  height="30">PC / 모바일</th>
+	</tr>
+	<tr>		
+		<th class="left">사용여부</th>
+		<td>
+			<div class="resp_radio">
+				<label><input type="radio" name="naverpayment_use" value='y' { ? use == 'y'}checked{/}> 사용</label>
+				<label><input type="radio" name="naverpayment_use" value="test" { ? use == 'test'}checked="checked"{/}/> 테스트</label>
+				<span class="tooltip_btn" onClick="showTooltip(this, '/admin/tooltip/marketing', '#tip19')"></span>
+				<label><input type="radio" name="naverpayment_use" value='n' { ? use == 'n' || use == '' }checked{/}> 사용 안 함</label>				
+			</div>
+		</td>
+	</tr>
+	<tr>
+		<th class="left">파트너 ID</th>
+		<td>				
+			<input type="text" name="partner_id" size="50" class="line" value="{partner_id}" />
+		</td>
+	</tr>
+	<tr>
+		<th class="left">클라이언트 ID</th>
+		<td>
+			<input type="text" name="client_id" size="50" class="line" value="{client_id}" />
+		</td>
+	</tr>
+	<tr>
+		<th class="left">클라이언트 Secret</th>
+		<td>
+			<input type="text" name="client_secret" size="50" class="line" value="{client_secret}" />
+		</td>
+	</tr>
+</table>
+
+<div class="box_style_05 mt10">
+	<div class="title">안내</div>
+	<ul class="bullet_hyphen">
+		<li>
+			사용 설정을 하더라도 네이버페이 최종 승인이 완료되지 않으면 결제가 불가합니다.<br>
+			네이버페이에서 오픈 가능 메일 수신 시 사용 설정 후, <span class="link_blue_01" onClick="window.open('https://help.admin.pay.naver.com/mail/form.help')">네이버페이센터 1:1문의</span>를 
+			통해 최종 승인을 요청해 주시기 바랍니다.
+		</li>
+		<li>
+			네이버페이 결제형 설정 방법
+			<span class="link_blue_01" onClick="window.open('https://www.firstmall.kr/customer/faq/21623')">자세히 보기</span>
+		</li>
+		<li>
+			<span class="link_blue_01" onClick="window.open('https://help.admin.pay.naver.com/faq/list.help?categoryNo=945')">네이버페이 취급 불가 상품</span>에 
+			해당하는 경우 네이버페이 결제형은 제외 처리 해주셔야 합니다.
+		</li>		
+	</ul>
+</div>	

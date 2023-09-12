@@ -8398,6 +8398,11 @@ class goods extends admin_base {
 			$payment_check['payco'] = in_array('payco', $possible_pay);
 		}
 
+		// 네이버페이 결제형
+		if( $this->config_system['not_use_naverpayment'] == 'n' ){
+			$payment_check['naverpayment'] = in_array('naverpayment', $possible_pay);
+		}
+
 		// 페이팔
 		if( $this->config_system['not_use_paypal'] == 'n' ){
 			$payment_check['paypal'] = in_array('paypal', $possible_pay);

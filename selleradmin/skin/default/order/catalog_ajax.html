@@ -276,7 +276,7 @@
 				<span class="icon-pay-virtual" title="{.mpayment}"><span>{.mpayment}</span></span>
 			<!--{ : .pg == 'talkbuy' && .payment == 'point' }-->
 				<span class="icon-pay-kakaomoney" title="카카오페이 머니"><span></span></span>
-			<!--{ : .pg != 'kakaopay' }-->
+			<!--{ : .pg != 'kakaopay' && .pg != 'naverpayment' }-->
 				<span class="icon-pay-{.payment}" title="{.mpayment}"><span>{.mpayment}</span></span>
 			<!--{ / }-->
 			<!--{ ? .payment=='bank' && .bank_name }-->

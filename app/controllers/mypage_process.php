@@ -124,7 +124,7 @@ class mypage_process extends front_base {
 		**/
 		if($aParams['chk_item_seq']){
 			foreach($result_option as $opts){
-				if(in_array($opts['item_seq'],$aParams['chk_item_seq'])){
+				if(in_array($opts['item_option_seq'],$aParams['chk_option_seq'])){
 					if( ($this->cfg_order['cancelDisabledStep35'] != '1' && !($opts['step']==25 || $opts['step']==35)) ||
 						($this->cfg_order['cancelDisabledStep35'] == '1' && $opts['step']!=25) )
 					{
@@ -134,7 +134,7 @@ class mypage_process extends front_base {
 				}
 			}
 			foreach($result_suboption as $opts){
-				if(in_array($opts['item_seq'],$aParams['chk_item_seq'])){
+				if(in_array($opts['item_suboption_seq'],$aParams['chk_suboption_seq'])){
 					if( ($this->cfg_order['cancelDisabledStep35'] != '1' && !($opts['step']==25 || $opts['step']==35)) ||
 						($this->cfg_order['cancelDisabledStep35'] == '1' && $opts['step']!=25) )
 					{
@@ -211,18 +211,22 @@ class mypage_process extends front_base {
 		$refund_status = 'request';
 
 		/* 신용카드 자동취소 */
-		if((in_array($data_order['payment'],array('card','kakaomoney')) || $data_order['pg'] == 'payco') && $order_total_ea==$cancel_total_ea)
-		{
+		if(
+			(in_array($data_order['payment'],array('card','kakaomoney')) || is_order_simple_payment($data_order)) 
+			&& $order_total_ea==$cancel_total_ea
+		) {
 			$pgCompany = $this->config_system['pgCompany'];
 
 			// 기타전자결제의 PG사를 추출하기 위한 데이터 :: 2015-02-25 lwh
 			switch($data_order['pg']){
 				case 'kakaopay':
 				case 'payco':
+				case 'naverpayment':
 					$pglog_tmp				= $this->ordermodel->get_pg_log($data_order['order_seq']);
 					$pg_log_data			= $pglog_tmp[0];
 					$data_order['pg_log']	= $pg_log_data;
 					$pgCompany				= $data_order['pg'];
+					$data_order['cancelRequester'] = 1; // 취소요청자(1: 주문자, 2: 관리자)
 					break;
 				case 'paypal':
 					$pgCompany				= $data_order['pg'];
@@ -1040,7 +1044,11 @@ class mypage_process extends front_base {
 		}
 
 		//환불 방법 입력부분 체크
-		if ($aParams['mode'] != 'exchange' && $aParams['chk_seq'] && $aParams['chk_ea'] && in_array($data_order['payment'], ['bank', 'virtual', 'escrow_virtual'])) {
+		if (
+			$aParams['mode'] != 'exchange' && $aParams['chk_seq'] && $aParams['chk_ea'] 
+			&& in_array($data_order['payment'], ['bank', 'virtual', 'escrow_virtual'])
+			&& !is_order_simple_payment($data_order)
+		) {
 			// 모바일 스킨은 string , 반응형/pc 는 array
 			$account = is_array($aParams['account']) ? implode('', $aParams['account']) : $aParams['account'];
 			if (!$aParams['depositor'] || !$account) {
@@ -1063,6 +1071,11 @@ class mypage_process extends front_base {
 				openDialogAlert(getAlert('mo160', [$payMethod, $refundMethod]), 400, 160, 'parent', '');
 				exit;
 			}
+		} else {
+			unset($aParams['bank']);
+			unset($aParams['depositor']);
+			unset($aParams['account']);
+			unset($aParams['refund_method']);
 		}
 
 		// 사은품 있는 경우 확인 필요
@@ -1232,7 +1245,13 @@ class mypage_process extends front_base {
 
 		$account = is_array($aParams['account']) ? implode('-',$aParams['account']) : $aParams['account'];
 
-        $aParams['refund_method'] = ($aParams['refund_method'])?$aParams['refund_method']:(($data_order['payment'])?$data_order['payment']:'bank');
+		if (isset($aParams['refund_method'])) {
+			$refund_method = $aParams['refund_method'];
+		} elseif (isset($data_order['payment'])) {
+			$refund_method = $data_order['payment'];
+		} else {
+			$refund_method = 'bank';
+		}
 
 		$items = array();
 
@@ -1400,7 +1419,7 @@ class mypage_process extends front_base {
 					'refund_reason' => '반품환불',
 					'refund_type' => 'return',
 					'regist_date' => date('Y-m-d H:i:s'),
-					'refund_method' => $aParams['refund_method']
+					'refund_method' => $refund_method
 				);
 				$refund_code = $this->refundmodel->insert_refund($data,$items);
 				if(!$refund_code){
@@ -2257,6 +2276,10 @@ class mypage_process extends front_base {
 			        $data_order['pg_log']	= $pg_log_data;
 			        $pgCompany				= $data_order['pg'];
 			    }
+
+				if($data_order['pg'] == 'naverpayment') {
+					$data_order['cancelRequester'] = 1; // 취소요청자(1: 주문자, 2: 관리자)
+				}
 			    
 			    /* PG */
 			    $cancelFunction = "{$pgCompany}_cancel";

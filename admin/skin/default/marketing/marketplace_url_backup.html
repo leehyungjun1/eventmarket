@@ -1,0 +1,1331 @@
+{ #layout_header }
+
+<script type="text/javascript" src="//pay.naver.com/customer/js/mobile/naverPayButton.js" charset="UTF-8"></script>
+<script type="text/javascript" src="//pay.naver.com/customer/js/naverPayButton.js" charset="UTF-8"></script>
+<script type="text/javascript" src="/app/javascript/js/admin-shipping.js?dummy={=date('Ymd')}"></script>
+<style>
+	.market_image {align:center}
+	.market-partner {text-align:center;border-bottom:1px solid #ddd;}
+	.market-info tr td.market-partner {border-left:1px solid #ddd;}
+	.market-info tr td.market-partner:first-child {border-left:0px;}
+	.market-partner table {padding-top:10px;}
+	.market-partner table tr:last-child td {padding-bottom:10px;}
+	.market-partner div {padding-top:10px;}
+	.engine-url-title {width:50px;}
+	.engine-url {text-align:left;}
+	div.infomation li.title {font-size:12px;font-weight:bold;}
+	div.infomation li {color:#747474;line-height:17px;}
+	.pdt50 { padding-top:50px; }
+	a.btn_contract {display:inline-block; width:150px; margin:5px 0 0 0; border-radius:3px; border:1px solid #068ae0; background:#0792ec; text-align:center; font-weight:bold; color:#fff; line-height:30px; text-decoration:none;}
+	a.btn_contract2 {display:inline-block; width:150px; margin:5px 0 0 0; border-radius:3px; border:1px solid #d5d5d5; background:#e6e6e6; text-align:center; font-weight:bold; color:#3c3c3c; line-height:30px; text-decoration:none;}
+	.guide {margin: 0 10px; border: 1px solid #d5d5d5; background: #fafafa; padding: 20px;}
+	.stit { margin-bottom: 10px; background: url(../images/design/k_icon04.png) no-repeat;  padding-left: 20px; font-weight: 600;}
+	.cont li { background: url(../images/design/k_icon_list.png) no-repeat 5px 10px; padding-left: 18px; font-size: 11px; color: #333; line-height: 2.0; }
+</style>
+<script type="text/javascript">
+	function check_naver_mileage_yn(){
+		$(".naver_mileage").find("input[type='text']").each(function(){
+			$(this).css("background-color","#f3f3f3");
+			$(this).css("color","#c6c6c6");
+			if( !$("input[name='naver_mileage_yn'][value='n']").attr("checked") ){
+				$(this).css("background-color","");
+				$(this).css("color","#000000");
+			}
+		});
+
+		{ ? naver_mileage.naver_mileage_api_id }
+		// 네이버 마일리지 조회
+		$.get('/naver_mileage/get_accum_rate', function(data) {
+			var naver_mileage_rate = 0;
+			if(data.baseAccumRate){
+				$("#naver_mileage_baseAccumRate").html(data.baseAccumRate);
+				naver_mileage_rate += data.baseAccumRate;
+			}
+			if(data.addAccumRate){
+				$("#naver_mileage_addAccumRate").html(data.addAccumRate);
+				naver_mileage_rate += data.addAccumRate;
+			}
+			$("#naver_mileage_rate").html(naver_mileage_rate);
+		});
+		{ / }
+	}
+
+	function check_naver_wcs_yn(){
+		$(".naver_wcs").each(function(){
+			$(this).attr("readonly",true);
+			$(this).css("background-color","#f3f3f3");
+			$(this).css("color","#c6c6c6");
+			if( $("input[name='naver_wcs_yn']").attr("checked") ){
+				$(this).attr("readonly",false);
+				$(this).css("background-color","");
+				$(this).css("color","#000000");
+			}
+		});
+	}
+
+	function set_goods_list(displayId,inputGoods){
+		$.ajax({
+			type: "get",
+			url: "../goods/select",
+			data: "page=1&inputGoods="+inputGoods+"&displayId="+displayId,
+			success: function(result){
+				$("div#"+displayId).html(result);
+			}
+		});
+		openDialog("상품 검색", displayId, {"width":"1000","height":"700","show" : "fade","hide" : "fade"});
+	}
+
+	/* 카테고리 가져오기*/
+	function multi_category_load(preSelect,targetSelect,code,callbackFunction)
+	{
+		targetSelect.find("option").each(function(){ if( $(this).val() ) $(this).remove(); });
+		if(preSelect && !code) return;
+		$.ajax({
+			type: "GET",
+			url: "/admin/common/category2json",
+			data: "categoryCode=" + code,
+			dataType: 'json',
+			success: function(result){
+				var options = "";
+				for(var i=0;i<result.length;i++) options += "<option value='"+result[i].category_code+"'>"+result[i].title+"</option>";
+				targetSelect.append(options);
+				if(options){
+					targetSelect.show();
+				}
+				if(preSelect){
+					targetSelect.find("option[value='"+code+"']").attr("selected",true);
+				}
+
+				if(callbackFunction){
+					callbackFunction(result);
+				}
+			}
+		});
+
+	}
+
+	function category_load()
+	{
+		multi_category_load('',$("select[name='category1[]']"),'');
+		$("select[name='category1[]']").bind("change",function(){
+			multi_category_load($("select[name='category1[]']"),$("select[name='category2[]']"),$(this).val());
+			multi_category_load($("select[name='category2[]']"),$("select[name='category3[]']"),"");
+			multi_category_load($("select[name='category3[]']"),$("select[name='category4[]']"),"");
+		});
+		$("select[name='category2[]']").bind("change",function(){
+			multi_category_load($("select[name='category2[]']"),$("select[name='category3[]']"),$(this).val());
+			multi_category_load($("select[name='category3[]']"),$("select[name='category4[]']"),"");
+		});
+		$("select[name='category3[]']").bind("change",function(){
+			multi_category_load($("select[name='category3[]']"),$("select[name='category4[]']"),$(this).val());
+		});
+
+		multi_category_load('',$("select[name='except_category1[]']"),'');
+		$("select[name='except_category1[]']").bind("change",function(){
+			multi_category_load($("select[name='except_category1[]']"),$("select[name='except_category2[]']"),$(this).val());
+			multi_category_load($("select[name='except_category2[]']"),$("select[name='except_category3[]']"),"");
+			multi_category_load($("select[name='except_category3[]']"),$("select[name='except_category4[]']"),"");
+		});
+		$("select[name='except_category2[]']").bind("change",function(){
+			multi_category_load($("select[name='except_category2[]']"),$("select[name='except_category3[]']"),$(this).val());
+			multi_category_load($("select[name='except_category3[]']"),$("select[name='except_category4[]']"),"");
+		});
+		$("select[name='except_category3[]']").bind("change",function(){
+			multi_category_load($("select[name='except_category3[]']"),$("select[name='except_category4[]']"),$(this).val());
+		});
+	}
+
+	var max_cnt		= 0;
+	var pageline	= 1000;
+	var now_page	= 0;
+	var max_page	= 0;
+	var file_mode	= '';
+	var mode		= '';
+
+	function make_market_file(row_cnt,sel_file_mode,sel_mode){
+		max_cnt		= row_cnt;
+		now_page	= 0;
+		max_page	= Math.ceil(max_cnt/pageline);
+		file_mode	= sel_file_mode;
+		mode		= sel_mode
+
+		openDialogAlert('페이지를 이탈하거나 브라우저를 종료하지 마세요. <Br/><span id="process_list_cnt" style="font-size:12px;font-weight: bold;"></span> 파일 생성 중',400,120,function(){},{'hideButton' : true});
+
+		loadingStart();
+		do_make_market_file();
+	}
+
+
+	function do_make_market_file(){
+		if(max_page == now_page){
+			loadingStop();
+			openDialogAlert('파일이 생성되었습니다.',400,120,function(){},{'hideButton' : true});
+			return true;
+		}else{
+			now_page++;
+		}
+
+		$('#process_list_cnt').html(now_page + ' / ' + max_page);
+
+		make_url	= '/partner/file_write?page=' + now_page +'&filemode='+file_mode+'&mode='+mode+'&rows=' + max_cnt + '&pageline=' + pageline;
+		$.ajax({url: make_url,global:false}).always(function(){
+			window.setTimeout(function(){do_make_market_file();}, 10000 );
+		});
+
+		return true;
+	}
+
+	// Firstmall 에서 호출하는 팝업
+	function popup_event(){
+		openDialog("이벤트 안내", "info_event_lay", {"width":"800","height":"700","show" : "fade","hide" : "fade"});
+	}
+
+	function npay_btn_style(mode){
+
+		var title	= '';
+		var w		= 750;
+		var h		= 650;
+		if(mode == "pc_goods"){
+			title = "PC버전 버튼 스타일 선택";
+		}else if (mode == "mobile_goods"){
+			title	= "Mobile버전 버튼 스타일 선택";
+			w		= 800;
+			h		= 610;
+		}
+		$("#npay").attr("src","../marketing/npay_btn_style?mode="+mode);
+		openDialog(title,"lay_npay_btn_style", {"width":w,"height":h,"show" : "fade","hide" : "fade"});
+
+
+	}
+
+	//네이버페이 버튼 노출 설정
+	function lay_npay_close(mode,npay_btn_text,h){
+
+		$("#npay_"+mode+"_text").html(npay_btn_text);
+		$("#npay_"+mode).attr("height",h);
+		$("#npay_"+mode).attr("src","../marketing/npay_btn_style_iframe?mode="+mode);
+
+		$("#lay_npay_btn_style").dialog("close");
+	}
+
+	// 네이버페이 안내창 팝업
+	function openpop_npay(){
+		openDialog("네이버페이 - 추가입력옵션을 이미지 업로드 방식으로 구성한 경우", "npay_imageupload_pop", {"width":"830","height":"230","show" : "fade","hide" : "fade"});
+	}
+	
+	function confirm_cancel_facebook()
+	{
+		openDialogConfirm('페이스북에 상품 데이터 전달을 종료하시겠습니까?',400,200,function(){
+			actionFrame.location.href = '../marketing_process/cancel_facebook';
+		},function(){
+		});
+	}
+	
+	function confirm_cancel_google()
+	{
+		openDialogConfirm('구글에 상품 데이터 전달을 종료하시겠습니까?',400,200,function(){
+			actionFrame.location.href = '../marketing_process/cancel_google';
+		},function(){
+		});
+	}
+
+	$(document).ready(function() {
+		
+		// EP 노출 배송비 설정 :: 2017-02-22 lwh
+		$("input[name='feed_pay_type']").on("change", function(){
+			ep_market_set();
+		});
+
+		// 추가 배송비 텍스트 체크 :: 2017-02-22 lwh
+		$("#feed_add_txt").on("keyup", function(){
+			ep_addtxt_chk();
+		});
+
+		// 기본 글자수 추가 :: 2017-02-22 lwh
+		$("#addcnt").html($("#feed_add_txt").val().length);
+
+		$("input[name='naver_mileage_yn']").bind("click",function(){
+			check_naver_mileage_yn();
+		});
+
+		check_naver_mileage_yn();
+
+		var naverWcsWhiteListAddBtn = ' <span class="btn small"><input type="button" value="추가" class="naverWcsWhiteListAdd" /></span>';
+		var naverWcsWhiteListDelBtn = ' <span class="btn small"><input type="button" value="삭제" class="naverWcsWhiteListDel" /></span>';
+
+		$(".naverWcsWhiteList .naverWcsWhiteListItem").each(function(i){
+			if(i==0) $(this).append(naverWcsWhiteListAddBtn);
+			else $(this).append(naverWcsWhiteListDelBtn);
+		});
+		$(".naverWcsWhiteList .naverWcsWhiteListAdd").live('click',function(){
+			var clone = $(".naverWcsWhiteListItem").eq(0).clone();
+			clone.find("input[name='checkoutWhitelist[]']").val('');
+			clone.find("span.btn").remove();
+			clone.append(naverWcsWhiteListDelBtn);
+			$(".naverWcsWhiteList").append(clone);
+		});
+		$(".naverWcsWhiteList .naverWcsWhiteListDel").live('click',function(){
+			$(this).closest(".naverWcsWhiteListItem").remove();
+		});
+
+		$("button.category_button").live("click",function(){
+
+			var obj = $(this).parent().parent();
+			var obj_select = obj.find("select");
+			var category = '';
+			var code = '';
+			var mode = 'apply';
+			var category_tag_name = "category_code[]";
+			if( obj_select.eq(0).attr('name') == 'except_category1[]'){
+				category_tag_name = "except_category_code[]";
+				var mode = 'except';
+			}
+
+			obj_select.each(function(idx){
+				var opt = $(this).find("option:selected");
+				if(obj.val()){
+					category = opt.html();
+					categoryCode = obj.val();
+				}
+				if(opt.val()){
+					if(idx == 0){
+						category = opt.html();
+					}else{
+						category += ' > ' + opt.html();
+					}
+					code = opt.attr('value');
+				}
+			});
+
+			if( code && !$("input[name='"+category_tag_name+"'][value='"+code+"']").val() ){
+				if( mode != 'apply' || !$(".choice_category_list input[value='"+code+"']").val() ){
+					var tag = "<span style='display:inline-block;width:300px'>"+category+"</span>";
+					tag += "<span class='btn-minus'><button type='button' class='del_category'></button></span>";
+					tag += "<input type='hidden' name='" + category_tag_name + "' value='"+code+"' />";
+					obj.next().append("<div style='padding:1px;'>"+tag+"</div>");
+				}
+			}
+		});
+
+		$("button.del_category").live("click",function(){
+			$(this).parent().parent().remove();
+		});
+
+		$("button.except_goods_button").live("click",function(){
+			var displayId = "except_goods_selected";
+			var inputGoods = "except_goods";
+			set_goods_list(displayId,inputGoods);
+		});
+
+		$("button.culture_goods_button").live("click",function(){
+			var displayId = "culture_goods_selected";
+			var inputGoods = "culture_goods";
+			set_goods_list(displayId,inputGoods);
+		});
+
+		$("input[name='navercheckout_culture']").live("click",function(){
+			if($(this).val()=='choice'){
+				$(".culture_choice").show();
+			} else {
+				$(".culture_choice").hide();
+			}
+		});
+
+		$("#btn_help_price").click(function() {
+			var guide_msg = "<div><p class='pdb5 left'>할인이벤트 가격 기본 적용이란?</p>";
+			guide_msg += "<p class='pdb5 left'>입점마케팅 채널로 전송되는 시점이 할인이벤트 기간이라면 할인이벤트에 속한 해당 상품의 할인가는</p>";
+			guide_msg += "<p class='pdb5 left'>이벤트 할인금액이 적용된 할인가격으로 자동 적용되어 전송됩니다.</p>";
+			guide_msg += "<p class='pdb5 left'>※ 할인이벤트는 프로모션/쿠폰><a href=\"../event/catalog\" target=\"_blank\" style=\"color:#ff6600;font-weight:bold;\" class=\"setlink\" onfocus=\"this.blur();\">할인 이벤트</a>에서 관리됩니다.</p></div>";
+			openDialogAlerttitle("안내 ) 할인이벤트 가격 기본 적용",guide_msg,700,180,function(){},{'hideButton' : true});
+		});
+
+		// 안내 팝업
+		$(".info_goods").bind("click",function(){
+			openDialog("안내) 대상 상품 조건", "info_goods_lay", {"width":"800","height":"700","show" : "fade","hide" : "fade"});
+		});
+		$(".info_domain").bind("click",function(){
+			openDialog("안내) 도메인연결 신청방법", "info_domain_lay", {"width":"800","height":"700","show" : "fade","hide" : "fade"});
+		});
+		$(".info_data").bind("click",function(){
+			openDialog("상품 데이터 전달 제외 기준", "info_data_lay", {"width":"450","height":"280","show" : "fade","hide" : "fade"});
+		});
+		$(".info_code").bind("click",function(){
+			openDialog("치환 코드 안내", "info_code_lay", {"width":"300","height":"180","show" : "fade","hide" : "fade"});
+		});
+		$(".info_brand").bind("click",function(){
+			openDialog("브랜드 정보", "info_brand_lay", {"width":"700","height":"400","show" : "fade","hide" : "fade"});
+		});
+		// 팝업 여부 확인
+		/*$.ajax({
+			type: "get",
+			url: "http://firstmall.kr/ec_hosting/marketing/marketplace_url_pop.php",
+			data: "mode=chk",
+			dataType : "jsonp",
+			success: function(result){
+				alert(result);
+			}
+		});*/
+
+		{? navercheckout.version != "2.1" && (navercheckout.use == "y" || navercheckout.use == "test") }
+		$(".npay_ver").bind("click",function(){
+			if($(this).val() == "2.1"){
+			openDialog("네이버페이 연동버전 업그레이드 신청","npay_ver2_lay",{"width":650,"height":670,"show" : "fade","hide" : "fade"});
+				$("input[name='navercheckout_ver'][value='1.0']").attr("checked",true);
+			}
+		});
+		{/}
+
+		$("#naverpay_upgrade").bind("click",function(){
+
+			if(!$("input[name='naverpay_mall_id']").val()){
+				openDialogAlert("페이가맹점 ID를 입력하세요.");
+				return false;
+			}
+			if(!$("input[name='naverpay_email[]']").eq(0).val() || !$("input[name='naverpay_email[]']").eq(1).val()){
+				openDialogAlert("이메일 주소를 입력하세요.");
+				return false;
+			}
+			if(!$("input[name='naverpay_user_phone']").val()){
+				openDialogAlert("휴대폰번호를 입력하세요.");
+				return false;
+			}
+
+			var upgrade_form = $("form[name='naverpay_upgrade']");
+
+		openDialogConfirm("<span class='fx12'>업그레이드 신청부터 완료기간까지 네이버페이 버튼이 노출되지<br />않습니다.(테스트모드)<br />업그레이드 하시겠습니까?</span>",450,200,function(){ upgrade_form.attr("action","../marketing_process/naverpay_upgrade");upgrade_form.submit(); } ,function(){}) ;
+		});
+
+		{? navercheckout.use == "y" && navercheckout.version == '' }
+		$(".navercheckout_use").bind("click",function(){
+
+			if($(this).val() == "n" || $(this).val() == "test"){
+				var msg = "추후 사용함으로 설정 시 상품연동 2.0 버전(주문연동 포함)으로만 연동 가능합니다.<br />사용안함(또는 테스트)으로 설정하시겠습니까?";
+				openDialogConfirm(msg,550,170,function(){},function(){$("input[name='navercheckout_use'][value='y']").attr("checked",true);});
+			}
+		});
+		{ / }
+		
+		<!--{ ? naver_use=='Y' }-->
+		$('[name="naver_use"]').bind('click', function(){
+			var v = $(this).val();
+
+			if(v == 'Y') {
+				$('.naver-ep-sec-guide').show();
+			} else {				
+				openDialogConfirm(
+					"[미사용]으로 변경 시 네이버쇼핑 3.0 버전만 사용 가능합니다.<br/>변경하시겠습니까?",
+					550, 170,
+					function(){
+						$('.naver-ep-sec-guide').hide();
+					},
+					function(){
+						$('[name="naver_use"]:eq(0)').attr('checked', true);
+						$('.naver-ep-sec-guide').show();
+					}
+				);	
+			}
+		});
+		<!--{ / }-->
+		/* 네이버페이 설정-사용여부가 사용/테스트일 경우 네이버 공통 인증 설정의 사용 여부를 자동으로 "사용" 으로 변경 */
+		$("input[name='navercheckout_use']").change(function() {
+			if( $.inArray($(this).val(), ["y", "test"]) !== -1 ) {
+				$("input[name='naver_wcs_use']").removeAttr("checked");
+				$("input[name='naver_wcs_use'][value='y']").attr("checked", true);
+				$("input[name='naver_wcs_use'][value='y']").focus();
+			}
+		});
+
+		//페이스북 피드 갱신 kmj
+		$('[id="facebookReload"]').bind('click', function(){
+			var url = window.location.protocol + "//" + window.location.hostname + "/partner/facebook";
+			$.ajax({
+				type: "get",
+				url: url,
+				data: "reload=y",
+				success: function(result){
+					var res = $.parseJSON(result);
+					$('[id="facebook_update"]').text(res['facebook_update']);
+					$('[id="facebook_file_size"]').text(res['facebook_file_size']);
+				}
+			});
+		});
+		
+		//구글 피드 갱신 kmj
+		$('[id="googleReload"]').bind('click', function(){
+			var url = window.location.protocol + "//" + window.location.hostname + "/partner/google";
+			$.ajax({
+				type: "get",
+				url: url,
+				data: "reload=y",
+				success: function(result){
+					var res = $.parseJSON(result);
+					$('[id="google_update"]').text(res['google_update']);
+					$('[id="google_file_size"]').text(res['google_file_size']);
+				}
+			});
+		});
+		
+		$('[name=navercheckout_use]').bind('click', function(){
+			if($("[name='navercheckout_use']:checked").val() != "n" && $("#no_npay_shipping").length == 1){
+				alert("네이버페이 결제가 가능한 배송그룹이 없습니다. \n배송그룹을 먼저 설정해주세요.");
+				$('input:radio[name=navercheckout_use]:input[value=n]').attr("checked", true);
+			}
+		});
+
+	});
+</script>
+
+<form name="partner" method="post" action="../marketing_process/marketplace" target="actionFrame" />
+<!-- 페이지 타이틀 바 : 시작 -->
+<div id="page-title-bar-area">
+	<div id="page-title-bar">
+
+		<!-- 타이틀 -->
+		<div class="page-title">
+			<h2>입점 마케팅 설정</h2>
+		</div>
+
+		<!-- 우측 버튼 -->
+		<!--{ ? visible.nbp }-->
+		<ul class="page-buttons-right">
+			<!--<li><span class="btn large black"><button  {? functionLimit }  type="button" onclick="servicedemoalert('use_f');" {:} type="submit" {/}>저장하기<span class="arrowright"></span></button></span></li>-->
+			<li><span class="btn large black"><button type="submit">저장하기<span class="arrowright"></span></button></span></li>
+		</ul>
+		<!--{ / }-->
+
+	</div>
+</div>
+<!-- 페이지 타이틀 바 : 끝 -->
+
+<!-- Firstmall 입점마케팅 배너 로드 :: 시작 (3.0 및 기타 버전과 맞추기위해 iframe 구성 ) -->
+<div class="center" >
+	<iframe id="gabiaPageFrame" src="//firstmall.kr/ec_hosting/marketing/marketplace_url.php?firstmall=yes&shopSno={config_system.shopSno}&domain={_SERVER.HTTP_HOST}&type={config_system.service.code}&renew=Y&isdemo={isdemo.isdemo}" width="100%" height="150" frameborder="0"></iframe>
+</div>
+<!-- Firstmall 입점마케팅 배너 로드 :: 끝 -->
+
+<div class="content">
+	<!--{? arrmarket.marketdaum=='y' }-->
+	<!-- 구버전 EP 생성 부분 -->
+	<div class="item-title">(구)DAUM입점 마케팅 파일생성
+		<span class="null desc" style="font-weight:normal">상품DB가 많을경우 파일을 미리 생성합니다.</span>
+	</div>
+	<table width="100%" class="info-table-style">
+		<tr>
+			<!--{? arrmarket.marketdaum=='y' }-->
+			<th class="its-th" width="160">Daum파일생성</th>
+			<td class="its-td">
+				<a href='javascript:make_market_file("{target_count.all}","daum","none")' >파일생성</a>
+			</td>
+			<!--{ / }-->
+		</tr>
+	</table>
+	<!--{ / }-->
+
+	<div class="item-title">외부 마케팅 설정</div>
+	<!-- 네이버쇼핑설정 :: 시작 -->
+	<table width="100%" class="info-table-style">
+		<col width="15%" /><col width="15%"  /><col />
+		<tr>
+			<th class="its-th" width="160" rowspan="3">네이버쇼핑</th>
+			<td class="its-td" style="background-color:#F1F1F1;">DB URL 생성</td>
+			<td class="its-td">
+				<!--{ ? naver_use=='Y' }-->
+				<!-- Only Naver EP 2.0 -->
+				<label><input type="radio" name="naver_use" value="Y" {?naver_use=='Y'}checked{/}> 생성</label>
+				&nbsp;&nbsp;
+				<label><input type="radio" name="naver_use" value="N" {?naver_use=='N' || !naver_use}checked{/}> 생성 하지 않음</label>
+				<!--{ : }-->
+				<!-- Only Naver EP 3.0 -->
+				<label><input type="radio" name="naver_third_use" value="Y" {?naver_third_use=='Y'}checked{/}> 생성</label>
+				&nbsp;&nbsp;
+				<label><input type="radio" name="naver_third_use" value="N" {?naver_third_use=='N' || !naver_third_use}checked{/}> 생성 하지 않음</label>
+				<!--{ / }-->
+			</td>
+		</tr>
+		<tr>
+			<td class="its-td" style="background-color:#F1F1F1;">DB URL</td>
+			<td class="its-td">
+				<div class="naver-ep-third-guide" style="margin:0 0 0 0; padding:0;">
+					<b>[3.0 버전-2016.11.14 이후 쇼핑 입점 고객]</b><br/>
+					전체 : ‘네이버 쇼핑 입점 도메인’/partner/naver_third
+					<!--{ ? partner_info.naver_third_file_time }-->
+					<span class="desc">({=partner_info.naver_third_file_time} 생성, {=partner_info.naver_third_file_size}kb)</span>
+					<!--{ / }--><br/>
+					판매지수<span class="helpicon" title="판매지수란?<br/>네이버 쇼핑을 통해 거래가 발생 된 상품의 판매수량 , 주문건수 , 거래금액 등을 수치화한 데이터 입니다.<br/>수치화 된 데이터는 상품의 인기도에 반영되며 네이버 쇼핑에서 상품의 정렬에 영향을 미칩니다.<br/><br/>※ 네이버쇼핑을 통해 발생된 어제 매출을 네이버에 전달.(네이버쇼핑 인기도에 반영됩니다.)"></span>  : ‘네이버 쇼핑 입점 도메인’/partner/naver_sales_ep
+					<!--{ ? partner_info.naver_sales_file_time }-->
+					<span class="desc">({=partner_info.naver_sales_file_time} 생성, {=partner_info.naver_sales_file_size}kb)</span>
+					<!--{ / }-->
+				</div>
+				<!--{ ? naver_use=='Y' }-->
+				<div class="naver-ep-sec-guide" style="margin:10px 0 0 0; padding:10px 0 0 15px; border-top:1px solid #dadada;">
+					<b>[2.0 버전-2016.11.14 이전 쇼핑 입점 고객]</b><br/>
+					전체 : ‘네이버 쇼핑 입점 도메인’/partner/naver
+					<!--{ ? partner_info.naver_file_time }-->
+					<span class="desc">({=partner_info.naver_file_time} 생성, {=partner_info.naver_file_size}kb)</span>
+					<!--{ / }--><br/>
+					요약 : ‘네이버 쇼핑 입점 도메인’/partner/naver?mode=summary
+
+					<div style="margin:10px 0 0 0; color:#ff0000;">
+					※ 현재 2.0 버전 사용 고객은 추후 3.0으로 일괄 업데이트될 예정입니다.<br />
+					<span style="padding:0 0 0 15px;">일괄 업데이트 전 사전 공지가 나갈 예정이오니 참고 부탁 드립니다.</span>
+					</div>
+				</div>
+				<!--{ / }-->
+			</td>
+		</tr>
+		<tr>
+			<td class="its-td" style="background-color:#F1F1F1;">신청 및 관리</td>
+			<!--{? functionLimit }-->
+			<td class="its-td">
+				<a href="#none" class="btn_contract" onclick="servicedemoalert('use_f');">신청</a>
+				&nbsp;<a href="#none" class="btn_contract2" onclick="servicedemoalert('use_f');">관리</a>
+			</td>
+			<!--{ : }-->
+			<td class="its-td">
+				<a href="https://adcenter.shopping.naver.com/mall/regist/agreement.nhn?agencyId=gabiacns" class="btn_contract" target="_blank">신청</a>
+				&nbsp;<a href="https://adcenter.shopping.naver.com/member/login/form.nhn?targetUrl=%2Fmain.nhn" class="btn_contract2" target="_blank">관리</a>
+			</td>
+			<!--{ / }-->
+		</tr>
+	</table>
+	<br />
+	<!-- 다음 쇼핑 하우 설정 :: 시작 -->
+	<table width="100%" class="info-table-style">
+		<col width="15%" /><col width="15%"  /><col />
+		<tr>
+			<th class="its-th" width="160" rowspan="3">다음 쇼핑하우</th>
+			<td class="its-td" style="background-color:#F1F1F1;">DB URL 생성</td>
+			<td class="its-td">
+				<label><input type="radio" name="daum_use" value="Y" {? daum_use=='Y'}checked{/}> 생성</label>
+				&nbsp;&nbsp;
+				<label><input type="radio" name="daum_use" value="N" {? daum_use=='N' || !daum_use}checked{/}> 생성 하지 않음</label>
+			</td>
+		</tr>
+		<tr>
+			<td class="its-td" style="background-color:#F1F1F1;">DB URL</td>
+			<td class="its-td">
+				<b>[상품]</b><br/>
+				전체 <span class="helpicon" title="전체 EP는 구매가능한 상태의 모든 상품을 대상으로 생성 합니다."></span> :  ‘쇼핑하우 입점 도메인’/partner/daum_engine
+				<!--{ ? partner_info.daum_file_time }-->
+				<span class="desc">({=partner_info.daum_file_time} 생성, {=partner_info.daum_file_size}kb)</span>
+				<!--{ / }--><br/>
+				요약 <span class="helpicon" title="요약 EP는 수집 주기안에 발생한 모든 변경 된 상품을 대상으로 생성 합니다."></span> :  ‘쇼핑하우 입점 도메인’/partner/daum_engine?mode=summary
+				<br/><br/>
+				<b>[상품평]</b><br/>
+				전체:  ‘쇼핑하우 입점 도메인’/partner/daum_review
+				<!--{ ? partner_info.daum_review_file_time }-->
+				<span class="desc">({=partner_info.daum_review_file_time} 생성, {=partner_info.daum_review_file_size}kb)</span>
+				<!--{ / }--><br/>
+				요약:  ‘쇼핑하우 입점 도메인’/partner/daum_review?mode=summary
+				
+				<br/><span class="desc">※ 퍼스트몰을 통해 신청시 상품및 상품평 DB URL 자동 등록됩니다.</span>
+			</td>
+		</tr>
+		<tr>
+			<td class="its-td" style="background-color:#F1F1F1;">신청 및 관리</td>
+			<!--{? functionLimit }-->
+			<td class="its-td">
+				<a href="#none" class="btn_contract" onclick="servicedemoalert('use_f');">신청</a>
+				&nbsp;<a href="#none" class="btn_contract2" onclick="servicedemoalert('use_f');">관리</a>
+			</td>
+			<!--{ : }-->
+			<td class="its-td">
+				<a href="https://shopping.biz.daum.net/join/step2?jointype=CPC&hosting=gabia" class="btn_contract" target="_blank">신청</a>
+				&nbsp;<a href="https://commerceone.biz.daum.net" class="btn_contract2" target="_blank">관리</a>
+			</td>
+			<!--{ / }-->
+		</tr>
+	</table>
+	<br />
+	<!-- 페이스북 설정 :: 끝 -->
+		
+	<!-- 페이스북 설정 :: 시작 -->
+	<table width="100%" class="info-table-style">
+		<col width="15%" /><col width="15%"  /><col />
+		<tr>
+			<th class="its-th" width="160" rowspan="3">페이스북 마케팅</th>
+			<td class="its-td" style="background-color:#F1F1F1;">픽셀 ID</td>
+			<td class="its-td">
+			<!--{ ? facebook_pixel_use=='Y' && facebook_pixel}-->
+				{=facebook_pixel}
+			<!--{ : }-->
+				페이스북 마케팅 연동 전
+			<!--{ / }-->
+			</td>
+		</tr>
+		<!--{ ? facebook_pixel_use=='Y' && facebook_pixel}-->
+		<tr>
+			<td class="its-td" style="background-color:#F1F1F1;">카탈로그 URL</td>
+			<td class="its-td">
+				‘도메인’/partner/facebook <span class="desc">(<span id="facebook_update">{=partner_info.facebook_file_time}</span> 생성, <span id="facebook_file_size">{=partner_info.facebook_file_size}</span>kb)</span>&nbsp;&nbsp;<span class="btn small gray"><button type="button" id="facebookReload">URL 갱신</button></span>
+			</td>
+		</tr>
+		<tr>
+			<td class="its-td" style="background-color:#F1F1F1;">설정</td>
+			<td class="its-td">
+				<a href='https://adsapi.gabia.com/pageRedirect?target=/campaign/facebook&params={"shop_hash":"{=shop_hash}"}' class="btn_contract" target="_blank" id="goGabiaADs">관리</a>
+			</td>
+		</tr>
+		<!--{ : }-->
+		<tr>
+			<td class="its-td" style="background-color:#F1F1F1;">신청</td>
+			<td class="its-td">
+				<a href='https://adsapi.gabia.com/pageRedirect?target=/campaign/facebook&params={"shop_hash":"{=shop_hash}"}' class="btn_contract2" target="_blank">신청</a>
+			</td>
+		</tr>
+		<!--{ / }-->
+	</table>
+	<!-- 페이스북 설정 :: 끝 -->
+	<br />
+	
+	
+	<!-- 구글 설정 :: 시작 -->
+	<table width="100%" class="info-table-style">
+		<col width="15%" /><col width="15%"  /><col />
+		<tr>
+			<th class="its-th" width="160" rowspan="3">구글 마케팅</th>
+			<td class="its-td" style="background-color:#F1F1F1;">Google Site Verification Token</td>
+			<td class="its-td">{? partner_info.google_verification_token}<input type="text" name="google_verification_token" value="{=partner_info.google_verification_token}">{:}구글 마케팅 연동 전{/}</td>
+		</tr>	
+		<!--{ ? partner_info.google_verification_token}-->
+		<tr>
+			<td class="its-td" style="background-color:#F1F1F1;">제품 피드 URL</td>
+			<td class="its-td">
+				‘도메인’/partner/google <span class="desc">(<span id="google_update">{=partner_info.google_file_time}</span> 생성, <span id="google_file_size">{=partner_info.google_file_size}</span>kb)</span>&nbsp;&nbsp;<span class="btn small gray"><button type="button" id="googleReload">URL 갱신</button></span>
+			</td>
+		</tr>
+		<tr>
+			<td class="its-td" style="background-color:#F1F1F1;">설정</td>
+			<td class="its-td">
+				<a href="https://ads.gabia.com/myads/index" class="btn_contract" target="_blank">관리</a>
+				<!--<a href="javascript:confirm_cancel_google();" class="btn_contract2">제품 데이터 전달 종료</a>-->
+			</td>
+		</tr>
+		<!--{ : }-->
+		<tr>
+			<td class="its-td" style="background-color:#F1F1F1;">신청</td>
+			<td class="its-td">
+				<a href="https://ads.gabia.com/myads/index" class="btn_contract" target="_blank">신청</a>
+			</td>
+		</tr>
+		<!--{ / }-->
+	</table>
+	<!-- 구글 설정 :: 끝 -->
+	
+	<br />
+	<div class="pd10 guide" style="line-height:20px;">
+		<div class="stit">안내</div>
+		<ul class="cont">
+			<li>페이스북 및 구글 마케팅은 가비아애즈를 통해 서비스를 제공하고 있습니다.</li>
+			<li>다음 쇼핑하우는 DB URL 이 자동 등록이 되며, 등록 후 <span class="red">상품 데이터가 제대로 전달</span>이 되었는지 반드시 확인을 하셔야 합니다. <a href="https://www.firstmall.kr/customer/faq/10" target="_blank"><span style="color: #5583dd;">도메인 연결 방법 안내 ></span></a></li>
+			<li>네이버 EP3.0, 페이스북, 구글 업데이트 주기 : <span class="red">01시 (일1회)</span></li>
+			<li>다음 쇼핑하우 업데이트 주기: 전체 데이터- 1일 1회 자동 생성, 요약 데이터- 실시간 생성</li>
+			<li>DB URL의 입점 도메인은 쇼핑몰에 연결이 필요합니다. 연결 하지 않은 경우, <a href='https://www.firstmall.kr/myshop' target="_blank"><span style="color: #5583dd;">MY 퍼스트몰</span></a>에서 연결 신청할 수 있습니다. (외부 호스팅 이용 시에는 해당 업체에 문의)</li>
+			<li>상품 데이터 전달 제외 조건에 해당 되는 경우 상품의 데이터가 전달되지 않습니다.<span class="btn small orange"><button type="button" class="info_data">안내) 상품 데이터 전달</button></span></li>
+			<li>데이터 전달 대상 상품은 실물 상품, 패키지/복합상품 입니다. (티켓 상품 전달 불가)</li>
+		</ul>
+	</div>
+	
+	<!-- 입점마케팅 전달 데이터 통합설정 :: 시작 -->
+	<div class="item-title">입점마케팅 전달 데이터 통합 설정</div>
+	<table width="100%" class="info-table-style">
+		<col width="15%" /><col />
+		<col width="73%" /><col />
+		<tr>
+			<th class="its-th" width="160">상품명 </th>
+			<td class="its-td" colspan="2">
+				<input type="text" name="feed_goods_name" id="feed_goods_name" class="input-box-default-text line" size="65" value="{? marketing_feed.goods_name }{marketing_feed.goods_name}{:}&#123;product_name&#125;{/}" title="" /> <span class="btn small orange"><button type="button" class="info_code">치환 코드 안내</button></span>
+				<div class="pdt10 gray">
+					 - 상품명에 위에 치환코드를 단돋 입력 시, 반드시 상품 상세에서 해당 항목들이 입력되<br />었는지 확인해주세요. 미입력 시 상품 데이터가 전달되지 않을 수 있습니다.
+				</div>
+			</td>
+		</tr>
+		<tr>
+			<th class="its-th">브랜드 <span class="btn small orange"><button type="button" class="info_brand">브랜드 정보</button></span></th>
+			<td class="its-td" colspan="2">
+				<label><input type="radio" name="feed_brand_kind" id="feed_brand_kind_1" value="brand" {?marketing_feed.brand_kind=='brand'}checked{/} /> 상품 브랜드 정보 전달</label>
+				&nbsp;&nbsp;&nbsp;<label><input type="radio" name="feed_brand_kind" id="feed_brand_kind_2" value="addinfo" {?marketing_feed.brand_kind!='brand'}checked{/} /> 상품 추가 정보 전달</label>
+			</td>
+		</tr>
+		<tr>
+			<th class="its-th">상품가격 <span class="helpicon" title="입점 마케팅으로 전달되는 데이터는 기본적으로 상품 등록 시 입력한 할인가(옵션이 있는 경우 기본 옵션 기준) 입니다. 단, 할인 이벤트가 진행 중인 경우 해당 이벤트 기간에 속한 상품은 이벤트가격이 적용된 금액으로 제공됩니다."></span></th>
+			<td class="its-td" colspan="2">
+				<div id="wrap_goods_price" style="padding-top:3px;padding-bottom:3px;">
+					<table id="tbl_goods_price" cellpadding="0" cellspacing="2" >
+						<tr>
+							<td>
+								<label><input type="checkbox" name="marketing_sale_member" value="Y" {?marketing_sale.member=='Y'}checked="checked"{/} /> 회원할인 적용 : </label>
+								<label><input type="radio" name="member_sale_type" value="0" {?marketing_sale.member_sale_type!='1'}checked="checked"{/} /> 비회원가</label>
+								<label><input type="radio" name="member_sale_type" value="1" {?marketing_sale.member_sale_type=='1'}checked="checked"{/} /> 회원가(일반등급 기준)</label>
+							</td>
+						</tr>
+						<tr>
+							<td>
+								<label><input type="checkbox" name="marketing_sale_coupon" value="Y" {?marketing_sale.coupon=='Y'}checked="checked"{/} /> 할인 쿠폰 적용 <span style="color:#9c9c9c;font-size: 11px;">적용 가능 쿠폰이 여러 개일 경우 할인 금액이 가장 높은 쿠폰 적용</span></label>
+							</td>
+						</tr>
+						<tr>
+							<td style="position:relative;">
+								<label><input type="checkbox" name="marketing_sale_referer" value="Y" {?marketing_sale.referer=='Y'}checked="checked"{/} /> 할인 유입경로 적용 (네이버, 다음 쇼핑하우)
+							</label>
+							<span class="helpicon2 detailDescriptionLayerBtn" title="할인 유입경로 적용 (네이버, 다음 쇼핑하우)"></span>
+							<div class="detailDescriptionLayer wx400 hide" style="left:261px;">
+								할인 유입 경로 적용: 네이버 쇼핑, 다음 쇼핑하우의 경우 하단의 유입경로가 생성되어 있어야 합니다.<br/>- 네이버 쇼핑: http://shopping.naver.com<br/>- 다음 쇼핑하우: http://shopping.daum.net <br/><br/>※ 페이스북 구글 마케팅은 유입 경로 할인이 적용되지 않습니다. 
+							</div>
+							</td>
+						</tr>
+						<tr>
+							<td>
+								<label><input type="checkbox" name="marketing_sale_mobile" value="Y" checked="checked" {?marketing_sale.mobile=='Y'}checked="checked"{/} /> 모바일 할인 적용 (네이버, 다음 쇼핑하우) <span style="color:#9c9c9c;font-size: 11px;">모바일 할인 설정 시 적용</span></label>
+							</td>
+						</tr>
+					</table>
+				</div>
+			</td>
+		</tr>
+		<tr>
+			<th class="its-th">카드무이자할부</th>
+			<td class="its-td" colspan="2">
+				<input type="text" name="cfg_card_free" id="cfg_card_free" class="input-box-default-text line" size="50" value="{? marketing_feed.cfg_card_free }{marketing_feed.cfg_card_free}{/}" title="" /> <span class="darkgray">예) 국민3,삼성2~3,하나SK3,시티2~6 (모든 카드가 동일한 할부 지원시는 '모든카드 3개월')</span>
+			</td>
+		</tr>		
+		<tr>
+			<th class="its-th" rowspan="2">노출 배송비</th>
+			<th class="its-th">
+				<label>배송 설정</label>
+			</th>
+			<td class="its-td" style="line-height:30px;">
+				<label><input type="radio" name="feed_pay_type" value="free" {?!marketing_feed.feed_pay_type || marketing_feed.feed_pay_type == 'free'}checked{/}> 무료</label>
+				&nbsp;
+				<label><input type="radio" name="feed_pay_type" value="fixed" {?marketing_feed.feed_pay_type == 'fixed'}checked{/}> 유료</label>
+				<input type="text" name="feed_std_fixed" class="line onlynumber" style="width:50px;text-align:right;" value="{=marketing_feed.feed_std_fixed}" {?marketing_feed.feed_pay_type!='fixed'}disabled{/}> { ? config_system['basic_currency'] == "KRW"} 원 {:} {=config_system['basic_currency']} { / }
+				&nbsp;
+				<label><input type="radio" name="feed_pay_type" value="postpay" {?marketing_feed.feed_pay_type=='postpay'}checked{/}> 착불</label><span class="helpicon" title="- 착불 배송의 금액은 페이스북, 구글 마케팅에만 전달 됩니다.<br />- 네이버 쇼핑, 다음 쇼핑하우에는 착불 배송 해당 여부만 전달됩니다."></span>
+				<input type="text" name="feed_std_postpay" class="line onlynumber" style="width:50px;text-align:right;" value="{=marketing_feed.feed_std_postpay}" {?marketing_feed.feed_pay_type!='postpay'}disabled{/}> { ? config_system['basic_currency'] == "KRW"} 원 {:} {=config_system['basic_currency']} { / }
+			</td>
+		</tr>	
+		<tr>
+			<th class="its-th">
+				<label>배송 안내 문구</label>
+			</th>
+			<td class="its-td" style="line-height:30px;">
+				<input type="text" name="feed_add_txt" id="feed_add_txt" class="line" style="width:250px;" value="{=marketing_feed.feed_add_txt}" title="예) 도서산간 5천원 추가" {?marketing_feed.feed_pay_type=='postpay'}disabled{:}{/}> (<span id="addcnt">0</span>/50)
+			</td>
+		</tr>	
+		<tr>
+			<th class="its-th" rowspan="4">전달 이미지 설정</th>
+			<th class="its-th">
+				<label>Naver 네이버쇼핑</label>
+			</th>
+			<td class="its-td">
+				<label><input type="radio" name="naverImage" value="B" {? marketing_image.naverImage=='B' || !marketing_image.naverImage}checked{/}/>&nbsp;상품상세(기본)</label>&nbsp;&nbsp;
+				<label><input type="radio" name="naverImage" value="C" {? marketing_image.naverImage=='C'}checked{/}/>&nbsp;상품상세(확대)</label>
+			</td>
+		</tr>
+		<tr>
+			<th class="its-th">
+				<label>Daum 쇼핑하우</label>
+			</th>
+			<td class="its-td">
+				<label><input type="radio" name="daumImage" value="B" {? marketing_image.daumImage=='B' || !marketing_image.daumImage}checked{/}/>&nbsp;상품상세(기본)</label>&nbsp;&nbsp;
+				<label><input type="radio" name="daumImage" value="C" {? marketing_image.daumImage=='C'}checked{/}/>&nbsp;상품상세(확대)</label>
+			</td>
+		</tr>
+		<tr>
+			<th class="its-th">
+				<label>페이스북 마케팅</label>
+			</th>
+			<td class="its-td">
+				<label>상품상세(확대)</label>
+			</td>
+		</tr>
+	</table>
+	<!-- 입점마케팅 전달 데이터 통합 설정 :: 끝 -->
+
+	<!-- 네이버페이 설정 :: 시작 -->
+	<!-- ### 네이버 공통인증 설정 ### -->
+	<!--{ ? visible.nbp }-->
+	<div class="item-title">네이버 공통인증 설정
+		<span class="null desc" style="font-weight:normal">공통인증을 사용하면 네이버쇼핑, 네이버페이, 마일리지, 검색광고의 유입분석이 가능하게 됩니다.
+		공통인증키는 <a href='https://adcenter.shopping.naver.com' target="_blank">네이버쇼핑광고센터>정보관리>정보수정</a>에서 확인하세요.
+		</span>
+	</div>
+	<!--{ / }-->
+	<table width="100%" class="info-table-style">
+		<col width="15%" /><col width="35%" />
+		<col width="15%" /><col width="35%" />
+		<tr>
+			<th class="its-th">사용여부</th>
+			<td class="its-td">
+				<!--{ ? config_basic.naver_wcs_use == 'y' }-->
+				<label><input type="radio" name="naver_wcs_use" value="y" checked="checked" /> 사용</label>
+				<label><input type="radio" name="naver_wcs_use" value="n" /> 사용안함</label>
+				<!--{ : }-->
+				<label><input type="radio" name="naver_wcs_use" value="y" /> 사용</label>
+				<label><input type="radio" name="naver_wcs_use" value="n" checked="checked" /> 사용안함</label>
+				<!--{ / }-->
+			</td>
+			<th class="its-th">네이버 공통인증키</th>
+			<td class="its-td">
+				<input type="text" name="naver_wcs_accountid" size="50" class="line" value="{naver_wcs.accountId}" />
+			</td>
+		</tr>
+		<tr>
+			<th class="its-th">White List <span class="helpicon" title="- 네이버페이 및 마일리지서비스의 유입경로별 혜택은 네이버광고센터에 등록하신 도메인에 한해서만 적용됩니다.<br />- 쇼핑몰이 여러개의 도메인으로 운영되는 경우 White List에 해당 도메인들을 추가하여주시기 바랍니다. "></span></th>
+			<td class="its-td" >
+				<div class="naverWcsWhiteList">
+					<!--{ ? naver_wcs.checkoutWhitelist }-->
+						<!--{ @ naver_wcs.checkoutWhitelist }-->
+						<div class="naverWcsWhiteListItem" style="padding-bottom:2px">http:// <input type="text" name="checkoutWhitelist[]" value="{.value_}" /></div>
+						<!--{ / }-->
+					<!--{ : }-->
+						<div class="naverWcsWhiteListItem" style="padding-bottom:2px">http:// <input type="text" name="checkoutWhitelist[]" value="" /></div>
+					<!--{ / }-->
+				</div>
+			</td>
+			<td colspan="2" class="its-td">
+				<div class="infomation">
+				<ol>
+				<li>CPC 네이버쇼핑 이용 쇼핑몰 : 공통인증 사용 불필요</li>
+				<li>CPA 네이버쇼핑 이용 쇼핑몰 : 공통인증 사용 필요</li>
+				<li>네이버페이 이용 쇼핑몰 : 공통인증 사용 필요</li>
+				<li>네이버 마일리지 이용 쇼핑몰 : 공통인증 사용 필요</li>
+				</ol>
+				</div>
+			</td>
+		</tr>
+	</table>
+
+	<!-- ### 네이버페이 설정 ### -->
+	<div class="item-title">네이버페이 설정
+		<span class="desc" style="font-weight:normal;color:red;">네이버페이는 네이버 담당자의 최종 검수완료 후 사용 가능합니다.</span>
+	</div>
+	<table width="100%" class="info-table-style">
+		<col width="15%" /><col width="35%" />
+		<col width="15%" /><col width="35%" />
+		<tr>
+			<th class="its-th">버전</th>
+			<td class="its-td" colspan="3">
+				{? in_array(navercheckout.use,array("y","test")) && in_array(navercheckout.version,array('','1.0')) }
+				<label><input type="radio" name="navercheckout_ver" value="1.0" class="npay_ver" {?navercheckout.version != '2.1'}checked="checked"{/}> 상품 연동 1.0 / 주문연동 안함</label>
+				&nbsp;&nbsp;&nbsp;
+				{ / }
+				<label><input type="radio" name="navercheckout_ver" value="2.1" class="npay_ver" {?navercheckout.version == '2.1' || navercheckout.version == ''}checked="checked"{/}> 상품 연동 2.0  / 주문연동 5.0</label>
+			</td>
+		</tr>
+		<tr>
+			<th class="its-th">사용여부</th>
+			<td class="its-td">
+				<label><input type="radio" name="navercheckout_use" class="navercheckout_use" value="y" {?navercheckout.use == 'y'}checked="checked"{/} /> 사용</label>
+				<label><input type="radio" name="navercheckout_use" class="navercheckout_use" value="test" {?navercheckout.use == 'test'}checked="checked"{/} /> 테스트 <span class="helpicon" title="- 네이버페이의 테스트서버와 연동됩니다.<br />- 관리자환경에 로그인된 상태에서만 네이버페이 버튼이 보입니다."></span></label>
+				<label><input type="radio" name="navercheckout_use" class="navercheckout_use" value="n" {?navercheckout.use == 'n'}checked="checked"{/} /> 사용안함</label>
+			</td>
+			<th class="its-th">상점 ID</th>
+			<td class="its-td">
+				<input type="text" name="navercheckout_shop_id" size="50" class="line" value="{navercheckout.shop_id}" />
+			</td>
+		</tr>
+		<tr>
+			<th class="its-th">상점인증키(가맹점인증키)</th>
+			<td class="its-td">
+				<input type="text" name="navercheckout_certi_key" size="50" class="line" value="{navercheckout.certi_key}" />
+			</td>
+			<th class="its-th">버튼인증키</th>
+			<td class="its-td">
+				<input type="text" name="navercheckout_button_key" size="50" class="line" value="{navercheckout.button_key}" />
+			</td>
+		</tr>
+		<!--{ ? navercheckout.version == "2.1" }-->
+		<tr>
+			<th class="its-th">네이버페이<br />버튼 노출 설정</th>
+			<td class="its-td" colspan="3">
+				<table width="99%" class="info-table-style">
+					<col width="50%"><col width="50%">
+					<tr>
+						<th class="its-th center">PC 노출 버튼 설정</th>
+						<th class="its-th center">Mobile 노출 버튼 설정</th>
+					</tr>
+					<tr>
+						<td class="its-td center" valign="top">
+							<div class="mb5">
+								<span class="btn small cyanblue" onclick="npay_btn_style('pc_goods')"><button type="button">버튼 스타일 선택</button></span>
+								<span id="npay_pc_goods_text" class="ml10">{=sel_npay_btn_text['pc_goods']}</span>
+							</div>							
+							<iframe name="npay_pc_goods" id="npay_pc_goods" src="../marketing/npay_btn_style_iframe?mode=pc_goods" frameborder=0 border=0 width="236" height="{=sel_npay_btn_text['pc_goods_h']}"></iframe>
+						</td>
+						<td class="its-td center" valign="top">
+							<div class="mb5">
+								<span class="btn small cyanblue" onclick="npay_btn_style('mobile_goods')"><button type="button">버튼 스타일 선택</button></span>
+								<span id="npay_mobile_goods_text" class="ml10">{=sel_npay_btn_text['mobile_goods']}</span>
+							</div>
+						
+							<iframe name="npay_mobile_goods" id="npay_mobile_goods" src="../marketing/npay_btn_style_iframe?mode=mobile_goods" frameborder=0 border=0 width="290" height="{=sel_npay_btn_text['mobile_goods_h']}"></iframe>
+						</td>
+					</tr>
+				</table>
+			</td>
+		</tr>
+		<!--{ / }-->
+		<tr>
+			<th class="its-th">상품연동 예외</th>
+			<td class="its-td" colspan="3">
+				<div class="desc_txt">
+				네이버페이는 티켓상품 결제를 지원하지 않아 티켓상품은 자동으로 연동되지 않습니다.<br/>
+				또한 실물(패키지 포함) 상품 중 추가입력옵션을 이미지업로드 방식으로 구성한 경우 네이버페이 결제가 되지 않습니다.
+				<span class="highlight-link hand" onclick="openpop_npay();">자세히</span>
+				<br/>
+				추가적인 예외 상품은 아래에서 설정하세요.
+				</div>
+				<div class="except_category" >
+					<div>
+						<select class="line" name="except_category1[]">
+							<option value="">1차 카테고리</option>
+						</select>
+						<select class="line" name="except_category2[]">
+							<option value="">2차 카테고리</option>
+						</select>
+						<select class="line" name="except_category3[]">
+							<option value="">3차 카테고리</option>
+						</select>
+						<select class="line" name="except_category4[]">
+							<option value="">4차 카테고리</option>
+						</select>
+						<span class="btn small gray"><button type="button" class="category_button">예외 카테고리 선택</button></span>
+					</div>
+					<div  class="except_category_list">
+					<!--{ @ navercheckout.except_category_code }-->
+					<div style='padding:1px;'>
+					<span style='display:inline-block;width:300px'>{.category_name }</span>
+					<span class='btn-minus'><button type='button' class='del_category'></button></span>
+					<input type='hidden' name='except_category_code[]' value='{.category_code }' />
+					</div>
+					<!--{ / }-->
+					</div>
+				</div>
+				<div>
+					<div><span class="btn small gray"><button type="button" class="except_goods_button">예외 상품 선택</button></span></div>
+					<div class="clearbox" style="height:5px;"></div>
+					<div id="except_goods_selected">
+					</div>
+					<div id="except_goods">
+					<!--{ @ navercheckout.except_goods }-->
+					<div class='goods' style='float:left;'>
+						<div align='center' class='image'>
+							<img class="goodsThumbView" alt="" src="{.image}" width="50" height="50">
+						</div>
+						<div align='center' class='name' style='width:70px;overflow:hidden;white-space:nowrap;'>{.goods_name}</div>
+						<div align='center' class='price'>{=get_currency_price(.price,3)}</div>
+						<input type="hidden" name='except_goods[]' value='{.goods_seq}' />
+						<!--{ ? serviceLimit('H_AD') }-->
+						<div align='center' class='provider_name red'  style='width:70px;overflow:hidden;white-space:nowrap;'>{.provider_name}</div>
+						<!--{ / }-->
+					</div>
+					<!--{ / }-->
+					</div>
+				</div>
+				<script>category_load();</script>
+				<div style="clear:both"></div>
+			</td>
+		</tr>
+		<tr>
+			<th class="its-th">배송그룹</th>
+			<td class="its-td" colspan="3">
+
+				<!-- // 네이버페이 가능 배송그룹 안내 :: START -->
+				<table width="99%" class="info-table-style">
+				<tr>
+					<th class="its-th-align">판매자</th>
+					<th class="its-th-align">가능 배송그룹</th>
+					<th class="its-th-align">가능 배송방법</th>
+					<th class="its-th-align" width="170px">연결된상품</th>
+					<th class="its-th-align" width="80px">관리</th>
+				</tr>
+				<!--{ ? npay_shipping }-->
+					<!--{ @ npay_shipping }-->
+						<!--{ @ .value_ }-->
+							<!--{ ? count(..shipping_set) > 0 }-->
+				<tr>
+								<!--{ ? ..index_ == 0 }-->
+					<td class="its-td" rowspan="{=count(.value_)}">{..provider_info}</td>
+								<!--{ / }-->
+					<td class="its-td">{..shipping_group_name}</td>
+					<td class="its-td">{=implode("<br/>",..shipping_set)}</td>
+					<td class="its-td-align center">
+						<span class="btn small valign-middle"><input name="modify_btn" onclick="window.open('/admin/goods/package_catalog?ship_grp_seq={..shipping_group_seq}');" type="button" value="패키지 : {=..rel_goods_cnt['package']}개" style="width:70px;"></span>
+						<span class="btn small valign-middle"><input name="modify_btn" onclick="window.open('/admin/goods/catalog?ship_grp_seq={..shipping_group_seq}');" type="button" value="상품 : {=..rel_goods_cnt['goods']}개" style="width:70px;"></span>
+					</td>
+					<td class="its-td-align center">
+								<!--{ ? ..shipping_provider_seq > 1 }-->
+						<span class="btn small valign-middle"><input name="modify_btn" onclick="window.open('/admin/setting/shipping_group_regist?provider_seq={..shipping_provider_seq}&provider_name={..provider_info}&shipping_group_seq={..shipping_group_seq}');" type="button" value="상세" style="width:50px;"></span>
+								<!--{ : }-->
+						<span class="btn small valign-middle"><input name="modify_btn" onclick="window.open('/admin/setting/shipping_group_regist?shipping_group_seq={..shipping_group_seq}');" type="button" value="상세" style="width:50px;"></span>
+								<!--{ / }-->
+					</td>
+				</tr>
+							<!--{ / }-->
+						<!--{ / }-->
+					<!--{ / }-->
+				<!--{ : }-->
+				<tr>
+					<td id="no_npay_shipping" class="its-td-align center desc" colspan="5">
+						네이버페이 결제가 가능한 배송그룹이 없습니다.
+					</td>
+				</tr>
+				<!--{ / }-->
+				</table>
+				<!-- // 네이버페이 가능 배송그룹 안내 :: END -->
+				<span>- 네이버페이 배송비 규정에 의해 위의 배송그룹으로 연결된 상품만 네이버페이 결제가 가능합니다.</span><br/>
+				<span>- 주소 오류, 네이버페이 통신 오류 등으로 배송비가 추가 과금 또는 누락될 수 있습니다. 이점 유의하시기 바랍니다.</span><br/>
+				<span>- 네이버 배송비 규정 <a href="https://www.firstmall.kr/customer/faq/1098" style="color: #4472c4; text-decoration: underline;" target="_blank">자세히 보기</a></span><br/>
+				<span>- 새로운 배송그룹 추가를 원하는 경우 설정><a onclick="window.open('/admin/setting/shipping_group');" style="color: #4472c4; text-decoration: underline;" target="_blank" >배송비</a>에서 추가해주세요.</span>
+			</td>
+		</tr>
+		<tr>
+			<th class="its-th">과세/비과세 안내</th>
+			<td class="its-td" colspan="3">
+				네이버페이 주문금액의 과세/비과세 유무는 '사업자 유형'에 따라 결정됩니다.<br/>
+				&nbsp;&nbsp;- 과세 : 개인사업자중 일반과세자, 법인사업자<br/>
+				&nbsp;&nbsp;- 비과세 : 개인사업자중 면세사업자 및 간이과세자<br/>
+				과세/비과세 처리에 대한 자세한 문의는 네이버페이 고객센터(1588-3819)로 문의해 주세요.
+			</td>
+		</tr>
+		<tr>
+			<th class="its-th">도서공연비 소득공제<br/>대상 상품 선택</th>
+			<td class="its-td" colspan="3">
+				<label><input type="radio" name="navercheckout_culture" value="n" {?navercheckout.culture==''||navercheckout.culture=='n'}checked="checked"{/} /> 없음</label>&nbsp;&nbsp;
+				<label><input type="radio" name="navercheckout_culture" value="all" {?navercheckout.culture == 'all'}checked="checked"{/}/> 전체 상품</label>&nbsp;&nbsp;
+				<label><input type="radio" name="navercheckout_culture" value="choice" {?navercheckout.culture == 'choice'}checked="checked"{/}/> 선택 상품 <span class="naver_count">{?navercheckout.culture_count>0}({navercheckout.culture_count}개){/}</span></label>
+
+				<div class="culture_choice {?navercheckout.culture != 'choice'}hide{/}">
+					<div><span class="btn small gray"><button type="button" class="culture_goods_button">상품등록</button></span></div>
+					<div class="clearbox" style="height:5px;"></div>
+					<div id="culture_goods_selected">
+					</div>
+					<div id="culture_goods">
+					<!--{ @ navercheckout.culture_goods }-->
+					<div class='goods' style='float:left;'>
+						<div align='center' class='image'>
+							<img class="goodsThumbView" alt="" src="{.image}" width="50" height="50">
+						</div>
+						<div align='center' class='name' style='width:70px;overflow:hidden;white-space:nowrap;'>{.goods_name}</div>
+						<div align='center' class='price'>{=get_currency_price(.price,3)}</div>
+						<input type="hidden" name='culture_goods[]' value='{.goods_seq}' />
+						<!--{ ? serviceLimit('H_AD') }-->
+						<div align='center' class='provider_name red'  style='width:70px;overflow:hidden;white-space:nowrap;'>{.provider_name}</div>
+						<!--{ / }-->
+					</div>
+					<!--{ / }-->
+					</div>
+				</div>
+				<div style="clear:both"></div>
+			</td>
+		</tr>
+		<tr>
+			<th class="its-th">신청 및 관리</th>
+			<td class="its-td center" colspan="3">
+				<div style="display:inline-block; position:relative; width:100%; text-align:left;">
+					<a href="https://admin.pay.naver.com/join/step1" class="btn_contract"  target="_blank">신청</a>
+				&nbsp;<a href="https://admin.pay.naver.com/" class="btn_contract2"  target="_blank">관리</a>
+				</div>
+			</td>
+		</tr>
+	</table>
+
+	<!-- 네이버페이 설정 :: 끝 -->
+</div>
+</form>
+
+<div id="lay_npay_btn_style" class="hide">
+	<iframe name="npay" id="npay" frameborder=0 border=0 src="" style="width:100%;height:100%;" scrolling="no"></iframe>
+</div>
+
+<div id="npay_imageupload_pop" class="hide">
+	<img src="../images/common/naverpay_img_01.png" />
+</div>
+
+<div id="info_goods_lay" width="100%" class="hide">
+	<table cellspacing="0" cellpadding="0" border="0" style="line-height:30px;">
+		<tr>
+			<td>
+				1. 입점 마케팅채널 전달 데이터’ 항목에서 ‘이 상품의 정보는 전달하지 않겠습니다.’ 에 미체크되어 있어야 합니다.
+			</td>
+		</tr>
+		<tr><td class="bold">* 상품 정보 화면</td></tr>
+		<tr>
+			<td>
+				<img src="//firstmall.kr/ec_hosting/images/marketing/popup/marketing_epurl_adva1.gif">
+			</td>
+		</tr>
+		<tr>
+			<td class="pdt50">
+				2. 상품의 정보가 '<span class="red">정상</span>', '<span class="red">노출</span>' , ‘<span class="red">승인</span>’ 이어야 합니다.
+			</td>
+		</tr>
+		<tr><td class="bold">* 상품 정보 화면</td></tr>
+		<tr>
+			<td>
+				<img src="//firstmall.kr/ec_hosting/images/marketing/popup/marketing_epurl_adva2.gif">
+			</td>
+		</tr>
+		<tr>
+			<td class="pdt50">
+				3. 성인전용 쇼핑몰의 상품은 모두 제외되면 일반 쇼핑몰 혹은 회원 전용 쇼핑몰의 성인전용 상품도 제외됩니다.<br/>(단 네이버 쇼핑만 제외됩니다. 다음은 성인상품도 전달됩니다. )
+			</td>
+		</tr>
+		<tr><td class="bold">* 설정 > 운영방식</td></tr>
+		<tr>
+			<td>
+				<img src="//firstmall.kr/ec_hosting/images/marketing/popup/marketing_epurl_adva3.gif">
+			</td>
+		</tr>
+		<tr>
+			<td class="pdt50">
+				4. 성인 전용 상품에 미 체크 되어 있어야 합니다.
+			</td>
+		</tr>
+		<tr><td class="bold">* 상품 상세</td></tr>
+		<tr>
+			<td>
+				<img src="//firstmall.kr/ec_hosting/images/marketing/popup/marketing_epurl_adva4.gif">
+			</td>
+		</tr>
+		<tr>
+			<td class="pdt50">
+				5 . 상품에 연결된 카테고리 중 1개라도 카테고리 접속권한이 제한되어 있으면 포함이 안됩니다.<br/>즉 연결된 카테고리의 접속권한이 ‘이 카테고리는 누구나 볼 수 있습니다‘ 로 설정되어야 합니다.
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<img src="//firstmall.kr/ec_hosting/images/marketing/popup/marketing_epurl_adva5.gif">
+			</td>
+		</tr>
+	</table>
+	<br/><br/>
+</div>
+<div id="info_domain_lay" width="100%" class="hide">
+	<table cellpadding="0" cellspacing="0" border="0" style="line-height:30px;">
+		<tr>
+			<td>
+				1. 가비아 로그인 후  my퍼스트몰로 이동합니다. (<a style="color:blue;" href="https://firstmall.kr/myshop/index.php" target="_blank">https://firstmall.kr/myshop/index.php</a>)
+			</td>
+		</tr>
+		<tr>
+			<td>
+				2. 도메인 연결하려는 쇼핑몰을 선택한 이후에 도메인 연결을 클릭합니다.
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<img src="//firstmall.kr/ec_hosting/images/marketing/popup/marketing_epurl_domain1.gif">
+			</td>
+		</tr>
+		<tr>
+			<td class="pdt50">
+				3. 연결하려는 도메인을 입력후 연결 신청을 합니다.
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<img src="//firstmall.kr/ec_hosting/images/marketing/popup/marketing_epurl_domain2.gif">
+			</td>
+		</tr>
+	</table>
+	<br/><br/>
+</div>
+<div id="info_event_lay" width="100%" class="hide">
+<div id="info_data_lay" width="100%" class="hide">
+	<p>아래의 조건에 해당하는 상품은 상품 데이터가 전달되지 않습니다.</p>
+	<br/>
+	<p style="line-height:160%;">1. 마케팅 전달 데이터에 아니오 체크한 경우</p>
+	<p style="line-height:160%;">2. 상품 승인 상태가 미승인 경우</p>
+	<p style="line-height:160%;">3. 상품 상태가 정상이 아닌 경우	</p>
+	<p style="line-height:160%;">4. 상품 정보가 미노출인 경우	</p>
+	<p style="line-height:160%;">5. 성인 상품인 경우	</p>
+	<p style="line-height:160%;">6. 구매대상을 제한한 경우	</p>
+	<p style="line-height:160%;">7. 연결된 카테고리가 없는 경우</p>
+	<p style="line-height:160%;">8. 연결된 대표 카테고리에 접근 제한이 있는 경우</p>
+</div>
+<div id="info_code_lay" width="100%" class="hide">
+	<p style="line-height:160%;">1. 상품명 : &#123;product_name&#125;</p>
+	<p style="line-height:160%;">2. 대표카테고리 : &#123;product_category&#125;</p>
+	<p style="line-height:160%;">3. 대표브랜드 : &#123;product_brand&#125;</p>
+	<p style="line-height:160%;">4. 상품검색태그 : &#123;product_tag&#125;</p>
+</div>
+<div id="info_brand_lay" width="100%" class="hide">
+	<p style="font-weight:bold;">상품의 브랜드 정보 전달 시, 전달 항목에 대한 설정 입니다.</p>
+	<br/>
+	<p>[상품 브랜드 정보 전달]</p>
+	<label for="feed_brand_kind_1"><img src="../images/common/scr_brand_1.png" /></label>
+	<br/><br/>
+	<p>[상품 추가 정보 전달]</p>
+	<label for="feed_brand_kind_2"><img src="../images/common/scr_brand_2.png" /></label>
+</div>
+{=pop_contants}
+</div>
+
+<!-- 네이버페이 연동버전 업그레이드 신청 -->
+<div id="npay_ver2_lay" class="hide">
+	<div style="width:600px;">
+		<form name="naverpay_upgrade" method="post" target="actionFrame">
+		<div class="center mt10">
+			<img src="../images/design/naverpay_pop.png">
+		</div>
+
+		<div style="width:570px;margin:15px auto;">
+			<p class="mt20 fx12 bold red">※ 필독</p>
+			<p class="mt10 fx12">
+				상품연동 2.0으로 업그레이드 하시면 퍼스트몰에서 주문처리도 가능해집니다.<br />
+			단, 업그레이드 신청처리는 <span class='red'>매주 목요일 ( 영업일 기준) 오전 10시에 순차적으로 진행</span>됩니다.
+			</p>
+			<p class="mt10" style="line-height:18px;">
+				<ul class="fx12">
+				<li class='red'>· 업그레이드 처리 소요시간은 영업일 기준 3 ~ 4일 소요됩니다.</li>
+				<li>· 신청 진행중에는 네이버페이  버튼이 노출되지 않습니다.(사용여부:”테스트”로 자동변경)<br />
+				&nbsp;&nbsp;&nbsp;※ ”테스트”모드로 자동 변경된 후 업그레이드 완료 전까지는 모드를 변경하시면 안됩니다.</li>
+				<li>· 신청 후 업그레이드가  완료되면 완료안내 메일을 보내드리며, <span class='red'>메일 확인 후 사용여부를 [사용]으로<br />
+						&nbsp;&nbsp;&nbsp;변경해주셔야 페이버튼이 정상 노출됩니다.</span></li>
+				<li>· 페이버튼 노출 후 실환경에서 추가 테스트가 진행됩니다.(정상 주문 및 수집 가능)</li>
+					<li>· 상품연동 2.0으로 변경 후 1.0으로 변경불가 합니다.</li>
+				</ul>
+			</p>
+			<p class="mt10 fx12">
+				<table width="100%" class="info-table-style">
+				<col width="175" /><col  />
+				<tr>
+				<th class="its-th">페이가맹점 ID</th>
+					<td class="its-td"><input type="text" name="naverpay_mall_id" value="{navercheckout.naverpay_mall_id}" style="width:94%;"></td>
+				</tr/>
+				<tr>
+				<th class="its-th"><strong>이메일주소</strong></th>
+					<td class="its-td">
+					<input type="text" name="naverpay_email[]" value="" style="width:19%;">
+					 @ <input type="text" name="naverpay_email[]" value="" style="width:33%;" class="emailListInput">
+
+						<select style="width:33%;height:25px;" name="emailList">
+							<option value="">직접입력</option>
+							<!--{ @ code_load('email') }-->
+							<option value="{.codecd}">{.value}</option>
+							<!--{ / }-->
+						</select>
+					<div class='red mt10' style="line-height:14px;">※적용완료시점에 이메일 발송으로 안내가 되오니 바로 확인이 가능한 이메일 주소를 적어주세요.</div>
+
+					</td>
+				</tr/>
+				<tr>
+				<th class="its-th">휴대폰번호</th>
+					<td class="its-td">
+					<input type="text" name="naverpay_user_phone" value="" style="width:94%;">
+					<div class='red mt10' style="line-height:14px;">※이메일 발송 시점에 SMS를 보내드리오니 확인 가능한 휴대폰 번호를 넣어주세요.</div>
+					</td>
+				</tr/>
+				</table>
+			</p>
+			<p class="mt10 center">
+				<span class="btn large black"><button  type="button" id="naverpay_upgrade">업그레이드 신청</button></span>
+			</p>
+		</div>
+		</form>
+	</div>
+</div>
+
+{ #layout_footer }

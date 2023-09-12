@@ -1790,6 +1790,10 @@ if(is_file_facebook_tag == true){
 				f.attr("target","actionFrame");
 				$("iframe[name='actionFrame']").hide();
 				// window.open('about:blank','childwin','width=420,height=550');
+			} else if ( sel_payment == 'naverpayment' ) {
+				// 네이버페이
+				f.attr("target","_self");
+				$("iframe[name='actionFrame']").hide();
 			} else if ( sel_payment == 'eximbay' || sel_payment == 'paypal' ) {
 				// 엑심베이, 페이팔
 				f.attr("target","tar_opener");

@@ -1,0 +1,116 @@
+<!--{ ? !record && page == 1 }-->
+	<tr class="list-row">
+		<td colspan="{? pagemode=='company_catalog'}12{:}14{/}" align="center">검색어가 없거나 검색 결과가 없습니다.</td>
+	</tr>
+<!--{ : }-->
+	<!-- 리스트 : 시작 -->
+	<!--{ ? !record }-->
+	<tr class="list-row">
+		<td colspan="14" align="center">검색어가 없거나 검색 결과가 없습니다.</td>
+	</tr>
+	<!--{ : }-->
+	<!--{ @ record }-->
+	<!--{ ? .start }-->
+	<!-- 리스트타이틀(주문상태 및 버튼) : 시작 -->
+	<tr class="list-title-row">
+		<td colspan="14" class="list-title-row-td" style="border-top:none;">
+			<div class="relative clearbox">
+				<div class="ltr-title">
+					<!--{ ? .status == 'request' }-->
+					<span class="small_group">{=arr_refund_status[.status]}</span> <span class="helpicon" title="환불신청을 처리하세요."></span>
+					<!--{ : .status == 'ing' }-->
+					<span class="small_group">{=arr_refund_status[.status]}</span> <span class="helpicon" title="환불처리를 완료하세요."></span>
+					<!--{ : .status == 'complete' }-->
+					<span class="small_group">{=arr_refund_status[.status]}</span> <span class="helpicon" title="환불처리가 완료되었습니다."></span>
+					<!--{ / }-->
+				</div>
+			</div>
+		</td>
+	</tr>
+	<!-- 리스트타이틀(주문상태 및 버튼) : 끝 -->
+	<!--{ / }-->
+	<tr class="list-row">
+		<td align="center">{.no}</td>
+		<td align="center"><a href="../order/view?no={.order_seq}"><strong class="hand blue">{.regist_date}</strong><br /><span class="fx11">{.refund_code}</span></a></td>
+		<td align="center">
+			<a href="../order/view?no={.order_seq}"><span class="hand blue">{.order_seq}</span></a>
+			{? .npay_order_id}<div class="ngreen">{.npay_order_id}<span style="font-size:11px;"> (Npay주문번호)</span></div>{/}
+		</td>
+		<td align="center">
+			<!--{ ? .member_seq }-->
+			<span class="hand" onclick="open_crm_summary(this,'{.member_seq}','{.order_seq}','right');">
+				{?.member_type=='개인'}<img src="../images/common/icon/icon_personal.gif" />
+				{:.member_type=='기업'}<img src="../images/common/icon/icon_besiness.gif" />{/}
+				{.order_user_name}
+				{? .sns_rute }
+					<span>(<img src="../images/sns/sns_{=substr(.sns_rute,0,1)}0.gif" align="absmiddle" class="btnsnsdetail">/<span class="blue">{.group_name}</span>)
+					</span>
+				{ : }
+				<!--{ ? .mbinfo_rute == 'facebook' //facebook 회원인경우 }-->
+					(<span style="color:#d13b00;" <img src="../images/board/icon/sns_f0.gif" align="absmiddle">{.mbinfo_email}</span>/<span class="blue">{.group_name}</span>)
+				<!--{ : }-->
+					(<span style="color:#d13b00;">{.userid}</span>/<span class="blue">{.group_name}</span>)
+				<!--{ / }-->
+				{ / }
+			</span>
+			<!--{ : }-->
+			<img src="../images/common/icon/icon_personal.gif" /> {.order_user_name} (<span class="desc" order_seq="{.order_seq}">비회원</span>)
+			<!--{ / }-->
+		</td>
+		<td align="center">
+			<!--{? .pg == 'npay' }-->
+			<span class="icon-pay-{.pg}" title="naver pay"><span>npay</span></span>
+			<!--{ : .pg == 'kakaopay' }-->
+				<span class="icon-pay-kakaopay-simple" title="kakaopay"><span>kakaopay</span></span>
+			<!--{ : }-->
+				<span class="icon-pay-{.pg}-simple" title="{.pg}"><span></span></span>
+			<!--{ / }-->
+			<!--{ ? .payment == 'escrow_account' }-->
+				<span class="icon-pay-escrow" title="에스크로"><span>에스크로</span></span>
+				<span class="icon-pay-account" title="{.mpayment}"><span>{.mpayment}</span></span>
+			<!--{ : .payment == 'escrow_virtual' }-->
+				<span class="icon-pay-escrow" title="에스크로"><span>에스크로</span></span>
+				<span class="icon-pay-virtual" title="{.mpayment}"><span>{.mpayment}</span></span>
+			<!--{ : .pg != 'kakaopay' && .pg != 'naverpayment' }-->
+				<span class="icon-pay-{.payment}" title="{.mpayment}"><span>{.mpayment}</span></span>
+			<!--{ / }-->
+			<!--{ ? .payment=='bank' && .bank_name }-->
+				<span class="darkgray"><span title="은행명"></span></span>
+			<!--{ / }-->
+		</td>
+		<td align="center">{=(.option_ea + .suboption_ea)}</td>
+		<td align="center">{?.refund_type=='return'}{.refund_ea_sum}{:}&nbsp;{/}</td>
+		<td align="center">{?.refund_type=='cancel_payment'}{.refund_ea_sum}{:}&nbsp;{/}</td>
+		<td align="center">{?.refund_type=='shipping_price'}1{:}&nbsp;{/}</td>
+		<td align="center">{?.refund_method}{.refund_method}{:}&nbsp;{/}</td>
+		<td align="center">{=get_currency_price(.refund_total)}</td>
+		<td align="center">{?.refund_date!='0000-00-00'}{.refund_date}{:}&nbsp;{/}</td>
+		<td align="center">{.mstatus}</td>
+		<td align="center">{.returns_status}</td>
+	</tr>
+	<tr class="list-row hide">
+		<td colspan="14" class="list-end-row-td">
+			<div class="detail"></div>
+		</td>
+	</tr>
+	<!-- 리스트데이터 : 끝 -->
+	<!--{ ? .end }-->
+	<!-- 합계 : 시작 -->
+	<tr class="list-end-row">
+		<td colspan="14" class="list-end-row-td">
+			<div class="list-end-total-amount">
+				{.mstatus} <span class="darkgray">합계</span> &nbsp; {=number_format(summary['status_cnt'][.status])}건
+				&nbsp;&nbsp;&nbsp;
+				{=get_currency_price(summary['tot_price'][.status],3,'','<span class="fx14">_str_price_</span>')}
+			</div>
+		</td>
+	</tr>
+	
+	<!-- 합계 : 끝 -->
+	<!--{ / }-->
+	<!--{ / }-->
+	<!--{ / }-->
+	<!-- 리스트 : 끝 -->
+<!--{ / }-->
+		<input type="hidden" id="{page}_no" value="{final_no}" />
+		<input type="hidden" id="{page}_step" value="{final_step}" />

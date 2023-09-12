@@ -648,6 +648,7 @@ $(document).ready(function() {
 	// 결제수단 : 개별 설정
 	$("#possible_pay_button").on("click", function(){
 		var obj							= $("input:radio[name=possible_pay_type]:checked");
+		var payObj						= $("input[name='possible_pay[]']");
 		var possible_pay_text 			= '';
 		var possible_pay				= new Array();
 		possible_pay["card"]			= "신용카드";
@@ -659,6 +660,7 @@ $(document).ready(function() {
 		possible_pay["bank"]			= "무통장 입금";
 		possible_pay["kakaopay"]		= "카카오페이";
 		possible_pay["payco"]			= "페이코";
+		possible_pay["naverpayment"]	= "네이버페이 결제형";
 		possible_pay["paypal"]			= "페이팔";
 		possible_pay["alipay"]			= "알리페이";
 		possible_pay["axes"]			= "엑시즈";
@@ -668,21 +670,21 @@ $(document).ready(function() {
 			alert("결제 수단이 '개별 설정'인 경우에만 사용 가능합니다.");
 			return false;
 		}
-		if($("input[name='possible_pay[]']").length == 0){
+		if(payObj.length == 0){
 			alert("사용할 결제 수단을 1개 이상 선택 하세요.");
 			return false;
 		}
 		var pc_text					= "";
 		var pc_value				= "";
 
-		for (i=0; i<$("input[name='possible_pay[]']").length; i++) {
-			if($("input[name='possible_pay[]']").eq(i).is(":checked")){
+		for (i=0; i<payObj.length; i++) {
+			if(payObj.eq(i).is(":checked") && payObj.eq(i).val() != 'all'){
 				if(pc_text == ""){
-					pc_text			= possible_pay[$("input[name='possible_pay[]']").eq(i).val()];
-					pc_value		= $("input[name='possible_pay[]']").eq(i).val();
+					pc_text			= possible_pay[payObj.eq(i).val()];
+					pc_value		= payObj.eq(i).val();
 				}else{
-					pc_text			= pc_text + ","+possible_pay[$("input[name='possible_pay[]']").eq(i).val()];
-					pc_value		= pc_value+","+$("input[name='possible_pay[]']").eq(i).val();
+					pc_text			= pc_text + ","+possible_pay[payObj.eq(i).val()];
+					pc_value		= pc_value+","+payObj.eq(i).val();
 				}
 			}
 		}
@@ -695,6 +697,24 @@ $(document).ready(function() {
 
 		closeDialog("possible_pay");
 
+	});
+
+	$("input[name='possible_pay[]']").on("click",function(){
+		var obj = $(this);
+		var chkPayLay = obj.parent().parent().parent().find("div");
+		var chkPayList = chkPayLay.find("input:checkbox");
+
+		if (obj.val() == 'all') {
+			chkPayList.each(function() { if(!$(this).prop("disabled")) $(this).prop("checked",obj.is(":checked")); });
+		} else {
+			if(obj.is(":checked") == false){
+				chkPayList.parent().find(".chkall").prop("checked",false);
+			}else{
+				if(chkPayList.parent().find(":checked").length == (chkPayList.length - chkPayLay.find("input:disabled").length - 1)){
+					chkPayList.parent().find(".chkall").prop("checked",true);
+				}
+			}
+		}
 	});
 
 	$("input:radio[name=possible_pay_type]").on("click",function(){
@@ -2744,7 +2764,7 @@ $(document).ready(function() {
 			getNoServiceAlert();
 		}else{
 			$("input[name='possible_pay_type'][value='goods']").prop("checked",true);
-			openDialog("결제 수단 개별 설정", "possible_pay", {"width":"600", "height":"500","show" : "fade","hide" : "fade"});
+			openDialog("결제 수단 개별 설정", "possible_pay", {"width":"600", "height":"550","show" : "fade","hide" : "fade"});
 		}
 	});
 

@@ -1443,11 +1443,13 @@ class order_process extends admin_base {
 		/*사은품 주문 취소 end by hyem 2018-11-28*/
 
 		/* 신용카드 자동취소 */
-		if(!$npay_use && $_POST['manual_refund_yn']=='y'
-				&& (in_array($data_order['payment'],array('card','kakaomoney')) || $data_order['pg'] == 'payco')
-				&& $order_total_ea==$cancel_total_ea){
+		if (
+			!$npay_use && $_POST['manual_refund_yn']=='y'
+			&& (in_array($data_order['payment'],array('card','kakaomoney')) || is_order_simple_payment($data_order))
+			&& $order_total_ea==$cancel_total_ea
+		) {
 			$creditcard_cancel = true;
-		}else{
+		} else {
 			$creditcard_cancel = false;
 		}
 
@@ -1459,6 +1461,7 @@ class order_process extends admin_base {
 			switch($data_order['pg']){
 				case 'kakaopay':
 				case 'payco':
+				case 'naverpayment':
 					$pglog_tmp				= $this->ordermodel->get_pg_log($order_seq);
 					$pg_log_data			= $pglog_tmp[0];
 					$data_order['pg_log']	= $pg_log_data;
@@ -1479,10 +1482,6 @@ class order_process extends admin_base {
 
 			$cancelFunction = "{$pgCompany}_cancel";
 			$cancelResult = $this->refundmodel->$cancelFunction($data_order,array('refund_reason'=>$_POST['refund_reason'],'cancel_type'=>'full'));
-
-			if( in_array($cancelResult['result_code'], array('0505')) ){ // 기취소건일 경우 취소 성공으로 처리
-				$cancelResult['success'] = true;
-			}
 
 			if(!$cancelResult['success']){
 				openDialogAlert("{$pgCompany} 결제 취소 실패<br /><font color=red>{$cancelResult['result_code']} : {$cancelResult['result_msg']}</font>",400,160,'parent','');
@@ -1837,8 +1836,11 @@ class order_process extends admin_base {
 		$this->ordermodel->set_order_step($order_seq);
 
 		/* 신용카드 자동취소 */
-		if(!$npay_use && $_POST['manual_refund_yn']=='y' && ($data_order['payment']=='card' || $data_order['payment']=='kakaomoney' || $data_order['pg']=='payco' ) && $order_total_ea==$cancel_total_ea)
-		{
+		if (
+			!$npay_use && $_POST['manual_refund_yn']=='y'
+			&& ( in_array($data_order['payment'], ['card', 'kakaomoney']) || is_order_simple_payment($data_order) ) 
+			&& $order_total_ea==$cancel_total_ea
+		) {
 			// 전체 취소로 인해 카드환불이 자동으로 이루어질 때 추가된 배송비와 pg_price를 업데이트 해준다
 			$tmp_refund_delivery			= 0;
 			$tmp_refund_pg_price_sum		= 0;
@@ -2108,7 +2110,10 @@ class order_process extends admin_base {
 			parent.closeDialog('order_refund_layer');
 			parent.document.location.reload();
 			";
-			openDialogAlert("신용카드 ".$this->arr_step[85]."가 완료되었습니다.",400,140,'parent',$callback);
+
+			$arr_field = search_arr_field();
+			$payment = $arr_field['arr_order_payment'][$data_order['payment']];
+			openDialogAlert($payment." ".$this->arr_step[85]."가 완료되었습니다.",400,140,'parent',$callback);
 		}else{
 
 			$logTitle	= "환불신청(".$refund_code.")";

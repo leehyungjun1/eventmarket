@@ -1362,7 +1362,15 @@ class statsmodel extends CI_Model {
 					,year(a.deposit_date) as stats_year
 					,month(a.deposit_date) as stats_month
 					,a.pg,a.payment as payment
-					,IF(a.pg='paypal','paypal',IF(a.pg='talkbuy','talkbuy',IF(a.pg='kakaopay','kakaopay',if(a.pg='npay','npay',IF(a.pg = 'payco', 'payco', if(a.pg='eximbay','eximbay','')))))) as pgs
+					,case 
+						when a.pg = 'paypal' then 'paypal'
+						when a.pg = 'talkbuy' then 'talkbuy'
+						when a.pg = 'kakaopay' then 'kakaopay'
+						when a.pg = 'npay' then 'npay'
+						when a.pg = 'payco' then 'payco'
+						when a.pg = 'eximbay' then 'eximbay'
+						when a.pg = 'naverpayment' then 'naverpayment'
+					end as pgs
 					,day(a.deposit_date) as stats_day
 					,sum(a.settleprice) as month_settleprice_sum
 					,count(order_seq) as month_count_sum

@@ -1785,6 +1785,11 @@ class order extends selleradmin_base {
 			$cancel_log  = $this->privatemasking->masking($cancel_log, 'order_log');
 
 			$orders['mpayment'] = $this->arr_payment[$orders['payment']];
+
+			if ($orders['pg'] == 'naverpayment') {
+				$orders['mpayment'] = $this->arr_payment[$orders['pg'].'_'.$orders['payment']];
+			}
+
 			$orders['mstep'] 	= $this->arr_step[$orders['step']];
 
 			$arr = config_load('bank');

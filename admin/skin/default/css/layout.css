@@ -53,6 +53,8 @@ a:hover {color:#f63; }
 .icon-pay-escrow span {display:none;}
 .icon-pay-escrow_virtual {display:inline-block; width:17px; height:15px; background:url('/admin/skin/default/images/common/icon_pay_escrow.gif') no-repeat; vertical-align:middle;}
 .icon-pay-escrow_virtual span {display:none;}
+.icon-pay-point {display:inline-block; width:17px; height:15px; background:url('/admin/skin/default/images/common/icon_pay_point.gif') no-repeat; vertical-align:middle;}
+.icon-pay-point span {display:none;}
 .icon-pay-npay {display:inline-block; width:17px; height:15px; background:url('/admin/skin/default/images/common/icon_pay_npay.gif') no-repeat; vertical-align:middle;}
 .icon-pay-npay span {display:none;}
 .icon-pay-kakaopay {display:inline-block; width:50px; height:20px; background:url('/admin/skin/default/images/common/kakaopay_slogo.png') no-repeat; vertical-align:middle;}
@@ -66,6 +68,8 @@ a:hover {color:#f63; }
 .icon-pay-kakaomoney {display:inline-block; width:17px; height:15px; background:url('/admin/skin/default/images/common/icon_pay_kakaomoney.gif') no-repeat; vertical-align:middle;}
 .icon-pay-pay_later {display:inline-block; width:17px; height:15px; background:url('/admin/skin/default/images/common/icon_pay_pay_later.gif') no-repeat; vertical-align:middle;}
 .icon-pay-pay_later span {display:none;}
+.icon-pay-naverpayment-simple {display:inline-block; width:43px; height:17px; background:url('/admin/skin/default/images/common/naverpayment_slogo_simple.png') no-repeat; vertical-align:middle;}
+.icon-pay-naverpayment-simple span {display:none;}
 
 /* 공통 : 주문상태 색상 */
 .order-step-color-15 {color:#d75e00;}

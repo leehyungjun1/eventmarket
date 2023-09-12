@@ -906,7 +906,7 @@ class statistic_sales extends admin_base {
 		if($npay_use){
 			$this->arr_payment = array_merge($this->arr_payment,config_load('npay_payment'));
 			//npay_point 추가 18-04-19 gcns jhs
-			$this->arr_payment = array_merge($this->arr_payment,array('npay_point'=>'네이버페이(포인트)'));
+			$this->arr_payment = array_merge($this->arr_payment,array('npay_point'=>'네이버페이 주문형 (포인트)'));
 		}
 		// 카카오페이구매 사용시
 		$talkbuy_use = talkbuy_useck();

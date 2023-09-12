@@ -6049,3 +6049,31 @@ function getMobileAppConfig()
 
 	return $mobileAppConfig;
 }
+
+/**
+ * 문자열을 바이트 단위로 자른 후 리턴
+ * 마지막 문자가 정상적인 문자가 아닌 경우 그 전 문자까지 리턴
+ */
+function getSubstring($str, $length)
+{
+	$str = trim($str);
+
+	if (strlen($str) <= $length) {
+		return $str;
+	}
+
+	$strArr = preg_split("//u", $str, -1, PREG_SPLIT_NO_EMPTY);
+	$cutStr = '';
+
+	foreach ($strArr as $s) {
+		$len1 = strlen($s);
+		$len2 = strlen($cutStr) + $len1;
+
+		if ($len2 > $length)
+			break;
+		else
+			$cutStr .= $s;
+	}
+
+	return $cutStr;
+}

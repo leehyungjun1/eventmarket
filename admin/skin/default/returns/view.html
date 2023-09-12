@@ -1,0 +1,765 @@
+{ #layout_header }
+<style>
+span.goods_name {display:inline-block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;-o-text-overflow:ellipsis;vertical-align:middle}
+.price {padding-right:5px;text-align:right}
+div.left {float:left;padding-right:10px}
+span.option {padding-right:10px;}
+span.reason {display:inline-block;width:60px;}
+div.status_complete_msg {padding:5px; line-height:13px;border:3px solid #333;display:none;}
+select.status {border:3px solid #333; padding:5px;}
+ul.addr li {float:left;}
+ul.addr li input{width:93%;}
+
+table.goods_info tr td { border:0px !important; }
+table.goods_info tr td  div{ padding-top:1px; }
+</style>
+{ ? scm_cfg['use'] == 'Y' }
+<script type="text/javascript" src="/app/javascript/plugin/jquery.fmprogressbar.js"></script>
+<script type="text/javascript" src="/app/javascript/js/scm.common.js?dummy={=date('Ymd')}"></script>
+{ / }
+<script type="text/javascript">
+$(document).ready(function() {
+	// 별표 설정
+	$("span.list-important").bind("click",function(){
+		var param = "?no="+$(this).attr('id');
+		if( $(this).hasClass('checked') ){
+			$(this).removeClass('checked');
+			param += "&val=0";
+			$.get('important'+param,function(data) {});
+		}else{
+			$(this).addClass('checked');
+			param += "&val=1";
+			$.get('important'+param,function(data) {});
+		}
+	});
+
+	$.get('../order/view?no={data_return.order_seq}&pagemode=return_view&return_code={data_return.return_code}', function(data) {
+		$('#order_info').html(data);
+	});
+
+	$("input.return_adjust_input").bind('keyup change',function(){
+		account_return_price();
+	});
+
+	// 우편번호 검색
+    $("#senderZipcodeButton").live("click",function(){
+        openDialogZipcode('sender');
+    });
+
+    {?data_return.status=='complete' || (npay_use && data_return.npay_order_id) }
+    $("input,select,textarea",$("form[name='return_form']")).each(function(){
+		
+    	if($(this).attr('name')!='admin_memo' && $(this).attr('name')!='return_code' && $(this).attr('type')!='submit' && $(this).attr('name')!='admin_memo' && $(this).attr('name')!='npay_use'){
+			{? able_return_shipping_price }
+				if($(this).attr('name')=='return_shipping_gubun') return;
+				if($(this).attr('name')=='return_shipping_price') return;
+			{/}
+    		$(this).attr("disabled",true);
+    	}
+    });
+		{? npay_use && data_return.npay_order_id && data_return.status!='complete' } 
+		$("input[name='status']").attr("disabled",false);
+		$("input[name='npay_return_released']").attr("disabled",false);
+		$("input[name='npay_return_hold']").attr("disabled",false);
+		$(".stock_return_ea").attr("disabled",false);
+		$(".return_badea").attr("disabled",false);
+		{/}
+    {/}
+
+	// 사은품 지급 조건 상세
+	$(".gift_log").bind('click', function(){
+		gift_use_log($(this).attr('order_seq'),$(this).attr('item_seq'));
+	});
+});
+
+// 사은품 지급 조건 상세 2015-05-14 pjm
+function gift_use_log(order_seq,item_seq){
+		$.ajax({
+			type: "post",
+			url: "../event/gift_use_log",
+			data: "order_seq="+order_seq+"&item_seq="+item_seq,
+			success: function(result){
+				if	(result){
+					$("#gift_use_lay").html(result);
+					openDialog("사은품 이벤트 정보", "gift_use_lay", {"width":"500","height":"330"});
+				}
+			}
+		});
+}
+
+//할인내역 열기 닫기
+function open_sale_contents(obj)
+{
+	var btnobj = $(obj);
+	var trobj = $(obj).closest('tr').next();
+	var tdobj = $(obj).closest('td');
+	var divobj = trobj.find("td").eq(tdobj.index()).find("div");
+	if(divobj.hasClass('hide')){
+		divobj.removeClass('hide');
+		btnobj.attr('src','../images/common/btn_close.gif');
+	}else{
+		divobj.addClass('hide');
+		btnobj.attr('src','../images/common/btn_open.gif');
+	}
+}
+
+// 반품 form submit
+function return_form_submit(){
+
+    <!--{ ? data_return.status != 'complete' && scm_cfg['use'] == 'Y' }-->
+	if	($("select[name='status']").val() == 'complete'){
+		var chkLocation	= true;
+		$('input.optioninfo').each(function(){
+			if	(!$(this).closest('tr').find('input.location_position_val').val()){
+				openDialogAlert('로케이션이 선택되지 않은 반품이 있습니다.<br/>로케이션을 선택해 주세요', 400, 170, function(){});
+				chkLocation	= false;
+				return false;
+			}
+		});
+		if	(!chkLocation){
+			return false;
+		}
+		<!--{ ? scm_cfg['scm_type'] == 'remote' }-->
+		// 물류관리 마스터 전달용 팝업
+		window.open('', "SCM_RETURN_POPUP", "width=400px,height=200px,menubar=0,status=0,toolbars=0,titlebar=0");
+		<!--{ / }-->
+	}
+	<!--{ / }-->
+	$("form[name='return_form']").submit();
+}
+</script>
+
+<!-- 페이지 타이틀 바 : 시작 -->
+<div id="page-title-bar-area">
+	<div id="page-title-bar">
+
+		<!-- 타이틀 -->
+		<div class="page-title">
+			<h2>
+
+			<!--{ ? data_return.important }-->
+			<!--<span class="icon-star-gray hand checked list-important" id="important_{data_return.return_seq}"></span>&nbsp;&nbsp;-->
+			<!--{ : }-->
+			<!--<span class="icon-star-gray hand list-important" id="important_{data_return.return_seq}"></span>&nbsp;&nbsp;-->
+			<!--{ / }-->
+			<span class="bold fx16" style="background-color:yellow">{data_return.return_code}</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+			<span class="bold fx16 blue" style="background-color:yellow">{data_return.mstatus}</span>
+			<span class="desc">( 종류 : { ? data_return.return_type == 'exchange' }(맞)교환{ : }반품{ / } )</span>
+			</h2>
+		</div>
+
+		<!-- 좌측 버튼 -->
+		<ul class="page-buttons-left">
+<!--  ######################## 16.12.16 gcs yjy : 검색조건 유지되도록-->
+			<li><span class="btn large icon"><button type="button" onclick="location.href='catalog?{query_string}';"><span class="arrowleft"></span>반품리스트</button></span></li>
+		</ul>
+
+		<!-- 우측 버튼 -->
+		<ul class="page-buttons-right">
+			<li></li>
+		</ul>
+	</div>
+</div>
+<!-- 페이지 타이틀 바 : 끝 -->
+
+<!-- 주문정보 테이블 : 시작 -->
+<div id="order_info"></div>
+
+
+<!-- 주문 상세 내역 -->
+
+<!--
+	# $summaryModeClass
+	# 주문리스트에서 보는 요약모드면 'summary-mode'
+	# 주문상세화면에서 볼때에는 ''
+-->
+
+<div class="item-title">반품정보</div>
+<form name="return_form" action="../returns_process/modify" method="post" target="actionFrame">
+<input type="hidden" name="return_code" value="{data_return.return_code}" />
+<input type="hidden" name="return_type" value="{data_return.return_type}" />
+<input type="hidden" name="order_seq" value="{data_return.order_seq}" />
+{?npay_use && data_return.npay_order_id}
+<input type="hidden" name="npay_use" value="{npay_use}" />
+{ / }
+<table class="order-view-table" width="100%" border=1>
+<colgroup>
+	<col />
+	<col width="100" />
+	{ ? scm_cfg['use'] == 'Y' }<col width="80" />{ / }
+	<col width="120" />
+	<col width="150" />
+	<col width="100" />
+	<col width="100" />
+	<col width="80" />
+	<col width="80" />
+</colgroup>
+<thead class="oth">
+	<tr>
+		<th class="dark" rowspan="2">반품신청 상품</th>
+		<th class="dark" rowspan="2">반품수량</th>
+		<th class="dark" { ? scm_cfg['use'] == 'Y' }colspan="2"{ : }rowspan="2"{ / }>
+		'반품완료' 처리 시
+		{ ? scm_cfg['use'] != 'Y' }<br/>재고증가 여부{ / }
+		</th>
+		<th class="dark" rowspan="2">사유</th>
+		<th class="dark" rowspan="2">반품접수 일시</th>
+		<th class="dark" rowspan="2">반품완료 일시</th>
+		<th class="dark" colspan="2">처리상태</th>
+	</tr>
+	<tr>
+		<!--{ ? scm_cfg['use'] == 'Y' }-->
+		<th class="dark">재고</th>
+		<th class="dark">
+			<!--{ ? provider.provider_seq == '1' }-->
+			{=scmSelectWarehouse(shopSno, scmOption)}
+			<!--{ / }-->
+		</th>
+		<!--{ / }-->
+		<th class="dark">환불</th>
+		<th class="dark">반품</th>
+	</tr>
+</thead>
+
+<tbody class="otb">
+	<!--{ @ data_return_item }-->
+	<tr class="order-item-row">
+		<td class="info" nowrap>
+	<!--{ ? scm_cfg['use'] == 'Y' && .provider_seq == '1' && .package_yn != 'y' && .optioninfo }-->
+	<input type="hidden" name="optioninfo[{.return_item_seq}]" class="optioninfo" value="{.optioninfo}" />
+	<!--{ / }-->
+		<table class="goods_info">
+		<tr>
+			<td>
+				<a href='/goods/view?no={.goods_seq}' target='_blank'><span class="order-item-image"><img class="small_goods_image" src="{.image}" /></span></a>
+			</td>
+			<td>
+				{? .npay_product_order_id}<div class="ngray bold">{.npay_product_order_id} <span style="font-size:11px;font-weight:normal">(Npay상품주문번호)</span></div>{/}
+				<!--{?.goods_type == 'gift'}-->
+				<img src="../images/common/icon_gift.gif" align="absmiddle" />
+				<!--{/}-->
+				<a href='../goods/regist?no={.goods_seq}' target='_blank'><span class="goods_name" style="width:500px;">{=.goods_name}</span></a>
+
+				<!--{ ? .adult_goods == 'Y' || .option_international_shipping_status == 'y' || .cancel_type == '1' || .tax == 'exempt' }-->
+				<div>
+					<!--{ ? .adult_goods == 'Y' }-->
+					<img src="../images/common/auth_img.png" alt="성인" style="vertical-align: middle;"/>
+					<!--{ / }-->
+					<!--{ ? .option_international_shipping_status == 'y' }-->
+					<img src="../images/common/icon/plane_on.png" alt="해외배송상품" style="vertical-align: middle;" height="19" />
+					<!--{ / }-->
+					<!--{ ? .cancel_type == '1' }-->
+					<img src="../images/common/icon/nocancellation.gif" alt="청약철회" style="vertical-align: middle;"/>
+					<!--{ / }-->
+					<!--{ ? .tax == 'exempt' }-->
+					<img src="../images/common/icon/taxfree.gif" alt="비과세" style="vertical-align: middle;"/>
+					<!--{ / }-->
+				</div>
+				<!--{ / }-->
+
+				<div class="desc">
+					<!--{ ? .option1!=null || .option2!=null || .option3!=null || .option4!=null || .option5!=null }-->
+						<!--{ ? .opt_type == 'opt' }-->
+					<img src="../images/common/icon_option.gif" />
+						<!--{ / }-->
+						<!--{ ? .opt_type == 'sub' }-->
+					<img src="../images/common/icon_add.gif" />
+						<!--{ / }-->
+					<!--{ / }-->
+					<!--{ ? .option1!=null }-->
+					<span class="option">{.title1} : {.option1}</span>
+					<!--{ / }-->
+					<!--{ ? .option2!=null }-->
+					<span class="option">{.title2} : {.option2}</span>
+					<!--{ / }-->
+					<!--{ ? .option3!=null }-->
+					<span class="option">{.title3} : {.option3}</span>
+					<!--{ / }-->
+					<!--{ ? .option4!=null }-->
+					<span class="option">{.title4} : {.option4}</span>
+					<!--{ / }-->
+					<!--{ ? .option5!=null }-->
+					<span class="option">{.title5} : {.option5}</span>
+					<!--{ / }-->
+					{? .goods_code }<div class="goods_option fx11 goods_code_icon">[상품코드: {.goods_code}]</div>{/}
+				</div>
+				<!--{ ? .inputs }-->
+				<div class="desc">
+					<!--{ @ .inputs }-->
+						<!--{ ? ..key_ > 0 }--><br /><!--{ / }-->
+					<img src="../images/common/icon_input.gif" />
+						<!--{ ? ..title }-->{..title}:<!--{ / }-->
+					{..value}
+						<!--{ / }-->
+				</div>
+				<!--{ / }-->
+				<!--{ ? .goods_kind =='coupon' }-->
+				<div  class="desc">
+					{? .coupon_serial }<span class="order-item-coupon-serial" >티켓번호:{.coupon_serial}</span><br/>{/}
+					{? .refunditem.cancel_memo }
+						{=nl2br(.refunditem.cancel_memo)}
+					{:}
+						{ ?.goods_kind =='coupon' && .social_start_date && .social_end_date }<span class="order-item-coupon-date" >유효기간:{.social_start_date}~{.social_end_date}</span><br/>{ / }
+					<div class="goods-coupon-use-return">사용제한 : {.couponinfo.coupon_use_return}</div>
+					<div class="goods-coupon-cancel-day">취소 마감시간 : {.couponinfo.socialcp_cancel_refund_day}</div>
+					{/}
+				</div>
+				<!--{ / }-->
+				{? .goods_type == "gift" }
+					{? .gift_title }<div><span class="fx11">{.gift_title}</span> <span class="btn small gray"><button type="button" class="gift_log resp_btn v2" order_seq="{=data_return.order_seq}" item_seq="{.item_seq}">자세히</button></span></div>{/}
+				{ / }
+
+			</td>
+		</tr>
+		</table>
+		</td>
+
+		<td class="info center">{?.package_yn == 'y'}[{/}{.ea}{?.package_yn == 'y'}]{/}</td>
+		{ ? .package_yn != 'y' }
+		<td class="info center">
+		<!--{ ? scm_cfg['use'] == 'Y' && .provider_seq == '1' }-->
+			+{=number_format(.ea)} 증가 中
+			<input type="hidden" name="stock_return_ea[{.return_item_seq}]" class="stock_return_ea" value="{.ea}" />
+			<br />
+			불량 <input type="text" name="return_badea[{.return_item_seq}]" value="{.return_badea}" class="return_badea" size="3" class="right" />
+			<!--{ : }-->
+			<select name="stock_return_ea[{.return_item_seq}]" class="stock_return_ea" style="width:70%;">
+			{@ .eaLoop }
+			<option value="{=..value_}" {? .stock_return_ea == ..value_}selected{/}>{=..value_}</option>
+			{ / }
+			</select>
+			<!--{ / }-->
+		</td>
+		<!--{ ? scm_cfg['use'] == 'Y' }-->
+		<td>
+			<!--{ ? .provider_seq == '1' }-->
+				로케이션 : <span class="location-code-title">{.location_code}</span>
+				<input type="hidden" name="location_position[{.return_item_seq}]" value="{.location_position}" org_location_position="{.location_position}" class="location_position_val" />
+				<input type="hidden" name="location_code[{.return_item_seq}]" value="{.location_code}" org_location_code="{.location_code}" class="location_code_val" />
+			<span class="btn-select-warehouse hide">
+				<span class="btn small black"><button type="button" onclick="selectReturnLocation(this, '{.return_item_seq}');">선택</button></span>
+			</span>
+			<!--{ : }-->
+			입점사
+			<!--{ / }-->
+		</td>
+		<!--{ / }-->
+		{ : }
+		<td class="info center">-</td>
+		{ / }
+		<td class="info center">
+		<select name="reason[{.return_item_seq}]" {? npay_use && .npay_product_order_id }disabled{/}>
+		{? npay_use && .npay_product_order_id }
+			<!--{@ .reasonLoop }-->
+			<option value="{..codecd}" {? ..codecd == .reason_code}selected{/}>{..reason}</option>
+			<!--{ / }-->
+		{ : }
+		<!--{? .reasonLoop }-->
+			<!--{@ .reasonLoop }-->
+				<option value="{..codecd}">{..reason}</option>
+			<!--{ / }-->
+		<!--{ : }-->
+			<!--{ @ .reasons }-->
+			<!--{ ? ..codecd!='110'}-->
+			<option value="{..codecd}">{..value}</option>
+			<!--{ / }-->
+			<!--{ / }-->
+		<!--{ / }-->
+		{ / }
+		</select>
+		<!--{? .reasonLoop }-->
+		<input type="hidden" name="reason_desc[{.return_item_seq}]" value="{.reason_desc}">
+		<script>
+			$.each($("select[name='reason[{.return_item_seq}]'] option"), function(){
+				if($(this).text() == "{.reason_desc}"){
+					$(this).attr("selected", true);
+				}
+			});
+			$("select[name='reason[{.return_item_seq}]']").change(function(){
+				var row = $(this).closest("tr");
+				var reason_desc = row.find("select[name='reason[{.return_item_seq}]'] option:selected").text();
+				row.find("input[name='reason_desc[{.return_item_seq}]']").val(reason_desc);
+			});
+		</script>
+		<!--{ : }-->
+		<script>$("select[name='reason[{.return_item_seq}]'] option[value='{.reason_code}']").attr('selected',true);</script>
+		<!--{ / }-->
+		</td>
+		<td class="info center">{=substr(data_return.regist_date,0,10)}<br />{=substr(data_return.regist_date,11,8)}</td>
+		<td class="info center">{=substr(data_return.return_date,0,10)}<br />{=substr(data_return.return_date,11,8)}</td>
+		<!-- <td class="info center">{data_return.mname}</td> -->
+		<td class="info center">{data_return.mrefund_status}</td>
+		<td class="info center">{data_return.mstatus}</td>
+	</tr>
+	<!--{ ? .package_yn == 'y' }-->
+		<!--{ @ .packages }-->
+	<tr class="order-item-row">
+		<td class="info" nowrap style="padding-left:20px;">
+			<!--{ ? scm_cfg['use'] == 'Y' && .provider_seq == '1' && .optioninfo }-->
+			<input type="hidden" name="optioninfo[{.return_item_seq}]" class="optioninfo" value="{..optioninfo}" />
+			<!--{ / }-->
+			<table class="goods_info">
+			<tr>
+				<td valign="top" style="border:none;padding-top:10px;"><img src="../images/common/icon/ico_package.gif" border="0" /></td>
+				<td>
+					<a href='/goods/view?no={..goods_seq}' target='_blank'><span class="order-item-image"><img class="small_goods_image" src="{..image}" /></span></a>
+					</td>
+					<td>
+				<!--{?..goods_type == 'gift'}-->
+					<img src="../images/common/icon_gift.gif" align="absmiddle" />
+				<!--{/}-->
+					<a href='../goods/regist?no={..goods_seq}' target='_blank'><span class="goods_name red" style="width:500px;">{..goods_name}</span></a>
+
+				<!--{ ? ..adult_goods == 'Y' || ..option_international_shipping_status == 'y' || ..cancel_type == '1' || ..tax == 'exempt' }-->
+						<div>
+					<!--{ ? ..adult_goods == 'Y' }-->
+							<img src="../images/common/auth_img.png" alt="성인" style="vertical-align: middle;"/>
+					<!--{ / }-->
+					<!--{ ? ..option_international_shipping_status == 'y' }-->
+							<img src="../images/common/icon/plane_on.png" alt="해외배송상품" style="vertical-align: middle;" height="19" />
+					<!--{ / }-->
+					<!--{ ? ..cancel_type == '1' }-->
+							<img src="../images/common/icon/nocancellation.gif" alt="청약철회" style="vertical-align: middle;"/>
+					<!--{ / }-->
+					<!--{ ? ..tax == 'exempt' }-->
+							<img src="../images/common/icon/taxfree.gif" alt="비과세" style="vertical-align: middle;"/>
+					<!--{ / }-->
+						</div>
+				<!--{ / }-->
+
+					<div class="desc">
+				<!--{ ? ..option1!=null || ..option2!=null || ..option3!=null || ..option4!=null || ..option5!=null }-->
+					<!--{ ? ..opt_type == 'opt' }-->
+						<img src="../images/common/icon_option.gif" />
+					<!--{ / }-->
+					<!--{ ? ..opt_type == 'sub' }-->
+						<img src="../images/common/icon_add.gif" />
+					<!--{ / }-->
+				<!--{ / }-->
+				<!--{ ? ..option1!=null }-->
+						<span class="option">{..title1} : {..option1}</span>
+				<!--{ / }-->
+				<!--{ ? ..option2!=null }-->
+						<span class="option">{..title2} : {..option2}</span>
+				<!--{ / }-->
+				<!--{ ? ..option3!=null }-->
+						<span class="option">{..title3} : {..option3}</span>
+				<!--{ / }-->
+				<!--{ ? ..option4!=null }-->
+						<span class="option">{..title4} : {..option4}</span>
+				<!--{ / }-->
+				<!--{ ? ..option5!=null }-->
+						<span class="option">{..title5} : {..option5}</span>
+				<!--{ / }-->
+				<!--{? ..goods_code }-->
+						<div class="goods_option fx11 goods_code_icon">[상품코드: {..goods_code}]</div>
+				<!--{ / }-->
+					</div>
+				</td>
+			<tr>
+			</table>
+		</td>
+		<td class="info center">
+			<span class="red">
+			[{.ea}]x{..unit_ea}={.ea*..unit_ea}
+			</span>
+		</td>
+		<td class="info center">
+			<!--{ ? scm_cfg['use'] == 'Y' }-->
+			+{=number_format(.ea*..unit_ea)} 증가 中
+			<input type="hidden" name="stock_return_ea[{.return_item_seq}][{..package_option_code}]" class="stock_return_ea" value="{.ea*..unit_ea}" />
+			<br />
+			불량 <input type="text" name="return_badea[{.return_item_seq}][{..package_option_code}]" class="return_badea" value="{..return_badea}" size="3" class="right" />
+			<!--{ : }-->
+			<select name="stock_return_ea[{.return_item_seq}][{..package_option_code}]" class="stock_return_ea" style="width:70%;">
+			{@ .eaLoop }
+			<option value="{=(...value_ * ..unit_ea)}" {? .package_stock_return_ea[..package_option_code] == ...value_}selected{/}>{=(...value_ * ..unit_ea)}</option>
+			{ / }
+			</select>
+			<!--{ / }-->
+		</td>
+		<!--{ ? scm_cfg['use'] == 'Y' }-->
+		<td>
+			<!--{ ? .provider_seq == '1' }-->
+				로케이션 : <span class="location-code-title">{.location_code}</span>
+				<input type="hidden" name="location_position[{.return_item_seq}][{..package_option_code}]" value="{.location_position}" org_location_position="{.location_position}"  class="location_position_val" />
+				<input type="hidden" name="location_code[{.return_item_seq}][{..package_option_code}]" value="{.location_code}" org_location_code="{.location_code}" class="location_code_val" />
+			<span class="btn-select-warehouse hide">
+				<span class="btn small black"><button type="button" package_option_code="{..package_option_code}" onclick="selectReturnLocation(this, '{.return_item_seq}');">선택</button></span>
+			</span>
+			<!--{ : }-->
+			입점사
+			<!--{ / }-->
+		</td>
+		<!--{ / }-->
+		<td class="info center">
+			-
+		</td>
+		<td class="info center">
+			-
+		</td>
+		<td class="info center">
+			-
+		</td>
+		<td class="info center">
+			-
+		</td>
+		<td class="info center">
+			-
+		</td>
+	</tr>
+		<!--{ / }-->
+	<!--{ / }-->
+
+	<!--{ / }-->
+	<tr class="order-item-row">
+		<th class="dark pd10" align="right" style="padding-right:5px;" >소계</th>
+		<th class="dark" align="center"><strong>{tot.ea} ({tot.goods_cnt}종)</strong></th>
+		<th class="dark"{ ? scm_cfg['use'] == 'Y' }colspan="2"{ / }></th>
+		<!-- <th class="dark">{tot.return_ea}</th> -->
+		<th class="dark">
+			{? !data_return.npay_order_id }
+			<span class="reason">변심:{=number_format(tot.user_reason_cnt)}</span>
+			<span class="reason">오배송:{=number_format(tot.shop_reason_cnt)}</span>
+			<span class="reason">하자:{=number_format(tot.goods_reason_cnt)}</span>
+			{ / }
+		</th>
+		<th class="dark" colspan="4">
+			{? data_return.npay_flag_msg }
+				<label><input type="checkbox" name="npay_return_released" value="y">
+				<span class="red">Npay 반품 보류 해제 (사유: {=data_return.npay_flag_msg})</span></label>
+				<input type="hidden" name="npay_return_hold" value="y">
+			{ / }
+		</th>
+	</tr>
+</tbody>
+</table>
+
+<div style="height:10px;"></div>
+
+<table width="100%" class="info-table-style">
+<col width="10%" /><col width="40%" /><col width="10%" /><col width="40%" />
+<tr>
+	<th class="its-th">휴대폰</th>
+	<td class="its-td">
+		{? npay_use && data_return.npay_order_id && data_return.cellphone }
+		<span class="desc" style="letter-spacing:0px;">{=data_return.cellphone}</span>
+		{ : }
+		<input type="text" name="cellphone[]" size="6" class="line" value="{data_return.cellphone[0]}" />
+		<input type="text" name="cellphone[]" size="6" class="line" value="{data_return.cellphone[1]}" />
+		<input type="text" name="cellphone[]" size="6" class="line" value="{data_return.cellphone[2]}" />
+		{ / }
+	</td>
+	<th class="its-th">연락처</th>
+	<td class="its-td">
+		{? npay_use && data_return.npay_order_id && data_return.phone }
+		<span class="desc" style="letter-spacing:0px;">{=data_return.phone}</span>
+		{ : }
+		<input type="text" name="phone[]" size="6" class="line" value="{data_return.phone[0]}" />
+		<input type="text" name="phone[]" size="6" class="line" value="{data_return.phone[1]}" />
+		<input type="text" name="phone[]" size="6" class="line" value="{data_return.phone[2]}" />
+		{ / }
+	</td>
+</tr>
+<tr>
+	<th class="its-th">회수방법</th>
+	<td class="its-td">
+		<label><input type="radio" name="return_method" value="user" /> 자가반품</label><br />
+		<label><input type="radio" name="return_method" value="shop" /> 택배회수</label>
+		<script>$("input[name='return_method'][value='{data_return.return_method}']").attr('checked',true);</script>
+	</td>
+	<th class="its-th">주소</th>
+	<td class="its-td">
+		<div>
+		<input type="text" name="senderZipcode[]" value="{data_return.sender_zipcode[0]}{? data_return.sender_zipcode[1]}-{data_return.sender_zipcode[1]}{/}" size="7" class="line" />
+		<input type="hidden" name="senderAddress_type" value="{data_return.sender_address_type}">
+		<span class="btn small"><input type="button" id="senderZipcodeButton" value="우편번호" /></span>
+		</div>
+
+		<div>
+			<ul class="addr">
+			<li style="width:15%;">
+			<span class="desc" {? data_return.sender_address_type == "street"}style="font-weight:bold;"{/}>(도로명)</span>
+			</li>
+			<li style="width:85%;">
+			<input type="text" name="senderAddress_street" value="{data_return.sender_address_street}" class="line" /></li>
+			<li style="width:15%;">
+			<span class="desc" {? data_return.sender_address_type != "street"}style="font-weight:bold;"{/}>(지번)</span> </li>
+			<li style="width:85%;">
+			<input type="text" name="senderAddress" value="{data_return.sender_address}" class="line" /><br />
+			<li style="width:15%;"><span class="desc">(공통상세)</span></li>
+			<li style="width:85%;"><input type="text" name="senderAddressDetail" value="{data_return.sender_address_detail}" class="line" /></li>
+			</ul>
+		</div>
+	</td>
+</tr>
+<tr>
+	<th class="its-th">반품 상세 사유</th>
+	<td class="its-td">
+		<textarea class="wp95 line" rows="3" name="return_reason">{data_return.return_reason}</textarea>
+	</td>
+	<th class="its-th">반품 관리 메모</th>
+	<td class="its-td">
+		<textarea class="wp95 line" rows="3" name="admin_memo">{data_return.admin_memo}</textarea>
+	</td>
+</tr>
+<tr>
+	<th class="its-th">반품 배송비</th>
+	<td class="its-td">
+		<div class="left"></div>
+		<div class="left">
+		<span class="desc">
+			<ul>
+				<!--{ ? serviceLimit('H_AD') }-->
+				<li>반품 상품 회수로 인하여 발생될 배송비 : 구매자에게 청구</li>
+				<li>
+					<label><input type="radio" name="return_shipping_gubun" value="company" {?data_return.return_shipping_gubun!='provider'} checked {/}> 통신판매중계자가 반품 배송비를 받음<br />
+					&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:red;">반품 배송비
+					<input type="text" name="return_shipping_price" value="{data_return.return_shipping_price}" size="10" class="line number onlyfloat" />
+					{=basic_currency} 을 정산 시 입점사에게 지불하게 됩니다.</span></li>
+				<li>
+					<!--{? provider.provider_seq > 1 }-->
+				<li>
+				<label><input type="radio" name="return_shipping_gubun" value="provider" {?data_return.return_shipping_gubun=='provider'} checked {/}> {=provider.provider_name}({=provider.provider_id})가 반품 배송비를 받음</label><br />
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="gray">입점사가 반품 배송비를 받았기 때문에 당연히 정산에 반영되지 않습니다.</span>
+				</li>
+					<!--{ / }-->
+				<!--{ : }-->
+				<li>
+					<input type="radio" class="hide" name="return_shipping_gubun" value="company" checked>
+					<input type="text" name="return_shipping_price" value="{data_return.return_shipping_price}" size="10" class="line number onlyfloat" />
+					{=basic_currency}
+					<br/>
+					<span class="desc">					
+					반품 상품의 회수로 인하여 발생한 배송비로 구매자에게서 받아야 합니다.
+					</span>
+				</li>
+				<!--{ / }-->
+			</ul>
+		</span>
+		</div>
+	</td>
+	<th class="its-th">반품 배송비<br />입금 계좌</th>
+	<td class="its-td">
+		{?data_return.shipping_price_bank_account}{data_return.shipping_price_bank_account}{/}<br />
+		{?data_return.shipping_price_depositor}
+		입금자명 : {data_return.shipping_price_depositor}
+		{/}
+	</td>
+</tr>
+<tr>
+	<th class="its-th-align">처리내역로그</th>
+	<td class="its-td" colspan="3">
+		<textarea  class="wp95 line" rows="3" readOnly="readOnly">{ @process_log }[{.regist_date}] [{.actor}] {?.add_info == "npay"}[네이버페이]{/} {.title}{=chr(10)}{ / }</textarea>
+	</td>
+</tr>
+</table>
+
+
+
+
+<div style="height:10px;"></div>
+
+{? data_order.pg == "npay" && npay_use }
+
+	<div style="text-align:Center;padding:20px;">
+	<input type="hidden" name="status" value="complete" />
+	{? data_return.return_type == "return"}
+		{? data_return.npay_flag == "RequestReturn" && !data_return.npay_flag_msg }
+		네이버페이 반품 처리한 주문입니다. 네이버페이에서 반품완료시 자동 처리완료 됩니다.</div>
+		{ : data_return.status == "request" && (strtolower(data_return.npay_flag) == "return_request" || data_return.npay_flag_msg) }
+		<div style="line-height:30px;">네이버페이 반품요청 건입니다. </div>
+		<span class="btn large black"><input type="submit" value="반품요청승인" /></span>
+		{ : }
+		<div style="line-height:30px;">네이버페이 반품요청 승인 처리한 주문입니다. 네이버페이에서 반품완료시 자동 처리완료 됩니다.</div>
+		{ / }
+	{ : data_return.return_type == "exchange"}
+		{ ? data_return.status == "request" && (strtolower(data_return.npay_flag) == "exchange_request" || data_return.npay_flag_msg) }
+		<div style="line-height:30px;">네이버페이 교환요청 건입니다. </div>
+		<span class="btn large black"><input type="submit" value="교환수거완료" /></span>
+		{ : data_return.npay_flag == "ApproveCollectedExchange" }
+		<div style="line-height:30px;">네이버페이 교환수거완료 처리한 주문입니다. 네이버페이에서 재배송 시 처리완료 됩니다.</div>
+		{ : }
+		<div style="line-height:30px;">네이버페이 교환수거완료 처리한 주문입니다. 네이버페이에서 재배송 시 처리완료 처리완료 됩니다.</div>
+		{ / }
+	{ / }
+	</div>
+
+{ : data_order.pg == "talkbuy" }
+
+<div style="text-align:Center;padding:20px;">
+	<input type="hidden" name="status" value="complete" />
+	{? data_return.return_type == "return"}
+		{? data_return.status == "request" }
+		카카오페이 구매 파트너센터에서 처리한 주문입니다. 카카오페이 구매 파트너센터에서 반품완료시 자동 처리완료 됩니다.</div>
+		{ : }
+		<div style="line-height:30px;">카카오페이 구매 반품요청 승인 처리한 주문입니다. 카카오페이 구매 파트너센터에서 반품완료시 자동 처리완료 됩니다.</div>
+		{ / }
+	{ : data_return.return_type == "exchange"}
+		{? data_return.status == "request" }
+		<div style="line-height:30px;">카카오페이 구매 파트너센터 교환요청 건입니다. </div>
+		{ : }
+		<div style="line-height:30px;">카카오페이 구매 파트너센터에서 교환완료 처리한 주문입니다.</div>
+		{ / }
+	{ / }
+</div>
+
+{ : }
+
+	{?data_return.status=='complete'}
+	<table align="center" style="margin:auto;">
+	<tr>
+		<td>
+			<input type="hidden" name="status" value="complete" />
+			<select disabled readonly>
+			<option value="complete">반품 완료</option>
+			</select>
+		</td>
+		<td width="10"></td>
+		<td>
+			해당 반품건의 처리가 완료된 상태입니다.
+		</td>
+		<td width="10"></td>
+		<td><span class="btn large black"><input type="submit" value="확인" /></span></td>
+	</tr>
+	</table>
+	{:}
+	<table align="center" style="margin:auto;">
+	<tr>
+		<td>
+			<select name="status" class="status" onchange="if(this.value=='complete'){$('.status_complete_msg').show();}else{$('.status_complete_msg').hide();}">
+				<option value="request">반품 신청</option>
+				<option value="ing">반품 처리중</option>
+				<option value="complete">반품 완료</option>
+			</select>
+			<script>$("select[name='status']").val("{data_return.status}").change();</script>
+		</td>
+		<td width="6"></td>
+		<td>
+			<div class="status_complete_msg hide">
+			<ul>
+				<li style="margin:2px 0 0 20px;list-style:disc;">반품완료는 반품상품을 회수 받은 후 상품의 이상유무를 확인한 후 처리하는 것을 권장합니다.</li>
+				<!--{ ? scm_cfg['use'] != 'Y' }-->
+				<li style="margin:2px 0 0 20px;list-style:disc;">반품완료 처리를 하면 해당 반품상품의 재고가 재고 증가여부에 따라 조정됩니다.</li>
+				<!--{ / }-->
+				<li style="margin:2px 0 0 20px;list-style:disc;">환불을 위한 반품 : 반품완료(상품회수) 처리 후 환불 처리가 가능합니다.</li>
+				<li style="margin:2px 0 0 20px;list-style:disc;">(맞)교환을 위한 반품 : 반품완료 (상품회수) 처리 후 반품된 상품의 재주문이 자동 생성(교환상품 변경 가능)됩니다.</li>
+			</ul>
+			</div>
+		</td>
+		<td width="6"></td>
+		<td><span class="btn large black"><input type="button" onclick="return_form_submit();" value="확인" /></span></td>
+	</tr>
+	</table>
+	{ / }
+{ / }
+</form>
+
+<div id="gift_use_lay"></div>
+<div id="location_select_lay">
+	<table width="100%" class="info-table-style">
+	<tbody whSeq="" retItemSeq="">
+	</tbody>
+	</table>
+</div>
+{ #layout_footer }
