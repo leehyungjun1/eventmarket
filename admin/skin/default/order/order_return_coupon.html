@@ -1,0 +1,458 @@
+<script>
+$(function(){
+	refund_method_layer_view();
+	$("#order_return_container select[name='reason[]']").change(function(){
+		var row = $(this).closest("tr");
+		var reason_desc = row.find("select[name='reason[]'] option:selected").text();
+		row.find("input[name='reason_desc[]']").val(reason_desc);
+	});
+
+	$("#order_return_container input[name='chk_seq[]']").change(function(){
+		// disabled 상태면 checked 속성을 제거하고 false를 반환한다.
+		if($(this).attr('disabled') === 'disabled') {
+			$(this).removeAttr('checked');
+			return false;
+		}
+		var row = $(this).closest("tr");
+		var idx = $("#order_return_container select[name='chk_ea[]']").index(this);
+		var chk_item_seq = row.find("input[name='chk_item_seq[]']").val();
+		var chk_option_seq = row.find("input[name='chk_option_seq[]']").val();
+		var chk_individual_return = row.find("input[name='chk_individual_return[]']").val();
+		var chk_export_code = row.find("input[name='chk_export_code[]']").val();
+
+		// 추가옵션 선택할때
+		if(row.find("input[name='chk_suboption_seq[]']").val()!='' && $(this).is(":checked")){
+			if(chk_individual_return!='1'){ // 개별취소 안되도록 설정했을때
+				// 필수옵션이 선택되어있지 않으면 에러
+				var result = true;
+				$("#order_return_container input[name='chk_item_seq[]'][value='"+chk_item_seq+"'][export_code='"+chk_export_code+"']").each(function(){
+					if($(this).closest("tr").find("input[name='chk_suboption_seq[]']").val()==''){
+						if(!$(this).closest("tr").find("input[name='chk_seq[]']").is(":checked")){
+							openDialogAlert("이 상품의 추가옵션은 개별반품할 수 없습니다.",400,140);
+							result = false;
+						}
+					}
+				});
+				if(!result) return false;
+			}
+		}
+
+		// 추가옵션 해제할때
+		if(row.find("input[name='chk_suboption_seq[]']").val()!='' && !$(this).is(":checked")){
+			if(chk_individual_return!='1'){
+				var result = true;
+				$("#order_return_container input[name='chk_item_seq[]'][value='"+chk_item_seq+"'][export_code='"+chk_export_code+"']").each(function(){
+					if($(this).closest("tr").find("input[name='chk_suboption_seq[]']").val()==''){
+						if($(this).closest("tr").find("select[name='chk_ea[]'] option").length>1 && $(this).closest("tr").find("select[name='chk_ea[]'] option:last-child").is(":selected")){
+							openDialogAlert("이 상품의 추가옵션은 개별반품할 수 없습니다.",400,140);
+							result = false;
+						}
+					}
+				});
+				if(!result) return false;
+			}
+		}
+
+		// 필수옵션 해제할때
+		if(row.find("input[name='chk_suboption_seq[]']").val()=='' && !$(this).is(":checked")){
+			if(chk_individual_return!='1'){ // 개별취소 안되도록 설정했을때
+				// 추가옵션 해제
+				var result = true;
+				$("#order_return_container input[name='chk_item_seq[]'][value='"+chk_item_seq+"'][export_code='"+chk_export_code+"']").each(function(){
+					if($(this).closest("tr").find("input[name='chk_suboption_seq[]']").val()!=''){
+						$(this).closest("tr").find("input[name='chk_seq[]']").removeAttr("checked").each(function(){
+							$(this).closest("tr").find("input,select,textarea").not(this).attr("disabled",true);
+						});
+						$(this).closest("tr").find("select[name='chk_ea[]']").val('').attr("disabled",true);
+					}
+				});
+			}
+		}
+
+		if($(this).is(":checked")){
+			row.find("input,select,textarea").not(this).removeAttr("disabled");
+			row.find("select[name='chk_ea[]'] option:last-child").attr("selected",true).parent().change();
+		}
+		else{
+			row.find("input,select,textarea").not(this).attr("disabled",true);
+			row.find("select[name='chk_ea[]']").val('').change();
+			if($(this).attr('cancel_type') ==  1 ){
+				//$(this).attr("disabled",true);
+			}
+		}
+
+		refund_method_layer_view();
+	}).change();
+
+	$("#order_return_container select[name='chk_ea[]']").change(function(){
+		var row = $(this).closest("tr");
+		var idx = $("#order_return_container select[name='chk_ea[]']").index(this);
+		var chk_item_seq = row.find("input[name='chk_item_seq[]']").val();
+		var chk_option_seq = row.find("input[name='chk_option_seq[]']").val();
+		var chk_individual_return = row.find("input[name='chk_individual_return[]']").val();
+		var chk_export_code = row.find("input[name='chk_export_code[]']").val();
+
+		if($(this).val()=='0'){
+			$(this).closest("tr").find("input[name='chk_seq[]']").removeAttr("checked").change();
+		}
+
+		// 필수옵션일때
+		if(row.find("input[name='chk_suboption_seq[]']").val()==''){
+			if(chk_individual_return!='1'){
+				if(row.find("select[name='chk_ea[]'] option").length>1 && row.find("select[name='chk_ea[]'] option:last-child").is(":selected")){
+					$("#order_return_container input[name='chk_item_seq[]'][value='"+chk_item_seq+"'][export_code='"+chk_export_code+"']").each(function(){
+						if($(this).parent().find("input[name='chk_suboption_seq[]']").val()!=''){
+							$(this).parent().find("input[name='chk_seq[]']").not(":disabled").attr("checked",true).change();
+							$(this).closest("tr").find("select[name='chk_ea[]'] option").not(":last-child").attr("disabled",true);
+						}
+					});
+				}else{
+					$("#order_return_container input[name='chk_item_seq[]'][value='"+chk_item_seq+"'][export_code='"+chk_export_code+"']").each(function(){
+						if($(this).parent().find("input[name='chk_suboption_seq[]']").val()!=''){
+							$(this).closest("tr").find("select[name='chk_ea[]'] option").not(":last-child").removeAttr("disabled");
+						}
+					});
+				}
+			}
+		}
+
+		refund_method_layer_view();
+	});
+
+	$("#order_return_container .chk_all").click(function(){
+		var tableObj = $(this).closest('span').next('.chk_list_table'); 
+		if($("input[name='chk_seq[]']",tableObj).not(":disabled").not(":checked").length==0){
+			$("input[name='chk_seq[]']",tableObj).removeAttr("checked").change();
+		}else{
+			$("input[name='chk_seq[]']",tableObj).not(":disabled").attr("checked",true).change();
+		}
+	});
+
+	$("input[name='refund_method']").change(function(){
+		$(".refund_method_cash").hide();
+		$(".refund_method_bank").hide();
+		if($(this).is(":checked")){
+			$(".refund_method_"+$(this).val()).show();
+		}
+	}).change();
+
+	$("input[name='chk_shipping_seq']").change(function(){
+		var shippingGroupObj = $(this).closest('div.shipping_group');
+		if($(this).is(":checked")){
+			$(shippingGroupObj).children("table").css('opacity',1).find("*").removeAttr("disabled");
+			$("div.shipping_group").not(shippingGroupObj).children("table").css('opacity',0.5).find("*").not("tbody,tr").attr("disabled",true);
+
+			if($(this).val()!='1' && $("input[name='chk_shipping_group_address[]']",shippingGroupObj).val().length>20){
+				$(".return_shipping_group_address").text($("input[name='chk_shipping_group_address[]']",shippingGroupObj).val());
+			}else{
+				$(".return_shipping_group_address").text(": (반송주소) {config_basic.companyZipcode} {=addslashes(config_basic.companyAddress)} {=addslashes(config_basic.companyAddressDetail)}");
+			}
+		}else{
+			$(shippingGroupObj).children("table").css('opacity',0.5).find("*").attr("disabled",true);
+			$("div.shipping_group").not(shippingGroupObj).children("table").css('opacity',1).find("*").removeAttr("disabled");
+		}
+		$("#order_return_container input[name='chk_seq[]']").change();
+		$("tr[disabledScript=1]").find("input,select").attr("disabled",true);
+	}).change();
+	$("input[name='chk_shipping_seq'][tot_rt_ea!='0']").eq(0).trigger('click');
+
+	$("input[name='submitButton']").bind('click',function(){
+		var frm = this;
+		openDialogConfirm("반품신청을 하기 위해 상품수령을 확인해주세요. 상품을 수령하셨습니까?",450,140,function(){
+			$("form[name='refundForm']").submit();
+		});
+		return false;
+	});
+
+	// 우편번호 찾기
+	$("#return_recipient_zipcode_button").live("click",function(){
+        openDialogZipcode('return_recipient_');
+    });
+
+	$("tr[disabledScript=1]").find("input,select").attr("disabled",true);
+
+
+	{ ? backalert }closeAlertPopup('반품신청 티켓상품이 없습니다.','order_refund_layer');{ / }
+
+});
+
+function refund_method_layer_view() {
+	if("{orders.payment}" == "card" && "{cancel_total_price}" == "{orders.settleprice}"){
+		$("#refund_method_layer").hide();
+		$("#manual_refund_layer").show();
+	}else{
+		$("#refund_method_layer").show();
+		$("#manual_refund_layer").hide();
+	}
+}
+
+</script>
+<style>
+.goods_name {display:inline-block;white-space:nowrap;overflow:hidden;width:350px;text-overflow:ellipsis;-o-text-overflow:ellipsis;vertical-align:middle}
+</style>
+<div id="order_return_container">
+
+	<form name="refundForm" method="post" action="/admin/order_process/order_return_coupon" target="actionFrame" onsubmit="loadingStart();">
+	<input type="hidden" name="order_seq" value="{orders.order_seq}" />
+	<input type="hidden" name="cancel_total_price" value="{cancel_total_price}" />
+
+	주문번호 : {orders.order_seq}
+
+	<div style="height:15px"></div>
+
+	● 주문티켓상품 중 환불 가능 티켓상품 : 환불 티켓상품을 선택하세요!
+	<div style="height:15px"></div>
+	<!--{ @ loop }-->
+	<div class="shipping_group">
+		<div class="pdb5"><label><input type="radio" name="chk_shipping_seq" value="{.shipping_provider.provider_seq}" tot_rt_ea="{.tot_rt_ea}" /> {.shipping_provider.provider_name}</label></div>
+		<input type="hidden" name="chk_shipping_group_address[]" value=": (반송주소) {.shipping_provider.deli_zipcode} {=htmlspecialchars(.shipping_provider.deli_address1)} {=htmlspecialchars(.shipping_provider.deli_address2)}" />
+		<table width="100%" border="0" cellpadding="0" cellspacing="0" class="list_table_style">
+		<thead>
+		<tr>
+			<th width="40"><span class="chk_all hand">선택</span></th>
+			<th width="400">주문상품</th>
+		<!-- <th width="80">주문수량</th> -->
+			<th>사유</th>
+			<!-- <th width="100">반품 가능 수량</th>
+			<th width="80">반품 수량</th> -->
+			<th width="130">주문금액</th>
+			<th width="120">환불금액</th>
+			<th width="130">잔여값어치</th>
+			<th width="120">처리 상태</th>
+		</tr>
+		</thead>
+		<tbody>
+		<!--{ @ .export_item }-->		
+		<tr>
+			<td class="cell left" colspan="7">
+				↓ 출고번호 : {..export_code}
+				/ {=orders.recipient_email} / {=orders.recipient_cellphone}
+				<!--배송지 : {orders.recipient_user_name} /  {? orders.recipient_address_type == "street"} {orders.recipient_address_street}{:} {orders.recipient_address} {/} {orders.recipient_address_detail} -->
+			</td>
+		</tr>
+			<!--{ ? ..rt_ea }-->
+			<tr>
+			<!--{ : }-->
+			<tr disabledScript=1>
+			<!--{ / }-->
+				<td class="cell">
+					<!-- 구매확정후 반품가능 처리 by hed #32095 -->
+					<input type='hidden' name='chk_after_refund[]'	value='{=..after_refund}' />
+					
+					<label><input type="checkbox" name="chk_seq[]" value="1" /></label>
+					<input type="hidden" name="chk_item_seq[]" value="{..item_seq}" item_option_seq="{..item_option_seq}" export_code="{..export_code}" />
+					<input type="hidden" name="chk_option_seq[]" value="{..item_option_seq}" />
+					<input type="hidden" name="chk_suboption_seq[]" value="{?..opt_type=='sub'}{..option_seq}{:}{/}" />
+					<input type="hidden" name="chk_export_code[]" value="{..export_code}" />
+
+					<input type="hidden" name="chk_individual_return[]" value="{..individual_return}" />
+					{? orders.settleprice < 1 }<input type="hidden" name="chk_ea_all[]" value="{..ea}" />{/}
+				</td>
+				<td class="cell left">
+					<table width="100%" border="0" cellpadding="0" cellspacing="0">
+					<tr>
+						<td class="left" width="80" valign="top">
+						<img src="{..image}" align="absmiddle" hspace="5" width="45" height="45" style="border:1px solid #ddd;" onerror="this.src='./images/common/noimage_list.gif'" />
+						</td>
+						<td class="left">
+							<div class="goods_name" style="line-height:20px;">{..goods_name}</div>
+							<!--{ ? ..adult_goods == 'Y' || ..option_international_shipping_status == 'y' || ..cancel_type == '1' || ..tax == 'exempt' }-->
+							<div>
+								<!--{ ? ..adult_goods == 'Y' }-->
+								<img src="../images/common/auth_img.png" alt="성인" style="vertical-align: middle;"/>
+								<!--{ / }-->
+								<!--{ ? ..option_international_shipping_status == 'y' }-->
+								<img src="../images/common/icon/plane_on.png" alt="해외배송상품" style="vertical-align: middle;" height="19" />
+								<!--{ / }-->
+								<!--{ ? ..cancel_type == '1' }-->
+								<img src="../images/common/icon/nocancellation.gif" alt="청약철회" style="vertical-align: middle;"/>
+								<!--{ / }-->
+								<!--{ ? ..tax == 'exempt' }-->
+								<img src="../images/common/icon/taxfree.gif" alt="비과세" style="vertical-align: middle;"/>
+								<!--{ / }-->
+							</div>
+							<!--{ / }-->
+
+							<!--{ ? ..goods_kind =='coupon' }-->
+							<div>
+								{? ..coupon_serial }<span class="order-item-coupon-serial" >티켓번호:{..coupon_serial}</span><br/>{/}
+								<!--{ ? ..goods_kind =='coupon' && ..social_start_date && ..social_end_date }--><span class="order-item-coupon-date" >유효기간:{..social_start_date}~{..social_end_date}</span><br/><!--{ / }-->
+								<div class="goods-coupon-use-return">사용제한 : {..couponinfo.coupon_use_return}</div>
+								<div class="goods-coupon-cancel-day">취소 마감시간 : {..couponinfo.socialcp_cancel_refund_day}</div>
+							</div>
+							<!--{ / }-->
+
+							<!--{ ? ..option1 || ..option2 || ..option3 || ..option4 || ..option5 }-->
+							<div class="desc">
+								<!--{ ? ..opt_type == 'sub' }-->
+								<img src="../images/common/icon_add.gif" align="absmiddle" />
+								<!--{ : }-->
+								<img src="../images/common/icon_option.gif" align="absmiddle" />
+								<!--{ / }-->
+								<!--{ ? ..option1 }-->{..title1} : {..option1}<!--{ / }-->
+								<!--{ ? ..option2 }-->, {..title2} : {..option2}<!--{ / }-->
+								<!--{ ? ..option3 }-->, {..title3} : {..option3}<!--{ / }-->
+								<!--{ ? ..option4 }-->, {..title4} : {..option4}<!--{ / }-->
+								<!--{ ? ..option5 }-->, {..title5} : {..option5}<!--{ / }-->
+							</div>
+							<!--{ / }-->
+
+							<!--{? ..goods_code }-->
+							<div class="goods_option fx11 goods_code_icon">
+							[상품코드: {..goods_code}]
+							</div>
+							<!--{ / }-->
+
+							<!--{ ? ..inputs }-->
+								<!--{ @ ..inputs }-->
+									<!--{ ? ...value }-->
+							<div class="desc" style="margin:1px;">
+								<img src="/admin/skin/default/images/common/icon_input.gif" />
+								<!--{?...title}-->{...title}:<!--{ / }-->
+								<!--{?...type=='file'}-->
+								<a href="/admin/order_process/filedown?file={...value}" target="actionFrame" style="color:#848484;">{...value}</a>
+								<!--{:}-->{...value}<!--{ / }-->
+							</div>
+									<!--{ / }-->
+								<!--{ / }-->
+							<!--{ / }-->
+						</td>
+
+					</tr>
+					</table>
+				</td>
+				<!-- <td class="cell">{=number_format(..ea)}</td> -->
+				<td class="cell">
+					<select name="reason[]">
+					<!--{@ ..reasonLoop }-->
+						<option value="{...codecd}">{...reason}</option>
+						<!--{ / }-->
+					</select>
+					<input type="hidden" name="reason_desc[]" value="">
+				</td>
+				<td class="cell right">{=number_format(..price*..ea)} 원</td>
+				<td class="cell right">
+					{? ..coupon_refund_type == 'emoney' //환불구분(마일리지)}
+						{=number_format(..coupon_refund_emoney)} 원
+						<input type="hidden" name="chk_ea[]" value="{? ..coupon_refund_emoney > 0 }{..rt_ea}{:}0{/}">
+					{: //환불구분(금액)}
+						{=number_format(..coupon_remain_price)} 원
+						<input type="hidden" name="chk_ea[]" value="{? ..coupon_remain_price > 0 }{..rt_ea}{:}0{/}">
+					{/}
+				</td>
+				<td class="cell">
+					{=number_format(..coupon_input)}{?..coupon_value_type=='price'}원{:}회{/}/<span class="red">잔여 {=number_format(..coupon_remain_value)}{?..coupon_value_type=='price'}원{:}회{/}</span>
+				</td>
+				<td class="cell" style="padding-left:3px;padding-right:3px;">
+					{..mstep}
+				</td>
+			</tr>
+
+		<!--{ / }-->
+		</tbody>
+		</table>
+
+		<div style="height:15px"></div>
+	</div>
+	<!--{ / }-->
+
+	<div>● 상세 사유</div>
+	<div><textarea name="reason_detail" style="width:100%;" rows="2"></textarea></div>
+
+	<div style="height:15px"></div>
+
+	<div>● 연락처</div>
+	<table width="100%" border="0" cellpadding="0" cellspacing="0" class="list_table_style">
+	<thead>
+	<tr>
+		<th width="30%">구매자</th>
+		<th width="35%">휴대폰</th>
+		<th width="35%">연락처</th>
+	</tr>
+	</thead>
+	<tbody>
+	<tr>
+		<td class="cell">{orders.order_user_name}</td>
+		<td class="cell">
+		<select name="cellphone[]">
+		<!--{ @ code_load('cellPhone') }-->
+		<!--{ ? orders.order_cellphone[0] == .codecd }-->
+		<option value="{.codecd}" selected>{.value}</option>
+		<!--{ : }-->
+		<option value="{.codecd}">{.value}</option>
+		<!--{ / }-->
+		<!--{ / }-->
+		</select>
+		<input type="text" name="cellphone[]" size="6" class="line" value="{orders.order_cellphone[1]}" />
+		<input type="text" name="cellphone[]" size="6" class="line" value="{orders.order_cellphone[2]}" />
+		</td>
+		<td class="cell">
+		<select name="phone[]">
+		<!--{ @ code_load('locationPhone') }-->
+		<!--{ ? orders.order_phone[0] == .codecd }-->
+		<option value="{.codecd}" selected>{.value} {.codecd}</option>
+		<!--{ : }-->
+		<option value="{.codecd}">{.value} {.codecd}</option>
+		<!--{ / }-->
+		<!--{ / }-->
+		</select>
+		<input type="text" name="phone[]" size="6" class="line" value="{orders.order_phone[1]}" />
+		<input type="text" name="phone[]" size="6" class="line" value="{orders.order_phone[2]}" />
+		</td>
+	</tr>
+	</tbody>
+	</table>
+	<div style="height:15px"></div>
+	<input type="hidden" name="return_method" value="user" />
+
+	<!--{? orders.show_refund_method == 'Y'}-->
+	<div id="refund_method_layer">
+		<div style="height:15px"></div>
+
+		<div>● 환불 방법</div>
+		<div>
+		<table width="100%" border="0" cellpadding="0" cellspacing="0" class="list_table_style">
+		<thead>
+		<tr>
+			<th>은행</th>
+			<th>예금주</th>
+			<th>계좌번호</th>
+		</tr>
+		</thead>
+		<tbody>
+		<tr>
+			<td class="cell">
+			<select name="bank">
+				<!--{ @ code_load('bankCode') }-->
+				<option value='{.codecd}'>{.value}</option>
+				<!--{ / }-->
+			</select>
+			</td>
+			<td class="cell">
+			<input type="text" name="depositor" size="10" class="line" />
+			</td>
+			<td class="cell">
+			<input type="text" name="account[]" size="10" class="line onlynumber" />
+			<input type="text" name="account[]" size="20" class="line onlynumber" />
+			<input type="text" name="account[]" size="20" class="line onlynumber" />
+			</td>
+		</tr>
+		</tbody>
+		</table>
+		</div>
+	</div>
+	<!--{/}-->
+
+	<div id="manual_refund_layer" class="center hide">
+		<div style="height:15px"></div>
+		<label><input type="checkbox" name="manual_refund_yn" value="y" checked /> 전자결제(PG)사 결제취소 처리 후 환불완료처리</label>
+	</div>
+
+	<div style="height:15px"></div>
+
+	<div class="center"><span class="btn large black"><input type="submit" value="작성완료" /></span></div>
+
+	<div style="height:40px"></div>
+
+	</form>
+</div>

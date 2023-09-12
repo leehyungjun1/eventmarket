@@ -1,0 +1,182 @@
+{ #layout_header }
+<script src="/app/javascript/js/admin/gSearchForm.js?mm={=date('Ymd')}"></script>
+
+<script type="text/javascript">
+	$(document).ready(function() {
+		gSearchForm.init({'pageid':'withdrawal','sc':'{=scObj}'});
+	});	
+</script>
+
+<!-- 페이지 타이틀 바 : 시작 -->
+<div id="page-title-bar-area">
+	<div id="page-title-bar">
+		<!-- 타이틀 -->
+		<div class="page-title">
+			<h2>탈퇴 회원 조회</h2>
+		</div>		
+	</div>
+</div>
+<!-- 페이지 타이틀 바 : 끝 -->
+
+<div id="search_container"  class="search_container">
+<form name="memberForm" id="memberForm" class='search_form'>
+<input type="hidden" name="member_seq" />
+<input type="hidden" name="orderby" value="{sc.orderby}"/>
+<input type="hidden" name="sort" value="{sc.sort}"/>
+<input type="hidden" name="searchcount" value="{sc.searchcount}"/>
+<input type="hidden" name="type" />
+	<table class="table_search">
+		<tr>
+			<th>아이디</th>
+			<td>				
+				<input type="text" name="keyword" value="{sc.keyword}" size="40" />
+			</td>
+		</tr>
+
+		<tr>
+			<th>탈퇴일</th>
+			<td>
+				<div class="sc_day_date date_range_form">
+					<input type="text" name="sdate" value="{sc.sdate}"  class="datepicker sdate"  maxlength="10" size="12" default_none/>
+					-
+					<input type="text" name="edate" value="{sc.edate}"  class="datepicker edate" maxlength="10" size="12" default_none />
+					<div class="resp_btn_wrap">
+						<input type="button" value="오늘" range="today" class="select_date resp_btn" settarget="regist" />
+						<input type="button" value="3일간" range="3day" class="select_date resp_btn" settarget="regist" />
+						<input type="button" value="일주일" range="1week" class="select_date resp_btn" settarget="regist" />
+						<input type="button" value="1개월" range="1month" class="select_date resp_btn" settarget="regist" />
+						<input type="button" value="3개월" range="3month" class="select_date resp_btn" settarget="regist" />
+						<input type="button" value="전체" range="all" class="select_date resp_btn" settarget="regist" row_bunch />
+						<input name="select_date_regist" value="{=sc.select_date_regist}" class="select_date_input" type="hidden">
+					</div>
+				</div>
+			</td>
+		</tr>
+	</table>	
+
+	<div class="footer search_btn_lay"></div>
+</div>
+
+<div class="contents_dvs v3">
+	<div class="list_info_container">
+		<div class="dvs_left">	
+			검색 <b>{=number_format(sc.searchcount)}</b>개 (총 <b>{=number_format(sc.totalcount)}</b>개)
+		</div>
+		<div class="dvs_right">	
+			<select name="perpage" id="display_quantity">
+				<option id="dp_qty10" value="10" {? sc.perpage == 10 } selected{/} >10개씩</option>
+				<option id="dp_qty50" value="50" {? sc.perpage == 50 } selected{/} >50개씩</option>
+				<option id="dp_qty100" value="100" {? sc.perpage == 100 } selected{/} >100개씩</option>
+				<option id="dp_qty200" value="200" {? sc.perpage == 200 } selected{/} >200개씩</option>
+			</select>
+		</div>
+	</div>
+
+
+	<!-- 탈퇴리스트 테이블 : 시작 -->
+	<table class="table_row_basic tdc">
+		<!-- 테이블 헤더 : 시작 -->
+		<colgroup>
+			<col width="5%" />
+			<col width="10%" />
+			<col />
+			<col width="10%" />
+			<col width="10%" />
+			<col width="10%" />
+			<col width="10%" />
+			<col width="10%" />
+			<col width="13%" />
+			<col width="5%" />
+		</colgroup>
+		<thead class="lth">
+		<tr>
+			<th>번호</th>
+			<th>아이디</th>
+			<th>사유</th>
+			<th>탈퇴IP</th>
+			<th>탈퇴일</th>
+			<th>마일리지</th>
+			<th>포인트</th>
+			<th>예치금</th>
+			<th>구매/주문/리뷰/방문</th>
+			<th>관리</th>
+		</tr>
+		</thead>
+		<!-- 테이블 헤더 : 끝 -->
+		<!-- 리스트 : 시작 -->
+		<tbody class="ltb otb" >
+	{? loop }
+		{@ loop }
+			<!-- 리스트타이틀(주문상태 및 버튼) : 시작 -->
+			<tr>
+				<td>{.number}</td>
+				<td onclick="window.open('/admincrm/main/user_detail?member_seq={.member_seq}');"><span class="resp_btn_txt v2">{.userid}</span></a></td>
+				<td>
+					<a onclick="open_reason('{.member_seq}')" class="resp_btn_txt v2">{.reason}</a>
+				</td>
+				<td>{.regist_ip}</td>
+				<td>{.regist_date}</td>
+				<td>{=number_format(.emoney)}</td>
+				<td>{=number_format(.point)}</td>
+				<td>{=number_format(.cash)}</td>
+				<td>{=number_format(.order_cnt)}/{=number_format(.order_sum)}/{=number_format(.review_cnt)}/{=number_format(.login_cnt)}</td>
+				<td><input type="button" name="manager_modify_btn" value="상세" onclick="window.open('/admincrm/main/user_detail?member_seq={.member_seq}');"  member_seq="{.member_seq}" class="resp_btn v2"/></td>
+			</tr>
+			<!-- 리스트데이터 : 끝 -->
+		{ / }
+	{ : }
+			<!-- 리스트타이틀(주문상태 및 버튼) : 시작 -->
+			<tr class="list-row">
+				<td align="center" colspan="10">
+					{ ? search_text }
+						'{search_text}' 검색된 회원이 없습니다.
+					{:}
+						등록된 회원이 없습니다.
+					{/}
+				</td>
+			</tr>
+			<!-- 리스트데이터 : 끝 -->
+	{ / }
+		</tbody>
+		<!-- 리스트 : 끝 -->
+	</table>
+	<!-- 탈퇴리스트 테이블 : 끝 -->
+	
+</div>
+</form>
+<!-- 페이징 -->
+<div class="paging_navigation">{pagin}</div>
+
+
+<script>
+	function joingate(){
+		window.open('/member/agreement','','');
+	}
+
+	function viewDetail(obj){
+		if(!$(obj).attr('member_seq')) return;
+		location.href = "detail?member_seq="+$(obj).attr('member_seq');
+		//$("input[name='member_seq']").val($(obj).attr('member_seq'));
+		//$("form[name='memberForm']").attr('action','detail');
+		//$("form[name='memberForm']").submit();
+	}
+
+	$(document).ready(function() {
+		$("#display_quantity").change(function(){
+			$("#memberForm").submit();
+		});
+	});
+
+	function open_reason(member_seq) {
+		if(member_seq == '') return;
+		$.get('withdrawal_pop?member_seq='+member_seq, function(data) {
+			$('#viewMemo').html(data);
+			openDialog("탈퇴 회원 상세 사유", "viewMemo", {"width":"600"});
+		});
+	}
+</script>
+
+<div id="viewMemo" class="hide"></div>
+<!-- 기본검색설정 -->
+
+{ #layout_footer }

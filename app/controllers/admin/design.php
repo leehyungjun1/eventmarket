@@ -3686,7 +3686,7 @@ class design extends admin_base {
 		/* 레이아웃 설정 assign */
 		$layout_config = layout_config_load($this->designWorkingSkin,$template_path);
 		$this->template->assign(array('layout_config'=>addslashes($layout_config[$template_path])));
-
+		$this->template->assign(['operation_type' => $this->operation_type]);
 		$this->template->assign(array('template_path' => $template_path));
 		$this->template->define(array('tpl'=>$this->template_path()));
 		$this->template->print_("tpl");
@@ -3781,7 +3781,7 @@ class design extends admin_base {
 		$banner_list = $query->result_array();
 
 		$this->template->assign(array('banner_list'=>$banner_list,'styles'=>$styles));
-
+		$this->template->assign(array('operation_type'=> $this->operation_type));
 		$file_path	= $this->skin.'/design/banner_list_inc.html';
 		$this->template->define(array('tpl'=>$file_path));
 		$this->template->print_("tpl");

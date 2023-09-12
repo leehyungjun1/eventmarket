@@ -296,6 +296,7 @@ class member extends admin_base {
 		$this->template->assign('pagin',$paginlay);
 		$this->template->assign('perpage',$sc['perpage']);
 		$this->template->assign('sc',$sc);
+		$this->template->assign('scObj',json_encode($sc));
 
 		$this->template->assign('query_string',get_query_string());
 
@@ -969,6 +970,7 @@ class member extends admin_base {
 
 		$this->template->assign('perpage',$sc['perpage']);
 		$this->template->assign('sc',$sc);
+		$this->template->assign('scObj',json_encode($sc));
 
 		$this->template->define(array('tpl'=>$file_path));
 		$this->template->print_("tpl");
@@ -1685,6 +1687,7 @@ class member extends admin_base {
 
 		$this->template->assign('perpage',$sc['perpage']);
 		$this->template->assign('sc',$sc);
+		$this->template->assign('scObj',json_encode($sc));
 
 		$this->template->define(array('tpl'=>$file_path));
 		$this->template->print_("tpl");
@@ -2516,6 +2519,7 @@ class member extends admin_base {
         $this->template->assign('perpage',$sc['perpage']);
         $this->template->assign('searchcount',$sc['searchcount']);
 		$this->template->assign('sc',$sc);
+		$this->template->assign('scObj',json_encode($sc));
 
 		$this->template->assign('tab2','-on');
 		if(isset($data)) $this->template->assign('loop',$dataloop);
@@ -2579,6 +2583,7 @@ class member extends admin_base {
         $this->template->assign('perpage',$sc['perpage']);
         $this->template->assign('searchcount',$sc['searchcount']);
 		$this->template->assign('sc',$sc);
+		$this->template->assign('scObj',json_encode($sc));
 
 		$this->template->assign('tab3','-on');
 		if(isset($data)) $this->template->assign('loop',$dataloop);

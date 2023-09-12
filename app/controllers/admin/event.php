@@ -95,7 +95,8 @@ class event extends admin_base {
 		$this->template->assign($result);
 		$this->template->assign(array(
 			'count'=>$count,
-			'sc'=>$sc
+			'sc'=>$sc,
+			'scObj'=>json_encode($sc),
 		));
 
 		$file_path	= $this->template_path();
@@ -410,7 +411,7 @@ class event extends admin_base {
 		$sc['checkbox']['event_view'][$sc['event_view']]		= "checked";
 
 		$this->template->assign($result);
-		$this->template->assign(array('count'=>$count,'sc'=>$sc));
+		$this->template->assign(array('count'=>$count,'sc'=>$sc,'scObj'=>json_encode($sc)));
 
 		$provider			= $this->providermodel->provider_goods_list();
 		$this->template->assign('provider',$provider);

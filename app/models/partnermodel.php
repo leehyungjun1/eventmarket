@@ -879,6 +879,12 @@ class Partnermodel extends CI_Model {
 				$noint = trim($this->noint);
 			}
 
+			// 렌탈상품
+			if($data_goods['product_flag'] == '렌탈' && $data_goods['rental_period']) {
+				$data_goods['rental_info'] = $data_goods['price'].'^'.$data_goods['rental_period'];
+				$data_goods['price'] = $data_goods['price'] * $data_goods['rental_period'];
+			}
+
 			// 모바일 할인가 계산
 			$systemmobiles = $this->configsalemodel->get_mobile_sale_for_goods($data_goods['price']);
 			$mobile_price = 0;
@@ -939,9 +945,7 @@ class Partnermodel extends CI_Model {
 			# naver EP 3.0 추가 필드 구성 :: 2018-08-07 lwh
 			if($data_goods['compound_state'])			$row[$data_goods['compound_state']]	= 'Y';
 			if($data_goods['product_flag'])				$row['product_flag']				= $data_goods['product_flag'];
-			if($data_goods['product_flag'] == '렌탈' && $data_goods['rental_period']) {
-				$row['rental_info'] = $data_goods['price'].'^'.$data_goods['rental_period'];
-			}
+			if($data_goods['rental_info'])				$row['rental_info']					= $data_goods['rental_info'];
 			if($data_goods['installation_costs'])		$row['installation_costs']			= $data_goods['installation_costs'];
 
 			if($mobile_price)	$row['price_mobile']			= $mobile_price;

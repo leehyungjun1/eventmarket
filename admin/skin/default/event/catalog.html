@@ -1,0 +1,331 @@
+{ #layout_header }
+<script type="text/javascript" src="/app/javascript/js/admin/gSearchForm.js?mm={=date('Ymd')}"></script>
+<script type="text/javascript">
+	$(document).ready(function() {
+
+		var arrSort = {'evt.regist_date desc':'최근 등록 순',
+						'evt.title asc':'이벤트명 순',
+						'evt.pageview desc':'조회수 많은 순',
+						'evt.pageview asc':'조회수 적은순'};
+		gSearchForm.init({'pageid':'event_catalog','search_mode':'{=sc.search_mode}','select_date':'{=sc.select_date}','displaySort':arrSort,'sc':'{=scObj}'});
+
+		{? _GET.mode == "new" }
+		//쿠폰신규생성 후 뒤로가기 시 리스트로 이동
+		history.pushState(null, null, location.href);
+			window.onpopstate = function () {
+				document.location.href="/admin/event/catalog";
+		};
+		{/}
+
+		$("#order_star").click(function(){
+			var status = "";
+			if($(this).hasClass("checked")){
+				$(this).removeClass("checked");
+				status = "asc";
+			}else{
+				$(this).addClass("checked");
+				status = "desc";
+			}
+			location.href = "../goods/catalog?orderby=favorite_chk&sort="+status;
+		});
+
+		$(".event_modify_btn").click(function(){
+			//######################## 16.10.27 : 수정 s
+			$("input[name='keyword']").focus();
+			$("input[name='event_seq']").val($(this).attr("event_seq"));
+			var search = location.search;
+			search = search.substring(1,search.length);
+			$("input[name='query_string']").val(search);			
+			$("form[name='orderForm']").attr('action','regist');
+			$("form[name='orderForm']").submit();
+			//######################## 16.10.27 : 수정 e
+		});
+
+		$(".event_copy_btn").click(function(){
+			if(!confirm("이벤트와 상품정보만 복사되니 복사 후 정보를 수정해 주세요!\n정말로 이 이벤트를 복사하시겠습니까?")) return;
+			actionFrame.document.location.href	= '../event_process/event_copy?event_seq='+$(this).attr("event_seq");
+		});
+
+		$(".event_delete_btn").click(function(){
+			if(!confirm("이 이벤트를 삭제하시겠습니까?")) return;
+			actionFrame.document.location.href	= '../event_process/event_delete?event_seq='+$(this).attr("event_seq");
+		});
+
+		$("input[name='sc_event_type']").on("click",function(){
+			if	($(this).val() == "solo"){
+				$("input[name='search_form_editor[]'][value='sc_event_solo']").closest("tr").show();
+				$(".search_solo").removeClass('desc');
+				$(".search_solo").find('select').prop('disabled', false);
+				$(".search_solo").find('input').prop('disabled', false);
+			}else{
+				$("input[name='search_form_editor[]'][value='sc_event_solo']").closest("tr").hide();
+				$(".search_solo").addClass('desc');
+				$(".search_solo").find('select').prop('disabled', true);
+				$(".search_solo").find('input').prop('disabled', true);
+			}
+		});
+
+		{? sc.sc_event_type == 'solo'} $("input[name='sc_event_type']").trigger("click"); {/}
+
+		$(".regist").on('click', function(){
+			location.href	= 'regist';
+		});
+
+	});
+
+	function event_view(tpl_path,mode){
+		window.open("/link/"+tpl_path+"?setDesignMode=on&setMode="+mode);
+	}
+</script>
+
+<!-- 페이지 타이틀 바 : 시작 -->
+<div id="page-title-bar-area">
+	<div id="page-title-bar">		
+
+		<!-- 타이틀 -->
+		<div class="page-title">
+			<h2>할인 이벤트</h2>
+		</div>
+
+		<!-- 우측 버튼 -->
+		<ul class="page-buttons-right">			
+			<li><button onclick="location.href='regist';" class="resp_btn active size_L">이벤트 등록</button></li>			
+		</ul>
+
+		<ul class="page-buttons-left">
+			<li>
+				<!--{ ? config_system.operation_type == 'light' }-->
+				<button onclick="location.href='/admin/page_manager/subpage_layout?cmd=event';" class="resp_btn v3 size_L">전체 이벤트 페이지 설정</button>
+				<!--{ : }-->
+				<button onclick="location.href='event_view?mode=sale_event';" class="resp_btn v3 size_L">전체 이벤트 페이지 설정</button>
+				<!--{ / }-->
+			</li>
+		</ul>		
+
+	</div>
+</div>
+<!-- 페이지 타이틀 바 : 끝 -->
+
+
+<!-- 이벤트리스트 검색폼 : 시작 -->
+<div id="search_container" class="search_container">
+<form name="orderForm" id="orderForm">
+<!-- ######################## 16.10.27 : 수정 s -->
+<input type="hidden" name="query_string"/>
+<input type="hidden" name="event_seq" />
+<input type="hidden" name="sort" value="{=sc.sort}"/>
+<!-- ######################## 16.10.27 : 수정 e -->
+<input type="hidden" name="perpage" id="perpage" value="{sc.perpage}" >
+<input type="hidden" name="page" id="page" value="{sc.page}" >
+<table class="table_search">
+	<tr>
+		<th><label><input type="checkbox" name="search_form_editor[]" value="sc_keyword" class="hide"></label>이벤트명</th>
+		<td>
+			<input type="text" name="keyword" value="{=htmlspecialchars(sc.keyword)}" title="이벤트명" size=80 />
+		</td>
+	</tr>
+	<tr>
+		<th><label><input type="checkbox" name="search_form_editor[]" value="sc_regist_date" class="hide"></label>날짜</th>
+		<td>
+			<div class="date_range_form">
+				<select name="date">
+					<option value="evt.start_date" {=sc['selectbox']['date']['evt.start_date']}>시작일</option>
+					<option value="evt.end_date" {=sc['selectbox']['date']['evt.end_date']}>종료일</option>
+					<option value="evt.regist_date" {=sc['selectbox']['date']['evt.regist_date']}>등록일</option>
+				</select>				
+				<input type="text" name="sdate" value="{=sc.sdate}" class="datepicker sdate"  maxlength="10"/>
+				-
+				<input type="text" name="edate" value="{=sc.edate}" class="datepicker edate" maxlength="10"/>
+				
+				<div class="resp_btn_wrap">
+					<input type="button" range="today" value="오늘" class="select_date resp_btn" />
+					<input type="button" range="3day" value="3일간" class="select_date resp_btn" />
+					<input type="button" range="1week" value="일주일" class="select_date resp_btn" />
+					<input type="button" range="1month" value="1개월" class="select_date resp_btn" />
+					<input type="button" range="3month" value="3개월" class="select_date resp_btn" />
+					<input type="button" range="all"  value="전체" class="select_date resp_btn"/>
+					<input name="select_date_regist" value="{=sc.select_date_regist}" class="select_date_input" type="hidden">
+				</div>	
+			</div>
+		</td>
+	</tr>
+	<tr>
+		<th><label><input type="checkbox" name="search_form_editor[]" value="sc_event_status" class="hide"></label>상태</th>
+		<td>
+			<div class="resp_radio">
+				<label><input type="radio" name="event_status" value="all" {=sc['checkbox']['event_status']['all']}/> 전체</label>
+				<label><input type="radio" name="event_status" value="before" {=sc['checkbox']['event_status']['before']}/> 시작 전</label>
+				<label><input type="radio" name="event_status" value="ing" {=sc['checkbox']['event_status']['ing']}/> 진행 중</label>
+				<label><input type="radio" name="event_status" value="end" {=sc['checkbox']['event_status']['end']}/> 종료</label>
+			</div>				
+		</td>
+	</tr>
+	{? serviceLimit('H_NFR') }	
+	<tr>
+		<th><label><input type="checkbox" name="search_form_editor[]" value="sc_event_type" class="hide"></label>유형</th>
+		<td>				
+			<div class="resp_radio">
+				<label><input type="radio" name="sc_event_type" value="" {=sc['checkbox']['sc_event_type']['all']} /> 전체</label>
+				<label><input type="radio" name="sc_event_type" value="multi" {=sc['checkbox']['sc_event_type']['multi'] }/> 상품 이벤트</label>	
+				<label><input type="radio" name="sc_event_type" value="solo" {=sc['checkbox']['sc_event_type']['solo']} /> 단독 상품이벤트</label>	
+			</div>
+		</td>
+	</tr>
+	<tr class='disable hide'>
+		<th><label><input type="checkbox" name="search_form_editor[]" value="sc_event_solo" class="hide"></label>단독 상품</th>
+		<td class="search_solo  {?sc.sc_event_type != 'solo'}desc{/}">
+			<select name="sc_goods_type" {?sc.sc_event_type != 'solo'}disabled{/}>
+				<option value=""			{=sc['selectbox']['sc_goods_type']['all']}>일반상품+티켓상품</option>
+				<option value="goods"		{=sc['selectbox']['sc_goods_type']['goods']}>일반상품</option>
+				<option value="coupon"		{=sc['selectbox']['sc_goods_type']['coupon']}>티켓상품</option>
+			</select>
+			<input type="text" name="sc_start_st" size="3" class="onlynumber" value="{=sc.sc_start_st}" {?sc.sc_event_type != 'solo'}disabled{/} maxlength=3 /> 차
+			~
+			<input type="text" name="sc_end_st" size="3" class="onlynumber" value="{=sc.sc_end_st}" {?sc.sc_event_type != 'solo'}disabled{/} maxlength=3 /> 차
+			<input type="text" name="sc_goods_info"size="40" value="{=htmlspecialchars(sc.sc_goods_info)}" title="상품명, 상품번호" {?sc.sc_event_type != 'solo'}disabled{/} />
+		</td>
+	</tr>
+	{ / }
+	<tr>
+		<th><label><input type="checkbox" name="search_form_editor[]" value="sc_use_coupon" class="hide"></label>사용 제한</th>
+		<td>
+			<div class="resp_radio">					
+				<label><input type="radio" name="use_type" value="all"					{=sc['checkbox']['use_type']['all']} /> 전체</label>
+				<label><input type="radio" name="use_type" value="use_coupon"				{=sc['checkbox']['use_type']['use_coupon']}/> 쿠폰</label>
+				<label><input type="radio" name="use_type" value="use_coupon_shipping"		{=sc['checkbox']['use_type']['use_coupon_shipping']}/> 배송비 쿠폰</label>
+				<label><input type="radio" name="use_type" value="use_coupon_ordersheet"	{=sc['checkbox']['use_type']['use_coupon_ordersheet']}/> 주문서 쿠폰</label>
+				<!--{? serviceLimit('H_NFR')}-->
+				<label><input type="radio" name="use_type" value="use_code"					{=sc['checkbox']['use_type']['use_code']}/> 할인 코드</label>
+				<label><input type="radio" name="use_type" value="use_code_shipping"		{=sc['checkbox']['use_type']['use_code_shipping']}/> 배송비 할인코드</label>
+				<!--{/}-->
+			</div>
+		</td>
+	</tr>
+	<tr>
+		<th><label><input type="checkbox" name="search_form_editor[]" value="sc_display" class="hide"></label>페이지 진입</th>
+		<td>
+			<div class="resp_radio">	
+				<label><input type="radio" name="display" value="all" {=sc['checkbox']['display']['all']} /> 전체</label>
+				<label><input type="radio" name="display" value="y" {=sc['checkbox']['display']['y']} /> 가능</label>
+				<label><input type="radio" name="display" value="n" {=sc['checkbox']['display']['n']}/> 불가</label>	
+			</div>
+		</td>
+	</tr>
+	<tr>
+		<th><label><input type="checkbox" name="search_form_editor[]" value="sc_event_view" class="hide"></label>전체 이벤트 노출</th>
+		<td>
+			<div class="resp_radio">
+				<label><input type="radio" name="event_view" value="all" {=sc['checkbox']['event_view']['all']}/> 전체</label>
+				<label><input type="radio" name="event_view" value="y" {=sc['checkbox']['event_view']['y']}/> 노출</label>
+				<label><input type="radio" name="event_view" value="n" {=sc['checkbox']['event_view']['n']}/> 미노출</label>
+			</div>				
+		</td>
+	</tr>
+	</table>
+
+	<div class="search_btn_lay center mt10"></div>
+	</form>	
+</div>
+
+<!-- 이벤트리스트 검색폼 : 끝 -->
+
+<div class="contents_dvs v2">
+	<div class="list_info_container">
+		<div class="dvs_left">	
+			<div class="left-btns-txt">검색 <b>{=number_format(page.searchcount)}</b> 개 (총 <b>{=number_format(page.totalcount)}</b>개)</div>
+		</div>
+		<div class="dvs_right">	
+			<span class="display_sort" sort="{=sc.sort}"></span>
+			<span class="display_quantity" perpage="{=sc.perpage}"></span>
+		</div>
+	</div>	
+	
+	<table class="table_row_basic">		
+		<colgroup>
+			<col width="7%" />
+			<col width="9%" />
+			<col width="16%" />
+			<col width="14%" />
+			<col width="10%" />
+			<col width="10%" />
+			<col width="10%" />
+			<col width="7%" />
+			<col width="10%" />
+			<col width="7%" />
+		</colgroup>
+		
+		<thead>
+			<tr>
+				<th>번호</th>
+				<th>유형</th>
+				<th>이벤트명</th>
+				<th>혜택</th>
+				<th>시작일/종료일</th>
+				<th>상태</th>
+				<th>등록일</th>
+				<th>조회수</th>
+				<th>관리</th>
+				<th>삭제</th>
+			</tr>
+		</thead>
+		
+		<tbody>
+		<!--{? list }-->
+		<!--{@ list }-->
+			<!-- 리스트타이틀(이벤트상태 및 버튼) : 시작 -->
+			<tr>
+				<td>{._no}</td>
+				<td>
+					{ ? .event_type == 'solo' }
+							단독
+					{ : }
+						상품
+					{ / }
+	
+				</td>
+				<td class="left">
+					{ ? .event_type == 'solo' }[{.st_num}차]{/}
+					<a href='/admin/event/regist?event_seq={.event_seq}' class="resp_btn_txt v2">{.title}</a></td>
+				<td class="left">{.salepricetitle}</td>
+				<td>
+					<!--{? .start_date == '0000-00-00 00:00:00' && .end_date == '0000-00-00 00:00:00'}-->
+						0000-00-00 00<br/>
+						0000-00-00 00
+					<!--{ : }-->
+						{=date('Y-m-d H', strtotime(.start_date))}<br/>
+						{=date('Y-m-d H', strtotime(.end_date))}
+					<!--{ / }-->
+				</td>
+				<td>{.status}</td>
+				<td>{.regist_date}</td>
+				<td>{=number_format(.pageview)}</td>
+				<td>
+					<input type="button" value="수정" class="event_modify_btn resp_btn v2" event_seq="{.event_seq}" event_type="{.event_type}" />
+					<input type="button" value="복사" class="event_copy_btn  resp_btn v2" event_seq="{.event_seq}" event_type="{.event_type}" />
+				</td>
+				<td><input type="button" value="삭제" class="event_delete_btn  resp_btn v3"  event_seq="{.event_seq}" /></td>
+			</tr>
+			<!-- 리스트데이터 : 끝 -->
+		<!--{ / }-->
+		<!--{ : }-->
+			<!-- 리스트타이틀(이벤트상태 및 버튼) : 시작 -->
+			<tr>				
+				<td class="center" colspan="10">				
+					{ ? keyword }
+						'{keyword}' 검색된 이벤트가 없습니다.
+					{:}
+						등록된 이벤트가 없습니다.
+					{/}
+				</td>
+			</tr>
+			<!-- 리스트데이터 : 끝 -->
+		<!--{ / }-->
+		<tbody>
+	</table>		
+</div>
+<!-- 이벤트리스트 테이블 : 끝 -->
+
+<!-- 페이징 -->
+<div class="paging_navigation">{page.html}</div>
+
+{ #layout_footer }

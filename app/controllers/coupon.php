@@ -17,7 +17,8 @@ class coupon extends front_base {
 	public function index()
 	{  
 		if( strstr($_SERVER["REQUEST_URI"],"popup=1") || strstr($_SERVER["HTTP_REFERER"],"popup=1") ) $this->returnpopup = true;
-		if(!isset( $_GET['return_url'])) $_GET['return_url'] = "/main/index";
+		$referer = parse_url($_SERVER["HTTP_REFERER"]);
+		if(!isset( $_GET['return_url'])) $_GET['return_url'] = $referer['path'].'?'.$referer['query'];
 		// 로그인 체크
 		$_SERVER["REQUEST_URI"] = $_GET['return_url']; 
 		login_check_confirm();

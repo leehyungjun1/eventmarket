@@ -1,0 +1,318 @@
+{ #layout_header }
+<script type="text/javascript" src="/app/javascript/js/admin/gSearchForm.js?mm={=date('Ymd')}"></script>
+<script type="text/javascript">
+	$(document).ready(function() {
+		
+		var arrSort = {
+						'evt.regist_date desc':'최근 등록 순',
+						'evt.title asc':'이벤트명 순'
+					};
+		gSearchForm.init({'pageid':'gift_catalog','search_mode':'{=sc.search_mode}','select_date':'{=sc.select_date}','displaySort':arrSort,'sc':'{=scObj}'});
+
+		$("#order_star").click(function(){
+			var status = "";
+			if($(this).hasClass("checked")){
+				$(this).removeClass("checked");
+				status = "asc";
+			}else{
+				$(this).addClass("checked");
+				status = "desc";
+			}
+			location.href = "../goods/catalog?orderby=favorite_chk&sort="+status;
+		});
+
+		$(".event_modify_btn").click(function(){
+			document.location.href="gift_regist?event_seq="+$(this).attr("event_seq");
+		});
+
+		$(".event_copy_btn").click(function(){
+
+			if(!confirm("이 이벤트를 복사하시겠습니까?")) return;
+
+			$.ajax({
+				type: "get",
+				url: "../event_process/event_copy",
+				data: "event_seq="+$(this).attr("event_seq"),
+				success: function(result){
+					location.reload();
+				}
+			});
+		});
+
+		$(".event_delete_btn").click(function(){
+
+			if(!confirm("이 이벤트를 삭제하시겠습니까?")) return;
+
+			$.ajax({
+				'type': "get",
+				'url': "../event_process/gift_delete?ajaxcall=Y",
+				'data': "event_seq="+$(this).attr("event_seq"),
+				'dataType': 'json',
+				success: function(res){
+					if(res.result == 'auth'){
+						alert(res.msg);
+						document.location.reload();
+					}else{
+						document.location.reload();
+					}
+				}
+			});
+		});
+
+
+		$(".mypage_view").click(function(){
+			window.open("/mypage/point_exchange","","");
+		});
+
+		// 검색조건에 보내는 판매자가 있을경우 :: 2016-11-09 lwh
+		//var src_provider_seq = '{=sc.provider_seq}';
+		//if(src_provider_seq)	$("select[name='provider_seq_selector']").trigger("change");
+
+		// 데이터가 없을 경우
+		$("tr.no-data td").attr('colspan',$("#gift-event-list thead.lth tr th").length);
+
+		$("select[name='sort']").on("change",function(){
+			
+		});
+	});
+
+	function contView(seq, type){
+		if(type == "order"){
+			if(!confirm("본 구매 조건 사은품 이벤트를 진행하시겠습니까?")) return;
+		}else{
+			if(!confirm("본 사은품 이벤트를 노출 하시겠습니까?")) return;
+		}
+		actionFrame.location.href = "../event_process/gift_cont?seq="+seq;
+	}
+
+	function event_view(tpl_path,platform){
+		window.open("/link/"+tpl_path+"?setDesignMode=on&setMode="+platform);
+	}
+</script>
+
+<!-- 페이지 타이틀 바 : 시작 -->
+<div id="page-title-bar-area">
+	<div id="page-title-bar">	
+
+		<!-- 타이틀 -->
+		<div class="page-title">
+			<h2>사은품 이벤트</h2>
+		</div>
+
+		<!-- 우측 버튼 -->
+		<ul class="page-buttons-right">
+			<li><button onclick="location.href='/admin/event/gift_regist'" class="resp_btn active size_L">이벤트 등록</button></li>			
+		</ul>
+
+		<!-- 좌측 버튼 -->
+		<ul class="page-buttons-left">			
+			<li>
+				<!--{ ? config_system.operation_type == 'light' }-->
+				<button onclick="location.href='/admin/page_manager/subpage_layout?cmd=event';" class="resp_btn v3 size_L">전체 이벤트 페이지 설정</button>
+				<!--{ : }-->
+				<button onclick="location.href='event_view?mode=gift_event';" class="resp_btn v3 size_L">전체 이벤트 페이지 설정</button>
+				<!--{ / }-->
+			</li>						
+		</ul>
+	</div>
+</div>
+
+
+<!-- 이벤트리스트 검색폼 : 시작 -->
+<div id="search_container" class="search_container">
+<form name="orderForm" id="orderForm">
+<input type="hidden" name="perpage" id="perpage" value="{sc.perpage}" >
+<input type="hidden" name="page" id="page" value="{sc.page}" >
+<input type="hidden" name="sort" value="{sc.sort}" >
+	<table class="table_search">
+		<tr>
+			<th><label><input type="checkbox" name="search_form_editor[]" value="sc_keyword" class="hide"></label> 이벤트명</th>
+			<td><input type="text" name="keyword" value="{=htmlspecialchars(sc.keyword)}" size=80 title="사은품 이벤트명" /></td>
+		</tr>
+
+		<tr>
+			<th><label><input type="checkbox" name="search_form_editor[]" value="sc_regist_date" class="hide"></label> 날짜</th>
+			<td>
+				<div class="date_range_form">
+					<select name="date">
+						<option value="start_date" {?sc.date=='start_date'}selected{/}>시작일</option>
+						<option value="end_date" {?sc.date=='end_date'}selected{/}>종료일</option>
+						<option value="regist_date" {?sc.date=='regist_date'}selected{/}>등록일</option>
+					</select>					
+					<input type="text" name="sdate" value="{sc.sdate}" class="datepicker sdate"  maxlength="10"/>
+					-
+					<input type="text" name="edate" value="{sc.edate}" class="datepicker edate" maxlength="10"/>
+					
+					<div class="resp_btn_wrap">
+						<input type="button" range="today" value="오늘" class="select_date resp_btn" />
+						<input type="button" range="3day" value="3일간" class="select_date resp_btn" />
+						<input type="button" range="1week" value="일주일" class="select_date resp_btn" />
+						<input type="button" range="1month" value="1개월" class="select_date resp_btn" />
+						<input type="button" range="3month" value="3개월" class="select_date resp_btn" />
+						<input type="button" range="all"  value="전체" class="select_date resp_btn"/>
+						<input name="select_date_regist" value="{=sc.select_date_regist}" class="select_date_input" type="hidden" />
+					</div>
+				</div>
+			</td>
+		</tr>
+
+		<!--{ ? serviceLimit('H_AD') }-->
+		<tr>
+			<th><label><input type="checkbox" name="search_form_editor[]" value="sc_provider" class="hide"></label> 사은품 제공자</th>
+			<td>	
+				<span style="display:inline-block">
+					<select name="provider_seq_selector">
+					</select>
+					<input type="hidden" class="provider_seq" name="provider_seq" value="{sc.provider_seq}" relation="ship_grp" />
+				</span>
+				<span class="ship_grp hide">
+					<select name="ship_grp" val="{=sc.ship_grp}">
+						<option value="">배송비 선택</option>
+					</select>
+				</span>
+			</td>
+		</tr>
+		<!--{ / }-->
+
+		<tr>
+			<th><label><input type="checkbox" name="search_form_editor[]" value="sc_event_status" class="hide"></label> 상태</th>
+			<td>
+				<div class="resp_radio">
+					<label><input type="radio" name="event_status" value="" {=sc['checkbox']['event_status']['all']} /> 전체</label>
+					<label><input type="radio" name="event_status" value="before" {=sc['checkbox']['event_status']['before']} /> 시작 이전</label>
+					<label><input type="radio" name="event_status" value="ing" {=sc['checkbox']['event_status']['ing']}/> 진행 중</label>
+					<label><input type="radio" name="event_status" value="end" {=sc['checkbox']['event_status']['end']}/> 종료</label>	
+				</div>
+				
+			</td>
+		</tr>
+		<tr>
+			<th><label><input type="checkbox" name="search_form_editor[]" value="sc_gift_gb" class="hide"></label> 유형</th>
+			<td>
+				<div class="resp_radio">
+					<label><input type="radio" name="gift_gb" value="" {=sc['checkbox']['gift_gb']['all']} /> 전체</label>
+					<label><input type="radio" name="gift_gb" value="order" {=sc['checkbox']['gift_gb']['order']} > 사은품 증정</label>
+					<label><input type="radio" name="gift_gb" value="buy" {=sc['checkbox']['gift_gb']['buy']}> 사은품 교환</label>
+				</div>
+			</td>
+		</tr>
+		<tr>
+			<th><label><input type="checkbox" name="search_form_editor[]" value="sc_display" class="hide"></label> 페이지 진입</th>
+			<td>
+				<div class="resp_radio">
+					<label><input type="radio" name="display" value="" {=sc['checkbox']['display']['all']} /> 전체</label>
+					<label><input type="radio" name="display" value="y" {=sc['checkbox']['display']['y']} /> 가능</label>
+					<label><input type="radio" name="display" value="n" {=sc['checkbox']['display']['n']} /> 불가</label>
+				</div>
+			</td>
+		</tr>
+		<tr>
+			<th><label><input type="checkbox" name="search_form_editor[]" value="sc_event_view" class="hide"></label> 전체 이벤트 노출</th>
+			<td>
+				<div class="resp_radio">
+					<label><input type="radio" name="event_view" value=""  {=sc['checkbox']['event_view']['all']} /> 전체</label>
+					<label><input type="radio" name="event_view" value="y" {=sc['checkbox']['event_view']['y']}/> 노출</label>
+					<label><input type="radio" name="event_view" value="n" {=sc['checkbox']['event_view']['n']}/> 미노출</label>
+				
+				</div>
+			</td>
+		</tr>
+	</table>
+	
+	<div class="search_btn_lay center mt10 footer"></div>
+	</form>
+</div>
+<!-- 이벤트리스트 검색폼 : 끝 -->
+
+<div class="contents_dvs v2">
+	<div class="list_info_container">
+		<div class="dvs_left">
+			<div class="left-btns-txt">검색 <b>{=number_format(page.searchcount)}</b>개 (총 <b>{=number_format(page.totalcount)}</b>개)</div>
+		</div>
+		<div class="dvs_right">	
+			<span class="display_sort" sort="{=sc.sort}"></span>
+			<span class="display_quantity" perpage="{=sc.perpage}"></span>
+		</div>
+	</div>	
+
+	<table class="table_row_basic tdc" id="gift-event-list">		
+		<colgroup>
+		<!--{ ? serviceLimit('H_AD') }-->
+			<col width="7%" />
+			<col width="11%" />
+			<col width="19%" />
+			<col width="11%" />
+			<col width="12%" />
+			<col width="8%" />
+			<col width="13%" />				
+			<col width="9%" />
+			<col width="9%" />				
+		<!--{ : }-->
+		<col width="8%" />
+		<col width="12%" />
+		<col width="24%" />	
+		<col width="14%" />
+		<col width="9%" />
+		<col width="14%" />			
+		<col width="9%" />
+		<col width="9%" />
+		<!--{ / }-->
+		</colgroup>
+		
+		<thead>
+			<tr>
+				<th>번호</th>
+				<th>유형</th>
+				<th>이벤트명</th>	
+			<!--{ ? serviceLimit('H_AD') }-->
+				<th>사은품 제공자</th>	
+			<!--{ / }-->
+				<th>시작일/종료일</th>	
+				<th>상태</th>	
+				<th>등록일</th>					
+				<th>관리</th>	
+				<th>삭제</th>	
+			</tr>
+		</thead>
+		
+		<tbody>
+		<!--{? record }-->
+		<!--{@ record }-->
+		<!-- 리스트타이틀(이벤트상태 및 버튼) : 시작 -->
+			<tr>
+			<td>{._no}</td>
+				<td>{?.gift_gb=='order'}증정{:}교환{/}</td>
+				<td class="left"><a href='/admin/event/gift_regist?event_seq={.gift_seq}' class='resp_btn_txt v2'>{.title}</a></td>
+				<!--{ ? serviceLimit('H_AD') }-->				
+				<td>{.provider_name}</td>
+				<!--{ / }-->
+				<td>{.start_date}<br/>{.end_date}</td>
+				<td>{.status}</td>
+				<td>{.regist_date}</td>	
+				<td><input type="button" value="수정" class="event_modify_btn resp_btn v2" event_seq="{.gift_seq}" />	</td>
+				<td><input type="button" value="삭제" class="event_delete_btn resp_btn v3" event_seq="{.gift_seq}"/></td>
+			</tr>
+		<!-- 리스트데이터 : 끝 -->
+		<!--{ / }-->
+		<!--{ : }-->
+		<!-- 리스트타이틀(이벤트상태 및 버튼) : 시작 -->
+			<tr>
+				<td colspan="9">
+					{ ? sc.keyword }
+						'{sc.keyword}' 검색된 이벤트가 없습니다.
+					{:}
+						등록된 이벤트가 없습니다.
+					{/}
+				</td>
+			</tr>
+		<!-- 리스트데이터 : 끝 -->
+		<!--{ / }-->
+		<tbody>
+	</table>
+	<!-- 이벤트리스트 테이블 : 끝 -->	
+</div>	
+
+<!-- 페이징 -->
+<div class="paging_navigation">{page.html}</div>
+
+{ #layout_footer }

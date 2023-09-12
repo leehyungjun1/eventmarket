@@ -2656,29 +2656,31 @@ class ordermodel extends CI_Model
 	//주문 배송지 저장
 	public function insert_delivery_address($insert_mode=''){
 
-		if($_POST['insert_mode']){
-			$insert_mode = $_POST['insert_mode'];
+		$params = $this->input->post();
+
+		if($params['insert_mode']){
+			$insert_mode = $params['insert_mode'];
 		}
 
 		if($this->userInfo['member_seq']) $member_seq = $this->userInfo['member_seq'];
-		if($_POST['adminOrder'] == 'admin') $member_seq=$_POST['member_seq'];
+		if($params['adminOrder'] == 'admin') $member_seq=$params['member_seq'];
 		if($member_seq){
 
-			if($_POST['often_recipient_user_name'])			$_POST['recipient_user_name']	= $_POST['often_recipient_user_name'];
-			if($_POST['often_recipient_phone'])				$_POST['recipient_phone']		= $_POST['often_recipient_phone'];
-			if($_POST['often_recipient_cellphone'])			$_POST['recipient_cellphone']	= $_POST['often_recipient_cellphone'];
-			if($_POST['often_recipient_zipcode'])			$_POST['recipient_zipcode']		= $_POST['often_recipient_zipcode'];
-			if($_POST['often_recipient_address_type'])		$_POST['recipient_address_type']= $_POST['often_recipient_address_type'];
-			if($_POST['often_recipient_address'])			$_POST['recipient_address']		= $_POST['often_recipient_address'];
-			if($_POST['often_recipient_address_street'])	$_POST['recipient_address_street']	= $_POST['often_recipient_address_street'];
-			if($_POST['often_recipient_address_detail'])	$_POST['recipient_address_detail']	= $_POST['often_recipient_address_detail'];
+			if($params['often_recipient_user_name'])			$params['recipient_user_name']	= $params['often_recipient_user_name'];
+			if($params['often_recipient_phone'])				$params['recipient_phone']		= $params['often_recipient_phone'];
+			if($params['often_recipient_cellphone'])			$params['recipient_cellphone']	= $params['often_recipient_cellphone'];
+			if($params['often_recipient_zipcode'])			$params['recipient_zipcode']		= $params['often_recipient_zipcode'];
+			if($params['often_recipient_address_type'])		$params['recipient_address_type']= $params['often_recipient_address_type'];
+			if($params['often_recipient_address'])			$params['recipient_address']		= $params['often_recipient_address'];
+			if($params['often_recipient_address_street'])	$params['recipient_address_street']	= $params['often_recipient_address_street'];
+			if($params['often_recipient_address_detail'])	$params['recipient_address_detail']	= $params['often_recipient_address_detail'];
 
 			if($insert_mode == 'order'){
 				$insert_params['often'] 					= 'Y';
 				$insert_params['lately'] 					= 'Y';
 				$insert_params['regist_date']				= date('Y-m-d H:i:s');
 			}elseif($insert_mode == 'insert'){
-				$insert_params['address_description']		= $_POST['address_description'];
+				$insert_params['address_description']		= $params['address_description'];
 				$insert_params['often'] 					= 'Y';
 				$insert_params['regist_date']				= date('Y-m-d H:i:s');
 			}else{
@@ -2687,47 +2689,55 @@ class ordermodel extends CI_Model
 			}
 
 			$insert_params['member_seq'] 					= $member_seq;
-			$insert_params['recipient_user_name']		= $_POST['recipient_user_name'];
-			$insert_params['nation']								= $_POST['address_nation'];
+			$insert_params['recipient_user_name']			= $params['recipient_user_name'];
+			$insert_params['nation']						= $params['address_nation'];
 
-			if($_POST['international'] == '1'){
+			if($params['international'] == '1'){
 
 				$insert_params['international'] 				= 'international';
-				$insert_params['region'] 						= $_POST['region'];
-				$insert_params['international_address'] 		= $_POST['international_address'];
-				$insert_params['international_town_city'] 		= $_POST['international_town_city'];
-				$insert_params['international_county'] 			= $_POST['international_county'];
-				$insert_params['international_postcode'] 		= $_POST['international_postcode'];
-				$insert_params['international_country'] 		= $_POST['international_country'];
-				$insert_params['recipient_phone'] 				= implode('-',$_POST['international_recipient_phone']);
-				$insert_params['recipient_cellphone'] 			= implode('-',$_POST['international_recipient_cellphone']);
+				$insert_params['region'] 						= $params['region'];
+				$insert_params['international_address'] 		= $params['international_address'];
+				$insert_params['international_town_city'] 		= $params['international_town_city'];
+				$insert_params['international_county'] 			= $params['international_county'];
+				$insert_params['international_postcode'] 		= $params['international_postcode'];
+				$insert_params['international_country'] 		= $params['international_country'];
+				$insert_params['recipient_phone'] 				= implode('-',$params['international_recipient_phone']);
+				$insert_params['recipient_cellphone'] 			= implode('-',$params['international_recipient_cellphone']);
 
 			}else{
 
 				$insert_params['international'] 				= 'domestic';
 
-				$insert_params['recipient_zipcode'] 			= implode('-',$_POST['recipient_zipcode']);
+				$insert_params['recipient_zipcode'] 			= implode('-',$params['recipient_zipcode']);
 
-				if($_POST['recipient_new_zipcode']) $insert_params['recipient_zipcode'] 	= $_POST['recipient_new_zipcode'];
+				if($params['recipient_new_zipcode']) $insert_params['recipient_zipcode'] 	= $params['recipient_new_zipcode'];
 
-				$insert_params['recipient_address_type'] 		= ( $_POST['recipient_address_type'] == 'street' && trim($_POST['recipient_address_street']) )?$_POST['recipient_address_type']:"zibun";
-				$insert_params['recipient_address'] 			= $_POST['recipient_address'];
-				$insert_params['recipient_address_street'] 		= $_POST['recipient_address_street'];
-				$insert_params['recipient_address_detail'] 		= $_POST['recipient_address_detail'];
-				$insert_params['recipient_phone'] 				= implode('-',$_POST['recipient_phone']);
-				$insert_params['recipient_cellphone'] 			= implode('-',$_POST['recipient_cellphone']);
+				$insert_params['recipient_address_type'] 		= ( $params['recipient_address_type'] == 'street' && trim($params['recipient_address_street']) )?$params['recipient_address_type']:"zibun";
+				$insert_params['recipient_address'] 			= $params['recipient_address'];
+				$insert_params['recipient_address_street'] 		= $params['recipient_address_street'];
+				$insert_params['recipient_address_detail'] 		= $params['recipient_address_detail'];
+				$insert_params['recipient_phone'] 				= implode('-',$params['recipient_phone']);
+				$insert_params['recipient_cellphone'] 			= implode('-',$params['recipient_cellphone']);
 			}
 
-			if($_POST['save_delivery_address']){
+			if($params['save_delivery_address']){
 				$insert_params['default'] 					= 'Y';
 			}
 
-			if($_POST['address_group']){
-				$insert_params['address_group'] 				= $_POST['address_group'];
+			if($params['address_group']){
+				$insert_params['address_group'] 				= $params['address_group'];
+			}
+			// 기존에 등록된 주소는 update, 아니면 insert
+			$address_seq = $params['address_seq'];
+			if($address_seq) {
+				$this->db->where('address_seq',$address_seq);
+				$this->db->where('member_seq',$member_seq);
+				$this->db->update('fm_delivery_address', $insert_params);
+			} else {
+				$this->db->insert('fm_delivery_address', $insert_params);
+				$address_seq = $this->db->insert_id();
 			}
 
-			$this->db->insert('fm_delivery_address', $insert_params);
-			$address_seq = $this->db->insert_id();
 
 			### Private Encrypt
 			$cellphone = get_encrypt_qry('recipient_cellphone');
@@ -2736,7 +2746,7 @@ class ordermodel extends CI_Model
 			$this->db->query($sql);
 			###
 
-			if($_POST['save_delivery_address']){
+			if($params['save_delivery_address']){
 				$sql = "update fm_delivery_address set `default` = 'N' where member_seq=? and address_seq!=?";
 				$this->db->query($sql,array($member_seq,$address_seq));
 			}

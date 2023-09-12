@@ -1,0 +1,31 @@
+<!--{ @ banner_list }-->
+	<tr>
+		<td class="dlts-td center"><input type="checkbox" name="delete_banner_seq[]" value="{.banner_seq}" /> {.banner_seq}</td>
+		<td class="dlts-td left">{.skin} 스킨</td>
+		<td class="dlts-td center">{=substr(.regdate,0,10)}</td>
+		<td class="dlts-td center">
+			<span class="admin_comment" banner_seq="{.banner_seq}">{.name}</span>
+		</td>
+		<td class="dlts-td center">
+			{=styles[.style].name}
+		</td>
+		<td class="dlts-td center">
+			<!--{? operation_type == 'heavy'}-->
+			&#123;=showDesignBanner({.banner_seq})&#125;
+			<!--{/ }-->
+			<!--{ ? designWorkingSkin == .skin }-->
+			<!--{? operation_type == 'light'}-->
+			<span class="btn small"><input type="button" value="복사" onclick="tag_clipboard_copy('{.banner_seq}','{.style}');" /></span>
+			<!--{:}-->
+			<span class="btn small"><input type="button" value="태그 복사" onclick="tag_clipboard_copy('{.banner_seq}');" /></span>
+			<!--{/}-->
+			<!--{ / }-->
+		</td>
+		<td class="dlts-td center">
+			<!--{ ? designWorkingSkin == .skin }-->
+			<span class="btn small red"><input type="button" value="선택" onclick="select_banner('{.banner_seq}','{.platform}','{.style}')" /></span>
+			<span class="btn small"><input type="button" value="수정" onclick="edit_banner('{.banner_seq}')" /></span>
+			<!--{ / }-->
+		</td>
+	</tr>
+<!--{ / }-->

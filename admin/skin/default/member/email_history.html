@@ -1,0 +1,202 @@
+{ #layout_header }
+<script src="/app/javascript/js/admin/gSearchForm.js?mm={=date('Ymd')}"></script>
+
+<script type="text/javascript">
+	$(document).ready(function() {
+		gSearchForm.init({'pageid':'email_history','search_mode':'{=sc.search_mode}','select_date':'{=sc.select_date}','sc':'{=scObj}'});
+
+		$(".email_select").live("click",function(){
+			$.get('../member_process/getlogmail?seq='+$(this).attr('seq'), function(response) {
+				//$('#contPop').html(data);
+
+				var data = eval(response)[0];
+				$("#contents").show();
+				$('#c_title').html(data.subject);
+				$('#c_total').html(data.total);
+				$('#c_regdate').html(data.regdate);
+				$('#c_contents').html(data.contents);
+				//openDialog("이메일 내용 <span class='desc'>&nbsp;</span>", "contPop", {"width":"600","height":"600"});
+			});
+		});		
+
+		$("#btn_submit").click(function(){
+			$("#gabiaFrm").submit();
+		});
+	});
+</script>
+
+<!-- 페이지 타이틀 바 : 시작 -->
+<div id="page-title-bar-area">
+	<div id="page-title-bar">
+
+		<!-- 타이틀 -->
+		<div class="page-title">
+			<h2>이메일 발송 관리</h2>
+		</div>
+
+		<!-- 좌측 버튼 -->
+		<ul class="page-buttons-left">
+		<!--
+			<li><span class="btn large icon"><button><span class="arrowleft"></span>이동버튼</button></span></li>
+			<li><span class="btn large icon"><button><span class="arrowleft"></span>이동버튼</button></span></li>
+		-->
+		</ul>
+
+		<!-- 우측 버튼 -->
+		<ul class="page-buttons-right">
+		<!--
+			<li><span class="btn large black"><button type="submit">저장하기<span class="arrowright"></span></button></span></li>
+			<li><span class="btn large black"><button type="submit">저장하기<span class="arrowright"></span></button></span></li>
+		-->
+		</ul>
+	</div>
+</div>
+<!-- 페이지 타이틀 바 : 끝 -->
+
+
+<!-- 상단 단계 링크 : 시작 -->
+<ul class="tab_02 tabEvent">
+	{? _GET['sc_gb'] == "PERSONAL"}
+	<li><a href='curation'>개인맞춤형알림</a></td>
+	<li><a href='sms_history?sc_gb=PERSONAL'>SMS 발송내역</a></td>
+	<li><a href='email_history?sc_gb=PERSONAL&orderby=regdate'>이메일 발송내역</a></td>
+	<li><a href='sms_setting'>세팅및충전</a></td>
+	<li><a href='curation_log'>로그데이터</a></td>
+	{ : }
+	<li><a href="email">이메일 자동 발송</a></td>
+	<li><a href="email_history" class="current">이메일 발송내역</a></td>
+	{ / }
+</ul>
+<!-- 상단 단계 링크 : 끝 -->
+
+<!-- 서브 레이아웃 영역 : 시작 -->
+<div id="search_container"  class="search_container">
+	<form name="gabiaFrm" id="gabiaFrm" class='search_form'>
+	<input type="hidden" name="sc_gb" value="{sc_gb}">
+	<input type="hidden" name="searchcount" value="{=sc.searchcount}">	
+	<table class="table_search">			
+		<tbody>
+			<tr>
+				<th>제목</th>
+				<td>
+					<input type="text" name="sc_subject" size="80" value="{sc.sc_subject}" />
+				</td>
+			</tr>
+			<tr>
+				<th>발송일</th>
+				<td>
+					<div class="sc_day_date date_range_form">
+						<input type="text" name="start_date" value="{sc.start_date}"  class="datepicker line sdate"  maxlength="10" size="12" default_none/>
+						-
+						<input type="text" name="end_date" value="{sc.end_date}"  class="datepicker line edate" maxlength="10" size="12" default_none />
+						<div class="resp_btn_wrap">
+							<input type="button" value="오늘" range="today" class="select_date resp_btn" settarget="regist" />
+							<input type="button" value="3일간" range="3day" class="select_date resp_btn" settarget="regist" />
+							<input type="button" value="일주일" range="1week" class="select_date resp_btn" settarget="regist" />
+							<input type="button" value="1개월" range="1month" class="select_date resp_btn" settarget="regist" />
+							<input type="button" value="3개월" range="3month" class="select_date resp_btn" settarget="regist" />
+							<input type="button" value="전체" range="all" class="select_date resp_btn" settarget="regist" row_bunch />
+							<input name="select_date_regist" value="{=sc.select_date_regist}" class="select_date_input" type="hidden">
+						</div>
+					</div>
+				</td>
+			</tr>
+			
+		</tbody>
+	</table>
+
+	<div class="footer search_btn_lay"></div>
+	</form>
+</div>
+<div class="contents_dvs v3">
+<!-- 주문리스트 테이블 : 시작 -->
+<div class="list_info_container">
+	<div class="dvs_left">	
+		검색 <b>{=sc.searchcount}</b>개 (총 <b>{=sc.totalcount}</b>개)
+	</div>		
+</div>
+<table class="table_row_basic">
+	<!-- 테이블 헤더 : 시작 -->
+	<colgroup>
+		<col width="5%" />
+		<col />
+		<col width="20%" />
+		<col width="20%" />
+	</colgroup>
+	<thead class="lth">
+		<tr>
+			<th>번호</th>
+			<th>이메일 제목</th>
+			<th>수신 대상자</th>
+			<th>발송일시</th>
+		</tr>
+	</thead>
+	<!-- 테이블 헤더 : 끝 -->
+	<tbody class="ltb otb" >
+{? loop }
+	{@ loop }
+		<!-- 리스트타이틀(주문상태 및 버튼) : 시작 -->
+		<tr class="list-row email_select"  seq="{.seq}" style="cursor:pointer;">
+			<td>{.number}</td>
+			<td class="left"><span>{.subject}</span></td>
+			<td>{? .memo == "admin"}관리자{:}{.total}명{/}</td>
+			<td>{.regdate}</td>
+		</tr>
+		<!-- 리스트데이터 : 끝 -->
+	{ / }
+{ : }
+		<!-- 리스트타이틀(주문상태 및 버튼) : 시작 -->
+		<tr class="list-row">
+			<td align="center" colspan="4">
+				{ ? search_text }
+					'{search_text}' 검색된 데이터가 없습니다.
+				{:}
+					등록된 데이터가 없습니다.
+				{/}
+			</td>
+		</tr>
+		<!-- 리스트데이터 : 끝 -->
+{ / }
+	</tbody>
+	<!-- 리스트 : 끝 -->
+</table>
+</div>
+<!-- 주문리스트 테이블 : 끝 -->	
+<div class="paging_navigation">{pagin} </div>			
+</div>
+
+<div id="contPop" class="hide"></div>
+
+<div id="contents" class="hide">
+<br style="line-height:16px;" />
+
+<!-- 주문리스트 테이블 : 시작 -->
+<div class="item-title" style="float:left;width:92%">이메일 발송내역</div>
+<table class="list-table-style" cellspacing="0">
+	<!-- 테이블 헤더 : 시작 -->
+	<colgroup>
+		<col />
+		<col width="20%" />
+		<col width="20%" />
+	</colgroup>
+	<thead class="lth">
+		<tr>
+			<th>이메일 제목</th>
+			<th>수신 대상자</th>
+			<th>발송일시</th>
+		</tr>
+	</thead>
+	<!-- 테이블 헤더 : 끝 -->
+	<tbody class="ltb otb" >
+		<tr class="list-row">
+			<td align="center"><span id="c_title"></span></td>
+			<td align="center"><span id="c_total"></span></td>
+			<td align="center"><span id="c_regdate"></span></td>
+		</tr>
+		<tr class="list-row">
+			<td align="center" colspan="3" style="padding:10px;"><span id="c_contents" style="width:80%;"></span></td>
+		</tr>
+	</tbody>
+</table>
+
+{ #layout_footer }

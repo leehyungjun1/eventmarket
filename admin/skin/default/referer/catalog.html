@@ -1,0 +1,209 @@
+{ #layout_header }
+
+<script type="text/javascript" src="/app/javascript/js/admin/gSearchForm.js?mm={=date('Ymd')}"></script>
+<script type="text/javascript">
+	$(function(){
+
+		gSearchForm.init({'pageid':'referer_catalog','search_mode':'{=sc.search_mode}','select_date':'{=sc.select_date}','sc':'{=scObj}'});
+
+		$(".regist").live('click', function(){
+			location.href	= './referersale';
+		});
+
+		$("input[name='modify_btn']").each(function(){
+			$(this).click(function(){
+				location.href	= './referersale?no='+$(this).attr('referersaleSeq');
+			});
+		});
+
+		$("input[name='delete_btn']").each(function(){
+			$(this).click(function(){
+				if	(confirm("정말로 삭제하시겠습니까?")){
+					actionFrame.location.href	= '../referer_process/delete_referer?no='+$(this).attr('referersaleSeq');
+				}
+			});
+		});
+
+		$("input[name='testPC_btn']").each(function(){
+			$(this).click(function(){
+				  var referersale_url = encodeURIComponent($(this).attr('referersale_url'));
+				actionFrame.location.href	= '../referer_process/test_referer?add='+referersale_url;
+				window.open('/../index?setMode=pc', '_blank');
+			});
+		});
+
+		$("input[name='testM_btn']").each(function(){
+			$(this).click(function(){
+				  var referersale_url = encodeURIComponent($(this).attr('referersale_url'));
+				actionFrame.location.href	= '../referer_process/test_referer?add='+referersale_url;
+				window.open('/../index?setMode=mobile', '_blank');
+			});
+		});
+
+		$('#display_quantity').bind('change', function() {
+			$("#perpage").val($(this).val());
+			$("#referersearch").submit();
+		});
+	});
+</script>
+
+<!-- 페이지 타이틀 바 : 시작 -->
+<div id="page-title-bar-area">
+	<div id="page-title-bar">
+		<!-- 타이틀 -->
+		<div class="page-title">
+			<h2>할인 유입경로</h2>
+		</div>
+		<!-- 우측 버튼 -->
+		<ul class="page-buttons-right">
+			<li><button type="button" class="resp_btn active size_L regist">할인 유입경로 등록</button></li>
+		</ul>
+	</div>
+</div>
+<!-- 페이지 타이틀 바 : 끝 -->
+
+
+<!-- 서브 레이아웃 영역 : 시작 -->
+<!-- 리스트검색폼 : 시작 -->
+<div id="search_container" class="search_container">
+<form name="referersearch" id="referersearch" method="get">
+<input type="hidden" name="perpage" id="perpage" value="{sc.perpage}" >
+<input type="hidden" name="page" id="page" value="{sc.page}" >
+	<table class="table_search">
+		<tr>
+			<th><label><input type="checkbox" name="search_form_editor[]" value="sc_keyword" class="hide"></label> 검색어</th>
+			<td>
+				<select name="search_field" class="resp_select">
+					<option value="" {=sc['selectbox']['search_field']['all']}>전체</option>
+					<option value="referersale_name" {=sc['selectbox']['search_field']['referersale_name']}>유입경로명</option>
+					<option value="referersale_url" {=sc['selectbox']['search_field']['referersale_url']}>유입경로 URL</option>			
+				</select>
+				<input type="text" name="search_text" id="search_text" value="{sc.search_text}" size="80" />
+			</td>
+		</tr>
+		<tr>
+			<th><label><input type="checkbox" name="search_form_editor[]" value="sc_regist_date" class="hide"></label> 등록일</th>
+			<td>
+			<div class="date_range_form">
+				<input type="text" name="sdate" value="{sc.sdate}" class="datepicker sdate"  maxlength="10"/>
+				-
+				<input type="text" name="edate" value="{sc.edate}" class="datepicker edate" maxlength="10"/>
+				
+				<div class="resp_btn_wrap">
+					<input type="button" range="today" value="오늘" class="select_date resp_btn"/>
+					<input type="button" range="3day" value="3일간" class="select_date resp_btn"/>
+					<input type="button" range="1week" value="일주일" class="select_date resp_btn"/>
+					<input type="button" range="1month" value="1개월" class="select_date resp_btn"/>
+					<input type="button" range="3month" value="3개월" class="select_date resp_btn"/>
+					<input type="button" range="all"  value="전체" class="select_date resp_btn"/>
+					<input name="select_date_regist" value="{=sc.select_date_regist}" class="select_date_input" type="hidden">
+				</div>
+			</div>
+			</td>
+		</tr>
+		<!--{ ? serviceLimit('H_AD') }-->
+		<tr>
+			<th><label><input type="checkbox" name="search_form_editor[]" value="sc_provider" class="hide"></label> 입점사</th>
+			<td>				
+				<select name="provider_seq_selector">
+				</select>
+				<input type="hidden" class="provider_seq disable" name="provider_seq" value="{sc.provider_seq}" clas />
+				<input type="hidden" name="provider_name" value="{sc.provider_name}" class="wx200 disable" readonly />
+			</td>
+		</tr>
+		<tr>
+			<th><label><input type="checkbox" name="search_form_editor[]" value="sc_cost_type" class="hide"></label> 할인 혜택 부담</th>
+			<td>
+				<select name="cost_type" class="search_select line">
+					<option value="admin" {? sc.cost_type=='admin'}selected{/}>본사 부담율</option>
+					<option value="provider" {? sc.cost_type=='provider'}selected{/}>입점사 부담율</option>
+				</select>
+
+				<input type="text" name="search_cost_start" size="3" maxlength="3" value="{sc.search_cost_start}" defaultValue='0' class="line onlynumber right" /> %
+				~ 
+				<input type="text" name="search_cost_end" size="3" maxlength="3" value="{sc.search_cost_end}" defaultValue='100' class="line onlynumber right" /> %				
+			</td>
+		</tr>
+		<!--{ / }-->
+	</table>
+
+	<div class="search_btn_lay center mt10 footer"></div>
+</form>
+</div>
+<div class="cboth"></div>
+<!-- 리스트검색폼 : 끝 -->
+
+<div class="contents_dvs v2">
+	<div class="list_info_container">
+		<div class="dvs_left">
+			<div class="left-btns-txt">
+				검색 <b>{=number_format(page.searchcount)}</b>개 (총 <b>{=number_format(page.totalcount)}</b>개)
+			</div>
+		</div>
+
+		<div class="dvs_right"><div class="display_quantity" perpage="{=sc.perpage}"></div></div>
+	</div>	
+
+	<table class="table_row_basic">
+		<colgroup>
+			<col width="5%" />
+			<col width="20%" />
+			<col width="20%" />			
+			<col width="18%" />
+			<col width="13%" />
+			<col width="10%" />
+			<col width="7%" />
+			<col width="7%" />
+		</colgroup>
+		<thead>
+			<tr>
+				<th>번호</th>
+				<th>유입경로명</th>
+				<th>유입 경로 URL</th>
+				<th>혜택</th>
+				<th>유효기간</th>
+				<th>등록일</th>				
+				<th>관리</th>
+				<th>삭제</th>
+			</tr>
+		</thead>
+		<tbody>
+		{? list }
+			{@ list }
+			<tr>
+				<td>{._no}</td>
+				<td class="left"><a href="../referer/referersale?no={.referersale_seq}" class='resp_btn_txt v2'>{.referersale_name}</a></td>
+				<td class="left">{.referersale_url}</td>
+				<td>{.salepricetitle}</td>				
+				<td>{.validdate}</td>
+				<td>{.date}</td>				
+				<td>
+					<input type="button" name="modify_btn" class="resp_btn v2" referersaleSeq="{.referersale_seq}"  value="수정" />					
+				</td>
+				
+				<td>
+					{ ? !.order_seq }
+					<input type="button" name="delete_btn" class="resp_btn v3" referersaleSeq="{.referersale_seq}"  value="삭제" />
+					{ / }
+				</td>
+			
+			</tr>
+			{/}
+		{:}
+			<tr>
+				<td class="its-td-align center" colspan="8">
+					{ ? search_text }'{search_text}' 검색된 유입경로할인이 없습니다.
+					{:}등록된 유입경로할인이 없습니다.{/}
+				</td>
+			</tr>
+		{/}
+		</tbody>
+	</table>	
+</div>
+
+<!-- 서브 레이아웃 영역 : 끝 -->
+
+<!-- 페이징 -->
+<div class="paging_navigation">{page.html}</div>
+
+{ #layout_footer }

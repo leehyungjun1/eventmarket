@@ -990,14 +990,27 @@ class Goodsmodel extends CI_Model {
 
 	public function upload_goodsImage($arr,$oldImg='',$imagehosting = [])
 	{
+		$this->load->model('imagehosting');
 		$isImagehosting = ($imagehosting['isImagehosting']) ?? false; //이미지호스팅 사용 여부
+
+		$imagestore_dir = "";
+		if ($isImagehosting == true) {
+			// 기능별 저장소 연결된 이미지호스팅 확인
+			$result_imagestore = $this->imagehosting->get_linked_imagehosting($imagehosting['imagestore_type']);
+			if($result_imagestore) $imagestore_dir = $result_imagestore['store_url']."/".$result_imagestore['store_dir'];
+		}
 
 		foreach( $arr as $i => $file ){
 
 			if(substr_count($file,'/data/goods/') > 0 || substr_count($file,'/data/tmp/') > 0){
-				if($oldImg && (substr_count($oldImg,'/data/goods/') > 0 || substr_count($oldImg,'/data/tmp/') > 0)){
+				if($oldImg && (substr_count($oldImg,'/data/goods/') > 0 || substr_count($oldImg,'/data/tmp/') > 0) 
+					&& (substr($oldImg, 0,4) != 'http' || substr_count($oldImg,$imagestore_dir) > 0)){ // 기존 이미지 경로가 현재 연결된 이미지호스팅 경로와 동일하거나, 외부 이미지 경로가 아닌 경우
 					$tmpfile	= explode('.',$file);
 					$tmpoldImg	= explode('.',$oldImg);
+					if(substr_count($oldImg,$imagestore_dir) > 0){
+						$tmpoldImg = str_replace($imagestore_dir, "", $oldImg);
+						$tmpoldImg	= explode('.',$tmpoldImg);
+					}
 					$target		= $tmpoldImg[0].'.'.$tmpfile[1];
 				}else{
 					$target = $this->get_target_goodsImage($file);

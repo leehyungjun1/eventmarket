@@ -2661,6 +2661,14 @@ class naverpaymodel extends CI_Model {
 						$insert_params['shipping_charge']			= $return_sale['OPT'][$option_seq]['shipping_charge'];
 						$insert_params['return_shipping_charge']	= $return_sale['OPT'][$option_seq]['return_shipping_charge'];
 						$insert_params['accountallmodeltest']		= "accountallmodeltest_ship";
+						/**
+						 * prepay_info 는 delivery, postpaid 만 가능함
+						 * shipping_method 직접배송(direct_delivery) 인 경우 prepay_info에 delivery 로 변경되도록 개선함
+						 */
+						$insert_params['prepay_info']				= $insert_params['shipping_method'];
+						if(preg_match( '/delivery/',$insert_params['prepay_info'])) {
+							$insert_params['prepay_info'] = 'delivery';
+						}
 						$account_ins_shipping[$shipping_seq] = array_merge($insert_params);
 						/**
 						* 정산개선 - 배송처리 : 순서변경주의 끝

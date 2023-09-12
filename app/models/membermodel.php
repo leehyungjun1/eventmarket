@@ -179,27 +179,28 @@ class Membermodel extends CI_Model {
 		// 기본배송지 추출 :: 2017-04-10 lwh
 		$this->db->select("*, AES_DECRYPT(UNHEX(recipient_phone), '{$key}') as recipient_phone, AES_DECRYPT(UNHEX(recipient_cellphone), '{$key}') as recipient_cellphone");
 		$query = $this->db->get_where('fm_delivery_address', array('member_seq'=>$seq, 'default'=>'Y'));
-		$result = $query->result_array();
-		if($result[0]){
+		$result = $query->row_array();
+		if($result){
 
-			if($result[0]['nation'] == 'KOREA' || $result[0]['international'] == 'domestic'){
-				$member_address['zipcode']				= $result[0]['recipient_zipcode'];
-				$member_address['address_type']			= $result[0]['recipient_address_type'];
-				$member_address['address']				= $result[0]['recipient_address'];
-				$member_address['address_street']		= $result[0]['recipient_address_street'];
-				$member_address['address_detail']		= $result[0]['recipient_address_detail'];
+			if($result['nation'] == 'KOREA' || $result['international'] == 'domestic'){
+				$member_address['zipcode']				= $result['recipient_zipcode'];
+				$member_address['address_type']			= $result['recipient_address_type'];
+				$member_address['address']				= $result['recipient_address'];
+				$member_address['address_street']		= $result['recipient_address_street'];
+				$member_address['address_detail']		= $result['recipient_address_detail'];
 			}else{
-				$member_address['international_address']= $result[0]['international_address'];
-				$member_address['international_town_city']= $result[0]['international_town_city'];
-				$member_address['international_county']	= $result[0]['international_county'];
-				$member_address['international_postcode']= $result[0]['international_postcode'];
-				$member_address['international_country']= $result[0]['international_country'];
+				$member_address['international_address']= $result['international_address'];
+				$member_address['international_town_city']= $result['international_town_city'];
+				$member_address['international_county']	= $result['international_county'];
+				$member_address['international_postcode']= $result['international_postcode'];
+				$member_address['international_country']= $result['international_country'];
 			}
-			$member_address['user_name']			= $result[0]['recipient_user_name'];
-			$member_address['phone']				= $result[0]['recipient_phone'];
-			$member_address['cellphone']			= $result[0]['recipient_cellphone'];
-			$member_address['nation']				= $result[0]['nation'];
-			$member_address['international']		= $result[0]['international'];
+			$member_address['user_name']			= $result['recipient_user_name'];
+			$member_address['phone']				= $result['recipient_phone'];
+			$member_address['cellphone']			= $result['recipient_cellphone'];
+			$member_address['nation']				= $result['nation'];
+			$member_address['international']		= $result['international'];
+			$member_address['address_seq']			= $result['address_seq'];
 
 		}else{
 			$member_address['user_name']			= $data[0]['user_name'];
